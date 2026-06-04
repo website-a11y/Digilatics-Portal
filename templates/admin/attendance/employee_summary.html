@@ -1,0 +1,265 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'attendance/css/attendance.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">Attendance</a>
+  &rsaquo; <a href="{% url 'admin:attendance_attendancerecord_changelist' %}">Records</a>
+  &rsaquo; {{ employee.full_name }}
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="att-page">
+
+  <!-- ── Top bar ── -->
+  <div class="att-topbar">
+    <div class="att-topbar-left">
+      <h1 class="att-page-title">Employee Summary</h1>
+      <span class="att-page-sub">{{ month_label }}</span>
+    </div>
+    <div class="att-topbar-right">
+      <a href="{% url 'admin:attendance_attendancerecord_changelist' %}?year={{ year }}&month={{ month }}" class="att-btn att-btn-outline">
+        ← Monthly Grid
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Employee profile card ── -->
+  <div class="emp-profile-card">
+    <div class="emp-profile-left">
+      {% if employee.profile_photo %}
+      <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}" class="emp-profile-avatar">
+      {% else %}
+      <div class="emp-profile-avatar emp-profile-avatar-placeholder">{{ employee.full_name|first }}</div>
+      {% endif %}
+      <div class="emp-profile-info">
+        <div class="emp-profile-name">{{ employee.full_name }}</div>
+        <div class="emp-profile-meta">
+          <span class="emp-meta-chip emp-meta-code">{{ employee.employee_code }}</span>
+          {% if employee.department %}<span class="emp-meta-chip">{{ employee.department }}</span>{% endif %}
+          {% if employee.designation %}<span class="emp-meta-chip">{{ employee.designation }}</span>{% endif %}
+          {% if employee.shift %}<span class="emp-meta-chip emp-meta-shift">{{ employee.shift }}</span>{% endif %}
+        </div>
+        {% if employee.scheduled_checkin or employee.scheduled_checkout %}
+        <div class="emp-schedule-row">
+          {% if employee.scheduled_checkin %}
+          <span class="emp-schedule-item">
+            <span class="emp-schedule-icon">&#9654;</span>
+            Check-in: <strong>{{ employee.scheduled_checkin|time:"H:i" }}</strong>
+          </span>
+          {% endif %}
+          {% if employee.scheduled_checkout %}
+          <span class="emp-schedule-item">
+            <span class="emp-schedule-icon">&#9632;</span>
+            Check-out: <strong>{{ employee.scheduled_checkout|time:"H:i" }}</strong>
+          </span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="emp-profile-right">
+      <div class="emp-att-pct-ring">
+        <svg viewBox="0 0 44 44" class="emp-ring-svg">
+          <circle cx="22" cy="22" r="18" fill="none" stroke="#F3F4F6" stroke-width="4"/>
+          <circle cx="22" cy="22" r="18" fill="none"
+            stroke="{% if attendance_pct >= 80 %}#22C55E{% elif attendance_pct >= 60 %}#F59E0B{% else %}#EF4444{% endif %}"
+            stroke-width="4"
+            stroke-dasharray="{{ attendance_pct|floatformat:0 }} 100"
+            stroke-dashoffset="25"
+            stroke-linecap="round"
+            pathLength="100"/>
+        </svg>
+        <div class="emp-ring-label">
+          <div class="emp-ring-pct">{{ attendance_pct }}%</div>
+          <div class="emp-ring-sub">Attendance</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Month Navigator ── -->
+  <div class="att-nav-bar" style="margin-bottom:20px;">
+    <div class="att-nav-controls">
+      <a href="?year={{ prev_year }}&month={{ prev_month }}" class="att-nav-arrow" title="Previous month">&#8249;</a>
+      <span class="att-nav-label">{{ month_label }}</span>
+      <a href="?year={{ next_year }}&month={{ next_month }}" class="att-nav-arrow" title="Next month">&#8250;</a>
+    </div>
+  </div>
+
+  <!-- ── KPI grid ── -->
+  <div class="att-kpi-grid emp-kpi-grid">
+    <div class="att-kpi-card att-kpi-present">
+      <div class="att-kpi-value">{{ present }}</div>
+      <div class="att-kpi-label">Present</div>
+    </div>
+    <div class="att-kpi-card att-kpi-absent">
+      <div class="att-kpi-value">{{ absent }}</div>
+      <div class="att-kpi-label">Absent</div>
+    </div>
+    <div class="att-kpi-card emp-kpi-late">
+      <div class="att-kpi-value">{{ late }}</div>
+      <div class="att-kpi-label">Late Check-ins</div>
+    </div>
+    <div class="att-kpi-card emp-kpi-early">
+      <div class="att-kpi-value">{{ early_checkout }}</div>
+      <div class="att-kpi-label">Early Checkouts</div>
+    </div>
+    <div class="att-kpi-card att-kpi-leave">
+      <div class="att-kpi-value">{{ leave_paid }}</div>
+      <div class="att-kpi-label">Leave (Paid)</div>
+    </div>
+    <div class="att-kpi-card" style="border-top-color:#10B981;">
+      <div class="att-kpi-value" style="color:#10B981;">{{ leave_unpaid }}</div>
+      <div class="att-kpi-label">Leave (Unpaid)</div>
+    </div>
+    <div class="att-kpi-card att-kpi-halfday">
+      <div class="att-kpi-value">{{ half_day }}</div>
+      <div class="att-kpi-label">Half Day</div>
+    </div>
+    <div class="att-kpi-card att-kpi-hourly">
+      <div class="att-kpi-value">{{ hourly_leave }}</div>
+      <div class="att-kpi-label">Hourly Leave</div>
+    </div>
+    <div class="att-kpi-card att-kpi-holiday">
+      <div class="att-kpi-value">{{ holiday }}</div>
+      <div class="att-kpi-label">Holidays</div>
+    </div>
+    <div class="att-kpi-card" style="border-top-color:#9CA3AF;">
+      <div class="att-kpi-value" style="color:#9CA3AF;">{{ not_recorded }}</div>
+      <div class="att-kpi-label">Not Recorded</div>
+    </div>
+    <div class="att-kpi-card att-kpi-working">
+      <div class="att-kpi-value">{{ working_days }}</div>
+      <div class="att-kpi-label">Working Days</div>
+    </div>
+  </div>
+
+  <!-- ── Visual breakdown bar ── -->
+  {% with total=present|add:absent|add:leave_paid|add:leave_unpaid|add:hourly_leave|add:half_day %}
+  {% if total > 0 %}
+  <div class="att-breakdown-section">
+    <h2 class="att-section-title">Status Breakdown — {{ month_label }}</h2>
+    <div class="att-breakdown-bar">
+      {% if present %}<div class="att-bar-seg att-bar-present" style="flex:{{ present }}" title="Present: {{ present }}"></div>{% endif %}
+      {% if absent %}<div class="att-bar-seg att-bar-absent" style="flex:{{ absent }}" title="Absent: {{ absent }}"></div>{% endif %}
+      {% if leave_paid %}<div class="att-bar-seg att-bar-leave-paid" style="flex:{{ leave_paid }}" title="Leave (Paid): {{ leave_paid }}"></div>{% endif %}
+      {% if leave_unpaid %}<div class="att-bar-seg att-bar-leave-unpaid" style="flex:{{ leave_unpaid }}" title="Leave (Unpaid): {{ leave_unpaid }}"></div>{% endif %}
+      {% if hourly_leave %}<div class="att-bar-seg att-bar-hourly" style="flex:{{ hourly_leave }}" title="Hourly: {{ hourly_leave }}"></div>{% endif %}
+      {% if half_day %}<div class="att-bar-seg att-bar-halfday" style="flex:{{ half_day }}" title="Half Day: {{ half_day }}"></div>{% endif %}
+    </div>
+    <div class="att-breakdown-labels">
+      {% if present %}<span class="att-bl att-bl-present">Present {{ present }}</span>{% endif %}
+      {% if absent %}<span class="att-bl att-bl-absent">Absent {{ absent }}</span>{% endif %}
+      {% if leave_paid %}<span class="att-bl att-bl-leave-paid">Leave (Paid) {{ leave_paid }}</span>{% endif %}
+      {% if leave_unpaid %}<span class="att-bl att-bl-leave-unpaid">Leave (Unpaid) {{ leave_unpaid }}</span>{% endif %}
+      {% if hourly_leave %}<span class="att-bl att-bl-hourly">Hourly {{ hourly_leave }}</span>{% endif %}
+      {% if half_day %}<span class="att-bl att-bl-halfday">Half Day {{ half_day }}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- ── Daily records table ── -->
+  <div class="att-table-section">
+    <h2 class="att-section-title" style="padding:0 24px;">Daily Records — {{ month_label }}</h2>
+    <div class="att-table-wrapper">
+      <table class="att-summary-table emp-detail-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th class="num">Status</th>
+            <th class="num">Check-in</th>
+            <th class="num">Check-out</th>
+            <th class="num">Late</th>
+            <th class="num">Early Out</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in day_rows %}
+          <tr class="{% if row.is_today %}emp-row-today{% endif %}">
+            <td class="emp-date-cell">
+              <span class="emp-date-num">{{ row.day|date:"d" }}</span>
+              <span class="emp-date-month">{{ row.day|date:"M" }}</span>
+            </td>
+            <td class="emp-dayname-cell">{{ row.day|date:"D" }}</td>
+            <td class="num">
+              <span class="att-badge att-badge-{{ row.status_key }}" style="margin:0 auto;">
+                {{ row.meta.symbol }}
+              </span>
+              <div class="emp-status-label">{{ row.meta.label }}</div>
+            </td>
+            <td class="num emp-time-cell">
+              {% if row.record and row.record.check_in %}
+                <span class="emp-time{% if row.record.is_late %} emp-time-late{% endif %}">
+                  {{ row.record.check_in|time:"H:i" }}
+                </span>
+                {% if row.record.is_late %}
+                <span class="emp-flag-late">Late</span>
+                {% endif %}
+              {% else %}
+                <span class="emp-time-empty">—</span>
+              {% endif %}
+            </td>
+            <td class="num emp-time-cell">
+              {% if row.record and row.record.check_out %}
+                <span class="emp-time{% if row.record.is_early_checkout %} emp-time-early{% endif %}">
+                  {{ row.record.check_out|time:"H:i" }}
+                </span>
+                {% if row.record.is_early_checkout %}
+                <span class="emp-flag-early">Early</span>
+                {% endif %}
+              {% else %}
+                <span class="emp-time-empty">—</span>
+              {% endif %}
+            </td>
+            <td class="num">
+              {% if row.record and row.record.is_late %}
+              <span class="emp-dot emp-dot-late"></span>
+              {% else %}—{% endif %}
+            </td>
+            <td class="num">
+              {% if row.record and row.record.is_early_checkout %}
+              <span class="emp-dot emp-dot-early"></span>
+              {% else %}—{% endif %}
+            </td>
+            <td class="emp-notes-cell">
+              {% if row.record %}
+                {% if row.record.leave_request %}
+                <a href="{% url 'admin:leaves_leaverequest_change' row.record.leave_request.pk %}"
+                   class="emp-leave-link">
+                  {{ row.record.leave_request.leave_type.name }}
+                </a>
+                {% elif row.record.notes %}
+                <span class="emp-notes-text">{{ row.record.notes }}</span>
+                {% else %}—{% endif %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' row.record.pk %}"
+                   class="emp-edit-link" title="Edit record">✏</a>
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align:center;padding:40px;color:#94a3b8;">
+              No working days in this period.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /att-page -->
+{% endblock %}

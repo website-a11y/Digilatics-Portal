@@ -1,0 +1,553 @@
+/* ================================================================
+   EMPLOYEE REGISTRATION FORM — Stripe/Vercel aesthetic
+   Primary: #F58400  |  Only font-weight 400 & 500
+   ================================================================ */
+
+:root {
+  --ef-brand:       #F58400;
+  --ef-brand-dark:  #B85E00;
+  --ef-brand-light: #FFF3E0;
+  --ef-brand-ring:  rgba(245, 132, 0, 0.18);
+  --ef-border:      rgba(0,0,0,0.08);
+  --ef-border-w:    0.5px;
+  --ef-radius:      8px;
+  --ef-text:        #111111;
+  --ef-muted:       #6B7280;
+  --ef-surface:     #F9FAFB;
+}
+
+/* ── Reset heavy weights everywhere on this page ─────────────────── */
+.app-accounts.model-employeeprofile *,
+.app-accounts.model-employeeprofile *::before,
+.app-accounts.model-employeeprofile *::after {
+  font-weight: 400;
+}
+
+/* ── Progress bar (2px strip under header) ───────────────────────── */
+.ef-progress-bar-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 2px;
+  background: #E5E7EB;
+  width: 100%;
+}
+.ef-progress-bar-fill {
+  height: 100%;
+  background: var(--ef-brand);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── Page title & meta row ───────────────────────────────────────── */
+.ef-title-row {
+  margin-bottom: 2px;
+}
+.ef-page-title {
+  font-size: 22px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ef-text) !important;
+  line-height: 1.2 !important;
+  margin: 0 0 6px !important;
+}
+.ef-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ef-meta-item {
+  font-size: 11px;
+  color: var(--ef-muted);
+  font-weight: 400;
+}
+.ef-meta-sep {
+  font-size: 11px;
+  color: #D1D5DB;
+  font-weight: 400;
+}
+
+/* ── Tab strip ────────────────────────────────────────────────────── */
+/* Override Unfold tab styles */
+[data-tab-target],
+.tab-nav a,
+.nav-tabs a,
+[role="tab"] {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--ef-muted) !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 10px 14px !important;
+  text-decoration: none !important;
+  transition: color 0.15s, border-color 0.15s !important;
+  letter-spacing: 0 !important;
+}
+[data-tab-target]:hover,
+.tab-nav a:hover {
+  color: var(--ef-text) !important;
+}
+[data-tab-target].active,
+[data-tab-target][aria-selected="true"],
+.tab-nav a.active,
+[role="tab"][aria-selected="true"] {
+  color: var(--ef-brand) !important;
+  border-bottom-color: var(--ef-brand) !important;
+  font-weight: 500 !important;
+}
+
+/* Tab number badge */
+.ef-tab-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  color: #6B7280;
+  font-size: 10px;
+  font-weight: 500;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.ef-tab-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #DCFCE7;
+  color: #16A34A;
+  font-size: 10px;
+  font-weight: 500;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+[data-tab-target].active .ef-tab-num,
+[role="tab"][aria-selected="true"] .ef-tab-num {
+  background: var(--ef-brand);
+  color: #fff;
+}
+
+/* ── Fieldset → flat section card ────────────────────────────────── */
+#content fieldset {
+  background: #fff !important;
+  border: var(--ef-border-w) solid var(--ef-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  margin-bottom: 20px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Section label: 11px uppercase with hairline rule */
+#content fieldset h2,
+#content fieldset .fieldset-title,
+.app-accounts.model-employeeprofile fieldset legend {
+  background: transparent !important;
+  border-bottom: var(--ef-border-w) solid var(--ef-border) !important;
+  border-radius: 0 !important;
+  color: var(--ef-muted) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  padding: 14px 20px 10px !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Description row under section label */
+#content fieldset .description {
+  background: #FAFAFA !important;
+  border-bottom: var(--ef-border-w) solid var(--ef-border) !important;
+  border-top: none !important;
+  color: var(--ef-muted) !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  padding: 8px 20px !important;
+  line-height: 1.5 !important;
+}
+
+/* Form rows inside fieldset */
+#content fieldset .form-row,
+#content fieldset .field-box,
+.app-accounts.model-employeeprofile fieldset .flex {
+  padding: 14px 20px !important;
+  border-bottom: var(--ef-border-w) solid var(--ef-border) !important;
+}
+#content fieldset .form-row:last-child,
+#content fieldset .field-box:last-child {
+  border-bottom: none !important;
+}
+
+/* ── Field labels ─────────────────────────────────────────────────── */
+#content label,
+#content .form-row label,
+.fieldBox label {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+  color: #374151 !important;
+  margin-bottom: 5px !important;
+  display: block !important;
+}
+
+/* Required dot — 4px orange circle before the label text */
+#content label.required,
+#content label[class*="required"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+#content label.required::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 4px !important;
+  height: 4px !important;
+  border-radius: 50% !important;
+  background: var(--ef-brand) !important;
+  flex-shrink: 0 !important;
+}
+/* Remove old asterisk approach */
+#content label.required::after {
+  content: "" !important;
+}
+
+/* ── Help / hint text ─────────────────────────────────────────────── */
+#content .help,
+#content p.help,
+.field-help-text,
+.helptext {
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: var(--ef-muted) !important;
+  margin-top: 4px !important;
+  line-height: 1.5 !important;
+}
+
+/* ── Inputs ───────────────────────────────────────────────────────── */
+#content input[type="text"],
+#content input[type="email"],
+#content input[type="number"],
+#content input[type="url"],
+#content input[type="password"],
+#content input[type="search"],
+#content input[type="tel"],
+#content input[type="date"],
+#content input[type="datetime-local"],
+#content input[type="time"],
+#content textarea,
+#content select {
+  appearance: none !important;
+  background: #fff !important;
+  border: var(--ef-border-w) solid rgba(0,0,0,0.14) !important;
+  border-radius: var(--ef-radius) !important;
+  box-shadow: none !important;
+  color: var(--ef-text) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  outline: none !important;
+  padding: 8px 11px !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
+  width: 100% !important;
+}
+
+/* Hover */
+#content input:hover:not([readonly]):not([disabled]),
+#content textarea:hover:not([readonly]),
+#content select:hover:not([disabled]) {
+  border-color: rgba(0,0,0,0.28) !important;
+}
+
+/* Focus */
+#content input:focus:not([readonly]),
+#content textarea:focus,
+#content select:focus {
+  border-color: var(--ef-brand) !important;
+  box-shadow: 0 0 0 3px var(--ef-brand-ring) !important;
+  background: #FFFDFB !important;
+  outline: none !important;
+}
+
+/* Verified / saved state — applied via JS */
+.ef-field-verified input,
+.ef-field-verified textarea,
+input.ef-verified,
+textarea.ef-verified {
+  border-color: #16A34A !important;
+  background: #F0FDF4 !important;
+  box-shadow: none !important;
+}
+.ef-verified-hint {
+  font-size: 11px;
+  color: #16A34A;
+  font-weight: 500;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Readonly */
+#content input[readonly],
+#content input[disabled],
+#content textarea[readonly] {
+  background: #F9FAFB !important;
+  border-color: rgba(0,0,0,0.08) !important;
+  box-shadow: none !important;
+  color: #9CA3AF !important;
+  cursor: default !important;
+}
+
+/* Textarea */
+#content textarea {
+  min-height: 88px !important;
+  resize: vertical !important;
+}
+
+/* Select arrow */
+#content select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  background-size: 12px !important;
+  padding-right: 30px !important;
+  cursor: pointer !important;
+}
+
+/* Error state */
+.errors input, .errors select, .errors textarea {
+  border-color: #EF4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+}
+#content .errorlist {
+  list-style: none !important;
+  margin: 5px 0 0 !important;
+  padding: 0 !important;
+}
+#content .errorlist li {
+  background: #FEF2F2 !important;
+  border: 0.5px solid #FECACA !important;
+  border-radius: 6px !important;
+  color: #DC2626 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 5px 10px !important;
+  margin-top: 4px !important;
+}
+
+/* ── File upload inputs → document cards ─────────────────────────── */
+#content input[type="file"] {
+  display: none !important;
+}
+
+.ef-doc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px 20px;
+}
+
+.ef-doc-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: var(--ef-border-w) solid var(--ef-border);
+  border-radius: var(--ef-radius);
+  background: #FAFAFA;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+.ef-doc-card:hover {
+  border-color: var(--ef-brand) !important;
+  background: var(--ef-brand-light) !important;
+}
+.ef-doc-card.ef-doc-uploaded {
+  border-color: #16A34A !important;
+  background: #F0FDF4 !important;
+}
+.ef-doc-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3F4F6;
+  border-radius: 6px;
+  flex-shrink: 0;
+  color: var(--ef-muted);
+}
+.ef-doc-uploaded .ef-doc-icon {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+.ef-doc-body { flex: 1; min-width: 0; }
+.ef-doc-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ef-text);
+  line-height: 1.3;
+}
+.ef-doc-hint {
+  font-size: 11px;
+  color: var(--ef-muted);
+  margin-top: 1px;
+}
+.ef-doc-arrow {
+  color: #D1D5DB;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.ef-doc-card:hover .ef-doc-arrow {
+  color: var(--ef-brand);
+}
+
+/* ── Info note (orange inline alert) ─────────────────────────────── */
+.ef-info-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--ef-brand-light);
+  border: 0.5px solid rgba(245, 132, 0, 0.35);
+  border-radius: var(--ef-radius);
+  padding: 10px 14px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ef-brand-dark);
+  line-height: 1.5;
+}
+.ef-info-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--ef-brand);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────── */
+.ef-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: var(--ef-border-w) solid var(--ef-border);
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+}
+
+.ef-footer-left { display: flex; align-items: center; gap: 12px; }
+.ef-footer-right { display: flex; align-items: center; gap: 8px; }
+
+.ef-delete-btn {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ef-muted);
+  border: var(--ef-border-w) solid var(--ef-border);
+  border-radius: var(--ef-radius);
+  padding: 7px 14px;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.ef-delete-btn:hover {
+  border-color: #EF4444;
+  color: #DC2626;
+}
+
+.ef-progress-pct {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ef-muted);
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.ef-btn {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  border-radius: var(--ef-radius);
+  padding: 8px 16px;
+  cursor: pointer;
+  border: var(--ef-border-w) solid var(--ef-border);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  line-height: 1;
+}
+.ef-btn-ghost {
+  background: transparent;
+  color: #374151;
+}
+.ef-btn-ghost:hover {
+  background: var(--ef-surface);
+  border-color: rgba(0,0,0,0.18);
+}
+.ef-btn-primary {
+  background: var(--ef-brand);
+  color: #fff;
+  border-color: var(--ef-brand);
+}
+.ef-btn-primary:hover {
+  background: var(--ef-brand-dark);
+  border-color: var(--ef-brand-dark);
+}
+
+/* ── Submit row (hide default Unfold one when ef-footer renders) ─── */
+.app-accounts.model-employeeprofile .submit-row:not(.ef-footer) {
+  display: none !important;
+}
+
+/* ── Inline group reset ───────────────────────────────────────────── */
+.inline-group {
+  border: var(--ef-border-w) solid var(--ef-border) !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+.inline-group h2 {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  color: var(--ef-muted) !important;
+  background: transparent !important;
+  border-bottom: var(--ef-border-w) solid var(--ef-border) !important;
+  border-radius: 0 !important;
+  padding: 14px 20px 10px !important;
+}
+
+/* ── Tab completion indicators injected by JS ────────────────────── */
+.ef-tab-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 500;
+  margin-right: 5px;
+  vertical-align: middle;
+  transition: background 0.2s;
+}
+.ef-tab-indicator.ef-ind-pending {
+  background: #E5E7EB;
+  color: #6B7280;
+}
+.ef-tab-indicator.ef-ind-active {
+  background: var(--ef-brand);
+  color: #fff;
+}
+.ef-tab-indicator.ef-ind-done {
+  background: #DCFCE7;
+  color: #15803D;
+}

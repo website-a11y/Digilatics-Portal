@@ -1,0 +1,183 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}HR Dashboard — Digilatics{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ══ HERO STATS ══ -->
+<div class="hr-stat-grid">
+
+  <div class="hr-stat-card blue">
+    <div class="hr-stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">{{ total_employees }}</div>
+      <div class="hr-stat-lbl">Active Employees</div>
+    </div>
+    {% if new_hires > 0 %}
+    <div class="hr-stat-badge green">+{{ new_hires }} this month</div>
+    {% endif %}
+  </div>
+
+  <div class="hr-stat-card green">
+    <div class="hr-stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">{{ checked_in_today }}</div>
+      <div class="hr-stat-lbl">Checked In Today</div>
+    </div>
+    <div class="hr-stat-badge {% if present_today > 0 %}green{% else %}gray{% endif %}">{{ present_today }} present</div>
+  </div>
+
+  <div class="hr-stat-card orange">
+    <div class="hr-stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">{{ pending_leaves }}</div>
+      <div class="hr-stat-lbl">Pending Leaves</div>
+    </div>
+    {% if manager_approved_leaves > 0 %}
+    <div class="hr-stat-badge blue">{{ manager_approved_leaves }} mgr approved</div>
+    {% endif %}
+  </div>
+
+  <div class="hr-stat-card purple">
+    <div class="hr-stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">{{ att_rate }}%</div>
+      <div class="hr-stat-lbl">Attendance Rate</div>
+    </div>
+    <div class="hr-stat-badge gray">{{ month_label }}</div>
+  </div>
+
+</div>
+
+<!-- ══ TWO-COLUMN ROW ══ -->
+<div class="hr-two-col">
+
+  <!-- Leave Requests Needing Action -->
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div>
+        <div class="ep-card-title">Leaves Needing Action</div>
+        <div class="ep-card-sub">Pending &amp; manager-approved requests</div>
+      </div>
+      <a href="{% url 'portal:hr_leaves' %}" class="ep-btn-sm" style="text-decoration:none;">View All →</a>
+    </div>
+    <div class="ep-card-body" style="padding:0;">
+      {% if recent_pending %}
+      <table class="hr-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Leave Type</th>
+            <th>Dates</th>
+            <th>Days</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lr in recent_pending %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="ep-avatar-sm" style="width:28px;height:28px;font-size:11px;">{{ lr.employee.full_name|slice:":1" }}</div>
+                <div>
+                  <div style="font-weight:600;font-size:13px;">{{ lr.employee.full_name }}</div>
+                  <div style="font-size:11px;color:var(--text-2);">{{ lr.employee.employee_code }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-size:13px;">{{ lr.leave_type.name }}</td>
+            <td style="font-size:12px;color:var(--text-2);">{{ lr.from_date|date:"M j" }} – {{ lr.to_date|date:"M j" }}</td>
+            <td style="font-weight:700;font-size:13px;">{{ lr.number_of_days|floatformat:"-2" }}d</td>
+            <td>
+              <span class="ep-badge {{ lr.status|slugify }}">{{ lr.status }}</span>
+            </td>
+            <td>
+              {% if lr.status == 'Pending' or lr.status == 'Manager Approved' %}
+              <div style="display:flex;gap:6px;">
+                <form method="post" action="{% url 'portal:hr_leave_action' lr.pk %}" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="approve">
+                  <input type="hidden" name="next_tab" value="{% if lr.status == 'Pending' %}pending{% else %}manager_approved{% endif %}">
+                  <button type="submit" class="hr-action-btn approve">✓</button>
+                </form>
+                <form method="post" action="{% url 'portal:hr_leave_action' lr.pk %}" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="reject">
+                  <input type="hidden" name="next_tab" value="{% if lr.status == 'Pending' %}pending{% else %}manager_approved{% endif %}">
+                  <button type="submit" class="hr-action-btn reject">✕</button>
+                </form>
+              </div>
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="hr-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <div>No pending leave requests</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right column: Dept breakdown + Payroll -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+
+    <!-- Department Breakdown -->
+    <div class="ep-card">
+      <div class="ep-card-header">
+        <div class="ep-card-title">By Department</div>
+        <a href="{% url 'portal:hr_employees' %}" class="ep-btn-sm" style="text-decoration:none;">All Employees →</a>
+      </div>
+      <div class="ep-card-body">
+        {% for dept in dept_counts %}
+        <div class="hr-dept-row">
+          <div class="hr-dept-name">{{ dept.department|default:"Unassigned" }}</div>
+          <div class="hr-dept-bar-wrap">
+            <div class="hr-dept-bar" style="width:{% widthratio dept.count total_employees 100 %}%;"></div>
+          </div>
+          <div class="hr-dept-count">{{ dept.count }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Latest Payroll Run -->
+    <div class="ep-card">
+      <div class="ep-card-header">
+        <div class="ep-card-title">Latest Payroll</div>
+        <a href="{% url 'portal:hr_payroll' %}" class="ep-btn-sm" style="text-decoration:none;">All Runs →</a>
+      </div>
+      <div class="ep-card-body">
+        {% if latest_run %}
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--text-1);">
+              {{ latest_run.get_month_display }} {{ latest_run.year }}
+            </div>
+            <div style="font-size:12px;color:var(--text-2);margin-top:2px;">Payroll Run</div>
+          </div>
+          <span class="ep-badge {{ latest_run.status|slugify }}" style="font-size:13px;padding:6px 14px;">{{ latest_run.status }}</span>
+          <a href="{% url 'portal:hr_payroll_detail' latest_run.pk %}" class="ep-btn-sm" style="text-decoration:none;margin-left:auto;">View →</a>
+        </div>
+        {% else %}
+        <div style="color:var(--text-2);font-size:13px;">No payroll runs yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

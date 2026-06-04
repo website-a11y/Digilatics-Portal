@@ -1,0 +1,58 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if obj %}Edit{% else %}Add{% endif %} Team Member — Digilatics HR{% endblock %}
+{% block page_title %}{% if obj %}Edit{% else %}Add{% endif %} Team Member{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;"><a href="{% url 'portal:hr_team_members' %}" class="ep-btn-sm" style="text-decoration:none;">← Back</a></div>
+  <div class="ep-card">
+    <div class="ep-card-body">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Employee <span class="hr-required">*</span></label>
+            <select name="employee" class="hr-form-input" required>
+              <option value="">Select employee…</option>
+              {% for emp in all_employees %}
+              <option value="{{ emp.pk }}" {% if obj and obj.employee.pk == emp.pk %}selected{% endif %}>{{ emp.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Team <span class="hr-required">*</span></label>
+            <select name="team" class="hr-form-input" required>
+              <option value="">Select team…</option>
+              {% for t in all_teams %}
+              <option value="{{ t.pk }}" {% if obj and obj.team.pk == t.pk %}selected{% endif %}>{{ t.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Role in Team</label>
+            <select name="role_in_team" class="hr-form-input">
+              {% for val, label in role_choices %}
+              <option value="{{ val }}" {% if obj and obj.role_in_team == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Joined At</label>
+            <input type="date" name="joined_at" class="hr-form-input" value="{{ obj.joined_at|date:'Y-m-d'|default:today|date:'Y-m-d' }}">
+          </div>
+        </div>
+        <label class="hr-checkbox-label" style="margin-bottom:16px;">
+          <input type="checkbox" name="is_primary" {% if obj.is_primary %}checked{% endif %}> Primary Team
+        </label>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save</button>
+          <a href="{% url 'portal:hr_team_members' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

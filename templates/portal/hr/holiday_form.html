@@ -1,0 +1,67 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if holiday %}Edit{% else %}Add{% endif %} Holiday — Digilatics HR{% endblock %}
+{% block page_title %}{% if holiday %}Edit{% else %}Add{% endif %} Holiday{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;">
+    <a href="{% url 'portal:hr_holidays' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Holidays</a>
+  </div>
+  <div class="ep-card" style="max-width:640px;">
+    <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+      <div class="ep-card-title">{% if holiday %}Edit Holiday{% else %}Add Public Holiday{% endif %}</div>
+    </div>
+    <div class="ep-card-body" style="padding:24px;">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+
+        <div class="hr-form-group">
+          <label class="hr-form-label">Holiday Name <span class="hr-required">*</span></label>
+          <input type="text" name="name" class="hr-form-input {% if errors.name %}error{% endif %}"
+                 value="{{ holiday.name|default:'' }}" placeholder="e.g. Eid-ul-Fitr" required>
+          {% if errors.name %}<div class="hr-form-error">{{ errors.name }}</div>{% endif %}
+        </div>
+
+        <div class="form-grid" style="margin-top:14px;">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Start Date <span class="hr-required">*</span></label>
+            <input type="date" name="start_date" class="hr-form-input {% if errors.start_date %}error{% endif %}"
+                   value="{{ holiday.start_date|date:'Y-m-d'|default:'' }}" required>
+            {% if errors.start_date %}<div class="hr-form-error">{{ errors.start_date }}</div>{% endif %}
+          </div>
+
+          <div class="hr-form-group">
+            <label class="hr-form-label">
+              End Date
+              <span style="font-size:10px;font-weight:500;color:var(--muted);margin-left:4px;">(leave blank for single day)</span>
+            </label>
+            <input type="date" name="end_date" class="hr-form-input {% if errors.end_date %}error{% endif %}"
+                   value="{{ holiday.end_date|date:'Y-m-d'|default:'' }}">
+            {% if errors.end_date %}<div class="hr-form-error">{{ errors.end_date }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="hr-form-group" style="margin-top:14px;">
+          <label class="hr-form-label">Description</label>
+          <textarea name="description" class="hr-form-input hr-textarea" rows="2"
+                    placeholder="Optional description…">{{ holiday.description|default:'' }}</textarea>
+        </div>
+
+        <label class="hr-checkbox-label" style="margin-bottom:20px;margin-top:14px;display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="is_active" {% if not holiday or holiday.is_active %}checked{% endif %}>
+          Active (visible in attendance calendar)
+        </label>
+
+        <div style="display:flex;gap:12px;">
+          <button type="submit" class="ep-btn ep-btn-primary">
+            {% if holiday %}Update Holiday{% else %}Add Holiday{% endif %}
+          </button>
+          <a href="{% url 'portal:hr_holidays' %}" class="ep-btn ep-btn-outline" style="text-decoration:none;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

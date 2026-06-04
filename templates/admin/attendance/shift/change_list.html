@@ -1,0 +1,345 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' 'attendance' %}">Attendance</a>
+  &rsaquo; Shifts
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="sh-page">
+
+  <!-- ── Page header ── -->
+  <div class="sh-header">
+    <div class="sh-header-left">
+      <div class="sh-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="sh-page-title">Shifts</h1>
+        <p class="sh-page-sub">{{ all_shifts|length }} shift{{ all_shifts|length|pluralize }} configured</p>
+      </div>
+    </div>
+    {% if has_add_permission %}
+    <button class="sh-btn-add" onclick="shOpenPopup('{% url 'admin:attendance_shift_add' %}')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Shift
+    </button>
+    {% endif %}
+  </div>
+
+  <!-- ── Shift cards grid ── -->
+  {% if all_shifts %}
+  <div class="sh-grid">
+    {% for shift in all_shifts %}
+    <div class="sh-card {% if not shift.is_active %}sh-card-inactive{% endif %}">
+
+      <!-- Status badge -->
+      <div class="sh-card-top">
+        <span class="sh-status-badge {% if shift.is_active %}sh-badge-active{% else %}sh-badge-inactive{% endif %}">
+          {% if shift.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+        {% if has_change_permission %}
+        <button class="sh-card-edit-btn"
+                onclick="shOpenPopup('{% url 'admin:attendance_shift_change' shift.pk %}')"
+                title="Edit {{ shift.name }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Edit
+        </button>
+        {% endif %}
+      </div>
+
+      <!-- Shift name -->
+      <h3 class="sh-card-name">{{ shift.name }}</h3>
+
+      <!-- Time block -->
+      <div class="sh-time-block">
+        <div class="sh-time sh-time-start">
+          <div class="sh-time-icon sh-icon-start">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <div class="sh-time-label">Start</div>
+            <div class="sh-time-value sh-start-color">{{ shift.start_time|time:"g:i A" }}</div>
+          </div>
+        </div>
+        <div class="sh-time-arrow">→</div>
+        <div class="sh-time sh-time-end">
+          <div class="sh-time-icon sh-icon-end">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div>
+            <div class="sh-time-label">End</div>
+            <div class="sh-time-value sh-end-color">{{ shift.end_time|time:"g:i A" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="sh-stats-row">
+        <div class="sh-stat">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span><strong>{{ shift.working_hours }}</strong> hrs</span>
+        </div>
+        <div class="sh-stat">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span><strong>{{ shift.employee_count }}</strong> staff</span>
+        </div>
+      </div>
+
+      {% if shift.notes %}
+      <div class="sh-notes">{{ shift.notes }}</div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <!-- Empty state -->
+  <div class="sh-empty">
+    <div class="sh-empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.2" width="52" height="52">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </div>
+    <h2 class="sh-empty-title">No shifts yet</h2>
+    <p class="sh-empty-sub">Create shift templates to assign scheduled check-in and check-out times to employees.</p>
+    {% if has_add_permission %}
+    <button class="sh-btn-add" onclick="shOpenPopup('{% url 'admin:attendance_shift_add' %}')">+ Add First Shift</button>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ── Popup Modal ── -->
+<div id="shPopupBackdrop" class="sh-popup-backdrop" aria-hidden="true" onclick="shClosePopup()">
+  <div class="sh-popup-dialog" onclick="event.stopPropagation()">
+    <div class="sh-popup-header">
+      <span class="sh-popup-title" id="shPopupTitle">Shift</span>
+      <button class="sh-popup-close" onclick="shClosePopup()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="sh-popup-body">
+      <iframe id="shPopupFrame" src="" frameborder="0" class="sh-popup-frame" scrolling="yes"></iframe>
+    </div>
+  </div>
+</div>
+
+<style>
+.sh-page { padding: 8px 0 48px; }
+
+/* ── Header ── */
+.sh-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 28px; padding-bottom: 20px;
+  border-bottom: 1px solid #E5E7EB;
+}
+.sh-header-left { display: flex; align-items: center; gap: 16px; }
+.sh-header-icon {
+  width: 50px; height: 50px; border-radius: 14px;
+  background: linear-gradient(135deg, #FFF8EE, #FFF3E0);
+  border: 1px solid rgba(245,132,0,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: #F58400;
+}
+.sh-header-icon svg { width: 22px; height: 22px; }
+.sh-page-title { font-size: 22px; font-weight: 800; color: #111827; margin: 0 0 3px; }
+.sh-page-sub   { font-size: 13px; color: #6B7280; margin: 0; }
+.sh-btn-add {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #F58400; color: #fff !important;
+  font-size: 13.5px; font-weight: 600; padding: 10px 20px;
+  border-radius: 9px; border: none; cursor: pointer;
+  transition: background 0.15s; white-space: nowrap;
+}
+.sh-btn-add:hover { background: #C86A00; }
+
+/* ── Grid ── */
+.sh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
+}
+
+/* ── Card ── */
+.sh-card {
+  background: #fff;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: box-shadow 0.15s, transform 0.15s;
+  border-top: 3px solid #F58400;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sh-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.09); transform: translateY(-2px); }
+.sh-card-inactive { border-top-color: #E5E7EB; opacity: 0.7; }
+
+.sh-card-top { display: flex; align-items: center; justify-content: space-between; }
+.sh-status-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 10px; border-radius: 999px;
+}
+.sh-badge-active   { background: #dcfce7; color: #16a34a; }
+.sh-badge-inactive { background: #F3F4F6; color: #9CA3AF; }
+.sh-card-edit-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+  color: #374151; font-size: 12px; font-weight: 600;
+  padding: 5px 11px; border-radius: 7px; cursor: pointer;
+  transition: all 0.15s;
+}
+.sh-card-edit-btn:hover { background: #fff8ee; border-color: #F58400; color: #F58400; }
+
+.sh-card-name {
+  font-size: 17px; font-weight: 800; color: #111827; margin: 0; line-height: 1.2;
+}
+
+/* ── Time block ── */
+.sh-time-block {
+  display: flex; align-items: center; gap: 10px;
+  background: #F9FAFB; border-radius: 10px; padding: 12px 14px;
+}
+.sh-time { display: flex; align-items: center; gap: 8px; flex: 1; }
+.sh-time-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.sh-icon-start { background: #dcfce7; color: #16a34a; }
+.sh-icon-end   { background: #fee2e2; color: #dc2626; }
+.sh-time-label { font-size: 10px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; }
+.sh-time-value { font-size: 16px; font-weight: 800; line-height: 1.2; }
+.sh-start-color { color: #16a34a; }
+.sh-end-color   { color: #dc2626; }
+.sh-time-arrow  { font-size: 18px; color: #D1D5DB; flex-shrink: 0; }
+
+/* ── Stats ── */
+.sh-stats-row {
+  display: flex; gap: 16px;
+  border-top: 1px solid #F3F4F6; padding-top: 12px;
+}
+.sh-stat {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12.5px; color: #6B7280;
+}
+.sh-stat strong { color: #111827; font-weight: 700; }
+.sh-stat svg { color: #9CA3AF; flex-shrink: 0; }
+
+/* ── Notes ── */
+.sh-notes {
+  font-size: 12px; color: #9CA3AF;
+  background: #F9FAFB; border-radius: 7px; padding: 8px 12px;
+  line-height: 1.5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Empty state ── */
+.sh-empty {
+  text-align: center; padding: 60px 20px;
+  background: #fff; border: 1px dashed #E5E7EB; border-radius: 16px;
+}
+.sh-empty-icon { margin-bottom: 14px; }
+.sh-empty-title { font-size: 20px; font-weight: 700; color: #374151; margin: 0 0 8px; }
+.sh-empty-sub   { font-size: 13.5px; color: #9CA3AF; margin: 0 0 20px; }
+
+/* ── Popup ── */
+.sh-popup-backdrop {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.sh-popup-backdrop[aria-hidden="false"] {
+  opacity: 1; pointer-events: auto;
+}
+.sh-popup-dialog {
+  background: #fff; border-radius: 18px; width: 700px; max-width: calc(100vw - 32px);
+  height: calc(100vh - 48px); max-height: calc(100vh - 48px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  display: flex; flex-direction: column;
+  transform: scale(0.95); transition: transform 0.2s;
+  overflow: hidden;
+}
+.sh-popup-backdrop[aria-hidden="false"] .sh-popup-dialog { transform: scale(1); }
+.sh-popup-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  border-radius: 18px 18px 0 0;
+  flex-shrink: 0;
+}
+.sh-popup-title { font-size: 15px; font-weight: 700; color: #111827; }
+.sh-popup-close {
+  width: 32px; height: 32px; border-radius: 8px; border: none;
+  background: #F3F4F6; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: background 0.15s;
+  color: #6B7280;
+}
+.sh-popup-close:hover { background: #FEE2E2; color: #DC2626; }
+.sh-popup-body { flex: 1; min-height: 0; overflow: hidden; }
+.sh-popup-frame {
+  width: 100%; height: 100%; border: none; display: block;
+}
+</style>
+
+<script>
+(function () {
+  var backdrop = document.getElementById('shPopupBackdrop');
+  var frame    = document.getElementById('shPopupFrame');
+  var titleEl  = document.getElementById('shPopupTitle');
+  var _reloadPending = false;
+
+  window.shOpenPopup = function (url) {
+    frame.src = url;
+    titleEl.textContent = url.indexOf('/add/') !== -1 ? 'Add Shift' : 'Edit Shift';
+    backdrop.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    _reloadPending = false;
+  };
+
+  window.shClosePopup = function () {
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    setTimeout(function () {
+      frame.src = '';
+      if (_reloadPending) { window.location.reload(); }
+    }, 250);
+  };
+
+  /* Detect when iframe navigates away from the change/add form → form was saved */
+  frame.addEventListener('load', function () {
+    try {
+      var loc = frame.contentWindow.location.href;
+      if (!loc || loc === 'about:blank') return;
+      if (loc.indexOf('/change/') === -1 && loc.indexOf('/add/') === -1) {
+        _reloadPending = true;
+        shClosePopup();
+      }
+    } catch (e) {}
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && backdrop.getAttribute('aria-hidden') === 'false') {
+      shClosePopup();
+    }
+  });
+})();
+</script>
+{% endblock %}

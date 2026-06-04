@@ -1,0 +1,308 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+
+{% block title %}Import Employees — Digilatics HRIS{% endblock %}
+
+{% block content %}
+<style>
+  .imp-page { max-width: 860px; margin: 0 auto; padding: 0 0 60px; }
+  .imp-header { margin-bottom: 32px; }
+  .imp-title { font-size: 28px; font-weight: 800; color: #111; margin: 0 0 6px; }
+  .imp-breadcrumb { font-size: 13px; color: #888; }
+  .imp-breadcrumb a { color: #888; text-decoration: none; }
+  .imp-breadcrumb a:hover { color: #111; }
+
+  .imp-card {
+    background: #fff;
+    border: 1.5px solid #ebebeb;
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 24px rgba(17,17,17,.05);
+  }
+  .imp-card-title { font-size: 16px; font-weight: 700; color: #111; margin: 0 0 8px; }
+  .imp-card-sub { font-size: 13px; color: #666; margin: 0 0 28px; line-height: 1.6; }
+
+  .imp-dropzone {
+    border: 2px dashed #ddd;
+    border-radius: 14px;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .18s, background .18s;
+    background: #fafafa;
+  }
+  .imp-dropzone:hover, .imp-dropzone.drag-over { border-color: #f58400; background: #fff8f0; }
+  .imp-dropzone-icon { font-size: 36px; margin-bottom: 10px; }
+  .imp-dropzone-label { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 4px; }
+  .imp-dropzone-sub { font-size: 13px; color: #888; }
+  .imp-file-input { display: none; }
+  .imp-file-name {
+    margin-top: 14px; font-size: 13px; color: #f58400; font-weight: 600;
+    min-height: 18px;
+  }
+
+  .imp-mapping {
+    margin-top: 28px;
+    background: #f8f8f8;
+    border-radius: 12px;
+    padding: 18px 22px;
+  }
+  .imp-mapping-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #888; margin-bottom: 12px; }
+  .imp-mapping-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+    font-size: 12px;
+    color: #555;
+  }
+  .imp-mapping-row { display: flex; gap: 6px; align-items: center; }
+  .imp-mapping-col { color: #999; font-family: monospace; }
+  .imp-mapping-arrow { color: #ddd; }
+  .imp-mapping-field { color: #111; font-weight: 600; }
+
+  .imp-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; border-radius: 999px;
+    font-size: 14px; font-weight: 700; border: none; cursor: pointer;
+    background: #111; color: #fff; transition: opacity .15s;
+    margin-top: 24px;
+  }
+  .imp-btn:hover { opacity: .85; }
+  .imp-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Results */
+  .imp-stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .imp-stat {
+    flex: 1; min-width: 140px; padding: 20px 22px;
+    border-radius: 14px; border: 1.5px solid #ebebeb;
+    background: #fff;
+  }
+  .imp-stat-num { font-size: 32px; font-weight: 800; }
+  .imp-stat-label { font-size: 12px; color: #888; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .08em; }
+  .imp-stat--green .imp-stat-num { color: #1a7a3c; }
+  .imp-stat--blue .imp-stat-num { color: #0057b7; }
+  .imp-stat--red .imp-stat-num { color: #c0392b; }
+
+  .imp-table-wrap { overflow-x: auto; }
+  .imp-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .imp-table th {
+    text-align: left; font-size: 11px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: #888;
+    padding: 10px 14px; border-bottom: 1.5px solid #ebebeb;
+  }
+  .imp-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; }
+  .imp-table tr:last-child td { border-bottom: none; }
+  .imp-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 700;
+  }
+  .imp-badge--green { background: #e8f8ef; color: #1a7a3c; }
+  .imp-badge--blue  { background: #e8f0ff; color: #0057b7; }
+  .imp-badge--red   { background: #fdecea; color: #c0392b; }
+
+  .imp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #888; text-decoration: none; margin-bottom: 24px; }
+  .imp-back:hover { color: #111; }
+</style>
+
+<div class="imp-page">
+  <div class="imp-header">
+    <h1 class="imp-title">Import Employees</h1>
+    <div class="imp-breadcrumb">
+      <a href="/admin/">Dashboard</a> /
+      <a href="/admin/accounts/employeeprofile/">Employees</a> /
+      <span>Import</span>
+    </div>
+  </div>
+
+  {% if show_results %}
+
+  <a href="/admin/accounts/employeeprofile/import-employees/" class="imp-back">
+    ← Import another file
+  </a>
+
+  <div class="imp-stats">
+    <div class="imp-stat imp-stat--green">
+      <div class="imp-stat-num">{{ created_count }}</div>
+      <div class="imp-stat-label">Created</div>
+    </div>
+    <div class="imp-stat imp-stat--blue">
+      <div class="imp-stat-num">{{ updated_count }}</div>
+      <div class="imp-stat-label">Updated</div>
+    </div>
+    <div class="imp-stat imp-stat--red">
+      <div class="imp-stat-num">{{ errors_count }}</div>
+      <div class="imp-stat-label">Failed</div>
+    </div>
+  </div>
+
+  {% if created_list %}
+  <div class="imp-card">
+    <div class="imp-card-title">Created ({{ created_count }})</div>
+    <div class="imp-table-wrap">
+      <table class="imp-table">
+        <thead><tr><th>Row</th><th>Code</th><th>Name</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for e in created_list %}
+          <tr>
+            <td style="color:#aaa">{{ e.row }}</td>
+            <td><strong>{{ e.code }}</strong></td>
+            <td>{{ e.name }}</td>
+            <td><span class="imp-badge imp-badge--green">Created</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if updated_list %}
+  <div class="imp-card">
+    <div class="imp-card-title">Updated ({{ updated_count }})</div>
+    <div class="imp-table-wrap">
+      <table class="imp-table">
+        <thead><tr><th>Row</th><th>Code</th><th>Name</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for e in updated_list %}
+          <tr>
+            <td style="color:#aaa">{{ e.row }}</td>
+            <td><strong>{{ e.code }}</strong></td>
+            <td>{{ e.name }}</td>
+            <td><span class="imp-badge imp-badge--blue">Updated</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if errors_list %}
+  <div class="imp-card">
+    <div class="imp-card-title">Failed ({{ errors_count }})</div>
+    <div class="imp-table-wrap">
+      <table class="imp-table">
+        <thead><tr><th>Row</th><th>Code</th><th>Reason</th></tr></thead>
+        <tbody>
+          {% for e in errors_list %}
+          <tr>
+            <td style="color:#aaa">{{ e.row }}</td>
+            <td><strong>{{ e.code }}</strong></td>
+            <td style="color:#c0392b">{{ e.reason }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <div style="margin-top:24px;">
+    <a href="/admin/accounts/employeeprofile/" class="imp-btn">
+      View All Employees
+    </a>
+  </div>
+
+  {% else %}
+
+  <div class="imp-card">
+    <div class="imp-card-title">Upload Excel File</div>
+    <div class="imp-card-sub">
+      Upload the employee Excel export. Employees are matched by <strong>EmployeeCode</strong> —
+      existing records are updated, new codes are created. Default password for new accounts is <strong>Change@123</strong>.
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="importForm">
+      {% csrf_token %}
+      <input type="file" name="excel_file" id="excelFile" class="imp-file-input" accept=".xlsx,.xls">
+      <div class="imp-dropzone" id="dropzone" onclick="document.getElementById('excelFile').click()">
+        <div class="imp-dropzone-icon">📂</div>
+        <div class="imp-dropzone-label">Click to choose file or drag & drop</div>
+        <div class="imp-dropzone-sub">.xlsx or .xls format</div>
+        <div class="imp-file-name" id="fileName"></div>
+      </div>
+      <button type="submit" class="imp-btn" id="submitBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        Import Employees
+      </button>
+    </form>
+  </div>
+
+  <div class="imp-card">
+    <div class="imp-card-title">Column Mapping</div>
+    <div class="imp-card-sub">The following Excel columns are imported. Missing required values use safe fallbacks.</div>
+    <div class="imp-mapping">
+      <div class="imp-mapping-title">Excel Column → System Field</div>
+      <div class="imp-mapping-grid">
+        <div class="imp-mapping-row"><span class="imp-mapping-col">EmployeeCode</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">employee_code</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">FirstName + LastName</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">full_name</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">Email</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">official_email</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">Department</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">department</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">Designation</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">designation</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">EmployeementType</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">employment_type</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">EmployeeStatus</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">employment_status</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">JoiningDate</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">joining_date</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">HireDate</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">hire_date</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">ConfirmationDate</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">confirmation_date</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">DOB</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">date_of_birth</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">CNIC</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">cnic</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">Gender</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">gender</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">MaritalStatus</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">marital_status</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">City / Country</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">city / country</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">WorkPhone / HomePhone</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">personal_phone</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">BasicSalary</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">basic_salary</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">SalaryPaymentMethod</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">payment_mode</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">BankName / AccountNumber</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">bank_name / account_number</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">LineManagerCode</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">reporting_manager</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">ShiftName</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">shift</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">Location</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">work_location</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">PermanentAddress</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">current_address</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">EmergencyContactPerson</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">emergency_contact_name</span></div>
+        <div class="imp-mapping-row"><span class="imp-mapping-col">PassportNumber</span><span class="imp-mapping-arrow">→</span><span class="imp-mapping-field">passport_number</span></div>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+
+<script>
+const fileInput = document.getElementById('excelFile');
+const dropzone  = document.getElementById('dropzone');
+const fileName  = document.getElementById('fileName');
+const submitBtn = document.getElementById('submitBtn');
+
+if (fileInput) {
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files[0];
+    if (f) {
+      fileName.textContent = f.name;
+      submitBtn.disabled = false;
+    }
+  });
+
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) {
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      fileInput.files = dt.files;
+      fileName.textContent = f.name;
+      submitBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('importForm')?.addEventListener('submit', () => {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Importing…';
+  });
+}
+</script>
+{% endblock %}

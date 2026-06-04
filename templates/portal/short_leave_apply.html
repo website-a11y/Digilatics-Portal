@@ -1,0 +1,180 @@
+{% extends "portal/base.html" %}
+{% block title %}Apply Short Leave — Portal{% endblock %}
+{% block page_title %}Apply for Short Leave{% endblock %}
+
+{% block extra_css %}
+<style>
+.sl-balance        { border-radius:10px;padding:10px 18px;display:flex;align-items:center;gap:10px; }
+.sl-balance.ok     { background:#dcfce7; }
+.sl-balance.empty  { background:#fee2e2; }
+.sl-balance .icon  { flex-shrink:0; }
+.sl-balance.ok  .icon  { color:#16a34a; }
+.sl-balance.empty .icon { color:#dc2626; }
+.sl-balance .count { font-size:13px;font-weight:700; }
+.sl-balance.ok  .count  { color:#15803d; }
+.sl-balance.empty .count { color:#7f1d1d; }
+.sl-balance .sub   { font-size:11px;color:var(--muted); }
+
+.sl-period-card {
+  border:2px solid var(--border);border-radius:12px;padding:16px;
+  text-align:center;transition:all .15s;background:var(--white);cursor:pointer;
+}
+.sl-period-card:hover { border-color:var(--brand);background:var(--brand-bg); }
+.sl-period-card.selected { border-color:var(--brand);background:var(--brand-bg);color:var(--brand); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div>
+
+  <div style="margin-bottom:20px;">
+    <a href="{% url 'portal:leave' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Leave</a>
+  </div>
+
+  <!-- Balance + policy info -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+    <div class="sl-balance {% if sl_remaining > 0 %}ok{% else %}empty{% endif %}">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <div>
+        <div class="count">
+          {{ sl_remaining }} of {{ policy.max_per_month }} short leave{{ policy.max_per_month|pluralize }} remaining this month
+        </div>
+        <div class="sub">Used {{ sl_used }} this month</div>
+      </div>
+    </div>
+    {% if policy.min_hours_before_afternoon %}
+    <div style="background:#fff7ed;border-radius:10px;padding:10px 18px;font-size:12px;color:#92400e;">
+      Afternoon: min <strong>{{ policy.min_hours_before_afternoon|floatformat:"-2" }} hrs</strong> worked required
+    </div>
+    {% endif %}
+  </div>
+
+  {% if sl_remaining == 0 %}
+  <div class="ep-alert error">
+    You have used all your short leaves for this month. Your allowance resets on the 1st of next month.
+  </div>
+  {% else %}
+
+  <div class="ep-card">
+    <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+      <div class="ep-card-title">Short Leave Application</div>
+      <div class="ep-card-sub">Half-day away — morning (late start) or afternoon (early leaving)</div>
+    </div>
+    <div class="ep-card-body" style="padding:28px;">
+
+      {% if errors.general %}
+      <div class="ep-alert error" style="margin-bottom:20px;">{{ errors.general }}</div>
+      {% endif %}
+
+      <form method="post" id="sl-form">
+        {% csrf_token %}
+
+        <!-- Date -->
+        <div class="hr-form-group">
+          <label class="hr-form-label">Date <span class="hr-required">*</span></label>
+          <input type="date" name="date" id="sl-date" class="hr-form-input"
+                 value="{{ today_str }}" max="{{ today_str }}" required
+                 onchange="updateTimes()">
+        </div>
+
+        <!-- Period -->
+        <div class="hr-form-group" style="margin-top:20px;">
+          <label class="hr-form-label">Period <span class="hr-required">*</span></label>
+          <div style="display:grid;grid-template-columns:240px 240px;gap:12px;margin-top:6px;">
+
+            <div class="sl-period-card" id="card-morning" onclick="selectPeriod('Morning')">
+              <input type="radio" name="period" value="Morning" id="sl-morning" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22" style="margin:0 auto 8px;">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              </svg>
+              <div style="font-size:13px;font-weight:700;">Morning</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">Late start</div>
+            </div>
+
+            <div class="sl-period-card" id="card-afternoon" onclick="selectPeriod('Afternoon')">
+              <input type="radio" name="period" value="Afternoon" id="sl-afternoon" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22" style="margin:0 auto 8px;">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <div style="font-size:13px;font-weight:700;">Afternoon</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">Early leaving</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Times -->
+        <div style="display:grid;grid-template-columns:240px 240px;gap:16px;margin-top:20px;">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Leave from <span class="hr-required">*</span></label>
+            <input type="time" name="from_time" id="sl-from" class="hr-form-input" required>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Leave until <span class="hr-required">*</span></label>
+            <input type="time" name="to_time" id="sl-to" class="hr-form-input" required>
+          </div>
+        </div>
+        <div id="sl-time-hint" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
+
+        <!-- Reason -->
+        <div class="hr-form-group" style="margin-top:20px;">
+          <label class="hr-form-label">Reason</label>
+          <textarea name="reason" class="hr-form-input hr-textarea" rows="2"
+                    placeholder="Brief reason for the short leave…"></textarea>
+        </div>
+
+        <button type="submit" class="ep-btn ep-btn-primary" style="margin-top:24px;">
+          Submit Short Leave Request
+        </button>
+      </form>
+
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var SHIFT_START = "{{ shift_start }}";
+var SHIFT_END   = "{{ shift_end }}";
+var SHIFT_MID   = "{{ shift_mid }}";
+
+function selectPeriod(p) {
+  document.getElementById('sl-morning').checked   = (p === 'Morning');
+  document.getElementById('sl-afternoon').checked = (p === 'Afternoon');
+  document.getElementById('card-morning').classList.toggle('selected',   p === 'Morning');
+  document.getElementById('card-afternoon').classList.toggle('selected', p === 'Afternoon');
+  updateTimes();
+}
+
+function updateTimes() {
+  var period = document.querySelector('[name="period"]:checked');
+  var hint   = document.getElementById('sl-time-hint');
+  if (!period) return;
+
+  if (period.value === 'Morning') {
+    document.getElementById('sl-from').value = SHIFT_START;
+    document.getElementById('sl-to').value   = SHIFT_MID;
+    hint.textContent = (SHIFT_START && SHIFT_MID)
+      ? 'Auto-filled from your shift: ' + SHIFT_START + ' – ' + SHIFT_MID
+      : 'Enter the time range for your late start.';
+  } else {
+    document.getElementById('sl-from').value = SHIFT_MID;
+    document.getElementById('sl-to').value   = SHIFT_END;
+    hint.textContent = (SHIFT_MID && SHIFT_END)
+      ? 'Auto-filled from your shift: ' + SHIFT_MID + ' – ' + SHIFT_END
+      : 'Enter the time you plan to leave and your shift end time.';
+  }
+}
+
+// Default selection
+selectPeriod('Afternoon');
+</script>
+{% endblock %}

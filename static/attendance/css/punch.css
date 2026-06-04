@@ -1,0 +1,348 @@
+/* =============================================================
+   DIGILATICS — EMPLOYEE PUNCH PORTAL
+   ============================================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand:        #F58400;
+  --brand-dark:   #D97200;
+  --brand-light:  #FFF8EE;
+  --bg:           #0f172a;
+  --surface:      #1e293b;
+  --surface2:     #334155;
+  --border:       #334155;
+  --text:         #f1f5f9;
+  --muted:        #94a3b8;
+  --green:        #22c55e;
+  --green-dark:   #16a34a;
+  --blue:         #3b82f6;
+  --blue-dark:    #2563eb;
+  --red:          #ef4444;
+  --radius:       16px;
+  --radius-sm:    10px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Layout ────────────────────────────────────────────────── */
+
+.pp-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px 48px;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+
+.pp-header {
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0 28px;
+}
+.pp-logo {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--brand);
+  text-transform: uppercase;
+}
+.pp-date {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.pp-admin-link {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.pp-admin-link:hover { color: var(--brand); }
+
+/* ── Main card ─────────────────────────────────────────────── */
+
+.pp-card {
+  width: 100%;
+  max-width: 540px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+}
+
+/* ── Employee profile strip ────────────────────────────────── */
+
+.pp-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.pp-avatar {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--brand);
+}
+.pp-avatar-ph {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.pp-emp-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.pp-emp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+}
+.pp-chip {
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.pp-shift-row {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.pp-shift-time {
+  font-family: ui-monospace, monospace;
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* ── Live clock ────────────────────────────────────────────── */
+
+.pp-clock-section {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.pp-clock {
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* ── Flash messages ────────────────────────────────────────── */
+
+.pp-flash {
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.pp-flash-ok  { background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+.pp-flash-err { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+/* ── Status row ────────────────────────────────────────────── */
+
+.pp-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.pp-status-item {
+  flex: 1;
+  text-align: center;
+}
+.pp-status-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.pp-status-time {
+  font-family: ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 700;
+}
+.pp-status-ok   { color: var(--green); }
+.pp-status-none { color: var(--border); }
+
+.pp-badge-late, .pp-badge-early {
+  display: block;
+  font-family: -apple-system, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin: 4px auto 0;
+  width: fit-content;
+}
+.pp-badge-late  { background: var(--red);    color: #fff; }
+.pp-badge-early { background: var(--brand);  color: #fff; }
+
+/* Elapsed timer */
+.pp-elapsed-wrap {
+  flex: 1.2;
+  text-align: center;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+}
+.pp-elapsed-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.pp-elapsed {
+  font-family: ui-monospace, monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--brand);
+}
+.pp-elapsed-done    { color: var(--green); }
+.pp-elapsed-stopped { color: var(--muted); }
+
+/* ── Shift ended banner ────────────────────────────────────── */
+
+.pp-shift-ended {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  background: rgba(148,163,184,0.08);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.pp-shift-ended-icon { font-size: 18px; }
+
+/* ── Punch buttons ─────────────────────────────────────────── */
+
+.pp-form { width: 100%; }
+
+.pp-btn {
+  width: 100%;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: transform 0.12s, opacity 0.15s;
+}
+.pp-btn:active { transform: scale(0.97); }
+.pp-btn-icon { font-size: 22px; }
+
+.pp-btn-in  { background: var(--green);      color: #fff; }
+.pp-btn-in:hover  { background: var(--green-dark); }
+
+.pp-btn-out { background: var(--blue);       color: #fff; }
+.pp-btn-out:hover { background: var(--blue-dark);  }
+
+.pp-btn-locked {
+  background: var(--surface2) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.pp-btn-locked:hover { transform: none; }
+
+/* ── All done state ────────────────────────────────────────── */
+
+.pp-done {
+  text-align: center;
+  padding: 20px 0 4px;
+}
+.pp-done-icon {
+  font-size: 48px;
+  color: var(--green);
+  margin-bottom: 10px;
+}
+.pp-done-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* ── Error card (no profile) ───────────────────────────────── */
+
+.pp-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+.pp-error-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  text-align: center;
+  max-width: 400px;
+}
+.pp-error-icon  { font-size: 40px; margin-bottom: 12px; }
+.pp-error-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.pp-error-body  { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+.pp-btn-back {
+  display: inline-block;
+  padding: 10px 22px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .pp-clock { font-size: 42px; }
+  .pp-card  { padding: 24px 18px; }
+  .pp-status-time { font-size: 18px; }
+  .pp-elapsed { font-size: 16px; }
+}

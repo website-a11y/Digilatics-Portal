@@ -1,0 +1,310 @@
+{% extends "portal/base.html" %}
+{% block title %}Team Dashboard — Portal{% endblock %}
+{% block page_title %}Team Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ══ TOP: 4 STAT CARDS ══ -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+
+  <div class="ep-stat-card att" style="border-top:3px solid var(--brand);">
+    <div class="ep-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    <div class="ep-stat-val">{{ team_count }}</div>
+    <div class="ep-stat-lbl">Team Members</div>
+  </div>
+
+  <div class="ep-stat-card present" style="border-top:3px solid var(--c-present);">
+    <div class="ep-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="ep-stat-val">{{ team_present_today }}</div>
+    <div class="ep-stat-lbl">Present Today</div>
+  </div>
+
+  <div class="ep-stat-card absent" style="border-top:3px solid var(--c-absent);">
+    <div class="ep-stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div class="ep-stat-val {% if pending_count > 0 %}mgr-pending-alert{% endif %}">{{ pending_count }}</div>
+    <div class="ep-stat-lbl">Pending Leave Requests</div>
+  </div>
+
+  <div class="ep-stat-card leave" style="border-top:3px solid var(--c-leave);">
+    <div class="ep-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+    <div class="ep-stat-val">{{ att_pct }}%</div>
+    <div class="ep-stat-lbl">My Attendance · {{ month_label }}</div>
+  </div>
+
+</div>
+
+<!-- ══ PUNCH WIDGET + PENDING LEAVES ══ -->
+<div style="display:grid; gap:20px;margin-bottom:24px;align-items:start;">
+
+  
+
+  <!-- Pending Leave Requests -->
+  <div class="ep-card" style="min-height:360px;">
+    <div class="ep-card-header">
+      <div>
+        <div class="ep-card-title">Pending Leave Approvals</div>
+        <div class="ep-card-sub">Requires your review</div>
+      </div>
+      {% if pending_count > 0 %}
+      <span style="background:#fee2e2;color:#b91c1c;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;">{{ pending_count }} pending</span>
+      {% endif %}
+    </div>
+    <div class="ep-card-body" style="padding:0;max-height:380px;overflow-y:auto;">
+      {% if pending_leaves %}
+      {% for lr in pending_leaves %}
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <!-- Avatar -->
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--brand-bg);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;">
+            {% if lr.employee.profile_photo %}<img src="{{ lr.employee.profile_photo.url }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+            {% else %}{{ lr.employee.full_name|first|upper }}{% endif %}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-weight:700;font-size:14px;">{{ lr.employee.full_name }}</span>
+              <span style="font-size:11px;color:var(--muted);">{{ lr.employee.department }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap;">
+              <span style="background:#ffedd5;color:#c2410c;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;">
+                {{ lr.leave_type.name }}
+                {% if lr._is_short_leave %}<span style="background:#fce7f3;color:#9d174d;padding:1px 5px;border-radius:5px;margin-left:3px;">Short</span>{% endif %}
+              </span>
+              {% if lr._is_short_leave %}
+              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.date|date:"M j, Y" }}</span>
+              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"H:i" }} – {{ lr.to_time|time:"H:i" }}</span>
+              {% else %}
+              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} – {{ lr.to_date|date:"M j, Y" }}</span>
+              <span style="font-size:12px;color:var(--muted);">{{ lr.number_of_days|floatformat:"-2" }} day{{ lr.number_of_days|pluralize }}</span>
+              {% endif %}
+            </div>
+            {% if lr.reason %}
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;">{{ lr.reason }}</div>
+            {% endif %}
+          </div>
+          <!-- Action buttons -->
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+            {% if lr._is_short_leave %}
+            <form method="post" action="{% url 'portal:manager_short_leave_action' lr.pk %}">
+              {% csrf_token %}<input type="hidden" name="action" value="approve">
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;">✓ Approve</button>
+            </form>
+            <form method="post" action="{% url 'portal:manager_short_leave_action' lr.pk %}">
+              {% csrf_token %}<input type="hidden" name="action" value="reject">
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;">✗ Reject</button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'portal:manager_leave_action' lr.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="approve">
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;"
+                      onclick="return confirm('Approve {{ lr.number_of_days }}-day leave for {{ lr.employee.full_name }}?')">
+                ✓ Approve
+              </button>
+            </form>
+            <form method="post" action="{% url 'portal:manager_leave_action' lr.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="reject">
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;"
+                      onclick="return confirm('Reject leave request for {{ lr.employee.full_name }}?')">
+                ✗ Reject
+              </button>
+            </form>
+          </div>
+        </div>
+        {% if lr.allocation %}
+        <div style="margin-top:8px;margin-left:50px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);">
+            <span>Balance: {{ lr.allocation.remaining_days|floatformat:"-2" }} / {{ lr.allocation.total_available_days|floatformat:"-2" }} days remaining</span>
+          </div>
+          <div class="ep-progress" style="margin-top:4px;max-width:220px;">
+            <div class="ep-progress-bar green mgr-progress-fill" data-pct="{% widthratio lr.allocation.remaining_days lr.allocation.total_available_days 100 %}"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="ep-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <p>No pending leave requests</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ AWAITING ADMIN APPROVAL ══ -->
+{% if awaiting_admin_leaves %}
+<div class="ep-card" style="margin-bottom:24px;">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">Awaiting HR / Admin Final Approval</div>
+      <div class="ep-card-sub">Requests you approved — pending second stage</div>
+    </div>
+  </div>
+  <div class="ep-card-body" style="padding:0;">
+    <div class="ep-table-wrap">
+      <table class="ep-table">
+        <thead>
+          <tr><th>Employee</th><th>Leave Type</th><th>Dates</th><th>Days</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for lr in awaiting_admin_leaves %}
+          <tr>
+            <td><strong>{{ lr.employee.full_name }}</strong><br><span style="font-size:11px;color:var(--muted);">{{ lr.employee.department }}</span></td>
+            <td>{{ lr.leave_type.name }}</td>
+            <td>{{ lr.from_date|date:"M j" }} – {{ lr.to_date|date:"M j, Y" }}</td>
+            <td>{{ lr.number_of_days|floatformat:"-2" }}</td>
+            <td><span class="ep-badge manager-approved">Manager Approved</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ══ TEAM ROSTER ══ -->
+<div class="ep-card">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">Team Roster</div>
+      <div class="ep-card-sub">{{ team_count }} member{{ team_count|pluralize }} · {{ month_label }} attendance &amp; salary</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="{% url 'portal:manager_attendance' %}" class="ep-btn-sm" style="text-decoration:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Full Grid
+      </a>
+      <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Hover salary to reveal
+      </span>
+    </div>
+  </div>
+  <div class="ep-card-body" style="padding:0;">
+    {% if team_rows %}
+    <div class="ep-table-wrap">
+      <table class="ep-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Today's Status</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in team_rows %}
+          <tr>
+            <!-- Employee info -->
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-bg);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;overflow:hidden;">
+                  {% if row.employee.profile_photo %}<img src="{{ row.employee.profile_photo.url }}" style="width:100%;height:100%;object-fit:cover;">
+                  {% else %}{{ row.employee.full_name|first|upper }}{% endif %}
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:13px;">{{ row.employee.full_name }}</div>
+                  <div style="font-size:11px;color:var(--muted);">{{ row.employee.designation|default:row.employee.department }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Today status -->
+            <td>
+              {% if row.today_record and row.today_record.check_in %}
+                {% if row.today_record.check_out %}
+                  <span class="ep-badge" style="background:#dcfce7;color:#14532d;">Done</span>
+                {% else %}
+                  <span class="ep-badge" style="background:#dbeafe;color:#1e40af;">● Active</span>
+                {% endif %}
+              {% elif row.today_record %}
+                <span class="ep-badge" style="background:#ffedd5;color:#c2410c;">{{ row.today_record.status }}</span>
+              {% else %}
+                <span style="color:var(--muted-2);font-size:12px;">Not In</span>
+              {% endif %}
+            </td>
+
+            <!-- Check in -->
+            <td style="font-variant-numeric:tabular-nums;font-weight:600;">
+              {% if row.today_record and row.today_record.check_in %}
+                {{ row.today_record.check_in|time:"g:i A" }}
+                {% if row.today_record.is_late %}<span style="font-size:10px;color:#eab308;font-weight:700;margin-left:3px;">Late</span>{% endif %}
+              {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
+            </td>
+
+            <!-- Check out -->
+            <td style="font-variant-numeric:tabular-nums;font-weight:600;">
+              {% if row.today_record and row.today_record.check_out %}
+                {{ row.today_record.check_out|time:"g:i A" }}
+              {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
+            </td>
+
+          
+
+           
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="ep-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <p>No team members assigned to you yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.mgr-pending-alert { color: var(--c-absent); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* Set progress bar widths from data-pct attributes (avoids inline style + Django tag warning) */
+document.querySelectorAll('.mgr-progress-fill').forEach(function(el) {
+  el.style.width = (el.dataset.pct || 0) + '%';
+});
+</script>
+(function () {
+  var checkInTime  = "{{ today_record.check_in|time:'g:i A'|default:'' }}";
+  var checkOutTime = "{{ today_record.check_out|time:'g:i A'|default:'' }}";
+  var clockEl = document.getElementById('punch-clock');
+  var dateEl  = document.getElementById('punch-date');
+  var labelEl = document.getElementById('punch-clock-label');
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function timeToMs(hhmm) { var p=hhmm.split(':'); return parseInt(p[0])*3600000+parseInt(p[1])*60000; }
+  function fmtElapsed(ms) { var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000); return pad(h)+':'+pad(m)+':'+pad(s); }
+  function tick() {
+    var now = new Date();
+    var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateEl.textContent = days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+    if (checkInTime && !checkOutTime) {
+      var nowMs=now.getHours()*3600000+now.getMinutes()*60000+now.getSeconds()*1000;
+      var diff=nowMs-timeToMs(checkInTime); if(diff<0) diff+=86400000;
+      clockEl.textContent=fmtElapsed(diff); labelEl.textContent='Time Worked';
+    } else if (checkInTime && checkOutTime) {
+      var diff=timeToMs(checkOutTime)-timeToMs(checkInTime); if(diff<0) diff+=86400000;
+      clockEl.textContent=fmtElapsed(diff); labelEl.textContent='Total Worked';
+    } else {
+      clockEl.textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+      labelEl.textContent='Current Time';
+    }
+  }
+  tick(); setInterval(tick,1000);
+})();
+</script>
+{% endblock %}

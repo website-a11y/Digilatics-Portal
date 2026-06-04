@@ -1,0 +1,569 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+
+{% block title %}{{ emp.full_name }} — Employee Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+*,.ep-wrap *{font-family:'Plus Jakarta Sans',sans-serif;box-sizing:border-box;}
+
+.ep-wrap{max-width:1100px;margin:0 auto;padding:0 4px;}
+
+/* ── Back bar ── */
+.ep-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.ep-back{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;color:#6B7280;text-decoration:none;
+  padding:7px 14px;border:1.5px solid #E5E7EB;border-radius:9px;background:#fff;
+  transition:all .15s;
+}
+.ep-back:hover{border-color:#F58400;color:#F58400;}
+.ep-back svg{width:14px;height:14px;}
+.ep-nav-actions{display:flex;gap:8px;}
+.ep-edit-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:9px;font-size:13px;font-weight:700;
+  background:linear-gradient(135deg,#F58400,#C86A00);color:#fff;
+  text-decoration:none;box-shadow:0 4px 14px rgba(245,132,0,.35);
+  transition:all .15s;
+}
+.ep-edit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(245,132,0,.45);color:#fff;}
+.ep-edit-btn svg{width:14px;height:14px;}
+
+/* ── Hero card ── */
+.ep-hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%);
+  border-radius:20px;padding:32px 36px;margin-bottom:20px;
+  display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+}
+.ep-hero::before{
+  content:'';position:absolute;top:-50px;right:-50px;
+  width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,132,0,.22) 0%,transparent 70%);
+  pointer-events:none;
+}
+.ep-hero-photo{
+  width:96px;height:96px;border-radius:22px;flex-shrink:0;
+  background:linear-gradient(135deg,#F58400,#C86A00);
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;font-weight:900;color:#fff;
+  box-shadow:0 8px 28px rgba(245,132,0,.4);
+  overflow:hidden;position:relative;z-index:1;
+}
+.ep-hero-photo img{width:96px;height:96px;object-fit:cover;}
+.ep-hero-body{flex:1;min-width:200px;position:relative;z-index:1;}
+.ep-hero-name{font-size:26px;font-weight:900;color:#fff;margin:0 0 5px;letter-spacing:-.03em;}
+.ep-hero-title{font-size:14px;color:rgba(255,255,255,.65);margin:0 0 14px;font-weight:500;}
+.ep-hero-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.ep-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;
+  border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.8);backdrop-filter:blur(4px);
+}
+.ep-tag svg{width:12px;height:12px;}
+
+.ep-hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:12px;position:relative;z-index:1;}
+.ep-status-hero{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 16px;border-radius:999px;font-size:13px;font-weight:700;
+}
+.ep-status-hero--active{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25);}
+.ep-status-hero--leave{background:rgba(245,132,0,.15);color:#fb923c;border:1px solid rgba(245,132,0,.25);}
+.ep-status-hero--onboarding{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.25);}
+.ep-status-hero--inactive{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25);}
+.ep-status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.ep-code-hero{font-size:12px;color:rgba(255,255,255,.4);font-weight:600;font-family:monospace;letter-spacing:.04em;}
+
+/* ── Grid layout ── */
+.ep-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:760px){.ep-grid{grid-template-columns:1fr;}}
+.ep-grid--3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:900px){.ep-grid--3{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.ep-grid--3{grid-template-columns:1fr;}}
+
+/* ── Section card ── */
+.ep-card{
+  background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+  overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04);
+}
+.ep-card-head{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 20px;border-bottom:1px solid #F3F4F6;
+}
+.ep-card-icon{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  background:#FFF8EE;color:#F58400;
+  display:flex;align-items:center;justify-content:center;
+}
+.ep-card-icon svg{width:15px;height:15px;}
+.ep-card-title{font-size:13px;font-weight:800;color:#111827;letter-spacing:-.01em;}
+.ep-card-body{padding:16px 20px;}
+
+/* ── Field rows ── */
+.ep-field{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-bottom:1px solid #F9FAFB;}
+.ep-field:last-child{border-bottom:none;padding-bottom:0;}
+.ep-field:first-child{padding-top:0;}
+.ep-field-lbl{font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;}
+.ep-field-val{font-size:13.5px;font-weight:600;color:#111827;}
+.ep-field-val--muted{color:#6B7280;font-weight:500;}
+.ep-field-val a{color:#F58400;text-decoration:none;}
+.ep-field-val a:hover{text-decoration:underline;}
+
+/* Status inline */
+.ep-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;
+}
+.ep-badge--active{background:#ECFDF5;color:#059669;}
+.ep-badge--leave{background:#FFFBEB;color:#D97706;}
+.ep-badge--onboarding{background:#EFF6FF;color:#2563EB;}
+.ep-badge--inactive{background:#FFF1F2;color:#DC2626;}
+.ep-badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+/* ── Salary card ── */
+.ep-salary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+@media(max-width:580px){.ep-salary-grid{grid-template-columns:1fr 1fr;}}
+.ep-sal-item{background:#F9FAFB;border:1px solid #F3F4F6;border-radius:10px;padding:12px 14px;}
+.ep-sal-lbl{font-size:10.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.ep-sal-val{font-size:17px;font-weight:800;color:#111827;}
+.ep-sal-val--gross{color:#F58400;}
+
+/* ── Attendance dashboard card ── */
+.ep-att-card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+@media(max-width:900px){.ep-att-card-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:620px){.ep-att-card-grid{grid-template-columns:1fr;}}
+.ep-att-card{background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,.04);}
+.ep-att-card-title{font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.08em;}
+.ep-att-card-value{font-size:28px;font-weight:900;color:#111827;}
+.ep-att-card-sub{font-size:12px;color:#6B7280;font-weight:600;}
+.ep-att-bar{background:#F3F4F6;border-radius:999px;height:10px;overflow:hidden;margin-top:16px;}
+.ep-att-bar-fill{height:100%;border-radius:999px;background-image:linear-gradient(135deg,#F58400,#D97706);}
+.ep-att-section{background:#fff;border:1px solid #E5E7EB;border-radius:20px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04);}
+.ep-att-section-head{padding:18px 20px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;gap:14px;}
+.ep-att-section-title{font-size:14px;font-weight:800;color:#111827;}
+.ep-att-section-body{padding:18px 20px;}
+.ep-att-meta-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+@media(max-width:760px){.ep-att-meta-list{grid-template-columns:1fr;}}
+.ep-att-meta-item{background:#F9FAFB;border:1px solid #F3F4F6;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px;}
+.ep-att-meta-label{font-size:11px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.ep-att-meta-value{font-size:16px;font-weight:800;color:#111827;}
+
+/* ── Document pills ── */
+.ep-doc-list{display:flex;flex-direction:column;gap:8px;}
+.ep-doc-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;border-radius:10px;background:#F9FAFB;border:1px solid #F3F4F6;
+}
+.ep-doc-name{font-size:13px;font-weight:600;color:#374151;display:flex;align-items:center;gap:8px;}
+.ep-doc-name svg{width:14px;height:14px;color:#9CA3AF;}
+.ep-doc-link{
+  font-size:12px;font-weight:600;color:#F58400;text-decoration:none;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.ep-doc-link:hover{color:#C86A00;}
+.ep-doc-link svg{width:12px;height:12px;}
+.ep-doc-none{font-size:12px;color:#D1D5DB;font-style:italic;}
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="ep-wrap">
+
+  {# Back + Edit #}
+  <div class="ep-nav">
+    <a href="/employees/" class="ep-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Directory
+    </a>
+    {% if request.user.is_staff %}
+    <div class="ep-nav-actions">
+      <a href="/admin/accounts/employeeprofile/{{ emp.pk }}/change/" class="ep-edit-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit Profile
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Hero #}
+  <div class="ep-hero">
+    <div class="ep-hero-photo">
+      {% if emp.profile_photo %}
+        <img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}">
+      {% else %}
+        {{ emp.full_name|slice:":1"|upper }}
+      {% endif %}
+    </div>
+    <div class="ep-hero-body">
+      <h1 class="ep-hero-name">{{ emp.full_name }}</h1>
+      <p class="ep-hero-title">{{ emp.designation }}{% if emp.department %} &nbsp;·&nbsp; {{ emp.department }}{% endif %}</p>
+      <div class="ep-hero-tags">
+        {% if emp.work_location %}
+        <span class="ep-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ emp.work_location }}
+        </span>
+        {% endif %}
+        {% if emp.employment_type %}
+        <span class="ep-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          {{ emp.employment_type }}
+        </span>
+        {% endif %}
+        {% if emp.joining_date %}
+        <span class="ep-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Joined {{ emp.joining_date|date:"M Y" }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="ep-hero-right">
+      {% if emp.employment_status == 'Active' %}
+        <span class="ep-status-hero ep-status-hero--active"><span class="ep-status-dot"></span> Active</span>
+      {% elif emp.employment_status == 'On Leave' %}
+        <span class="ep-status-hero ep-status-hero--leave"><span class="ep-status-dot"></span> On Leave</span>
+      {% elif emp.employment_status == 'Onboarding' %}
+        <span class="ep-status-hero ep-status-hero--onboarding"><span class="ep-status-dot"></span> Onboarding</span>
+      {% else %}
+        <span class="ep-status-hero ep-status-hero--inactive"><span class="ep-status-dot"></span> Inactive</span>
+      {% endif %}
+      <span class="ep-code-hero"># {{ emp.employee_code }}</span>
+    </div>
+  </div>
+
+  {# Attendance dashboard #}
+  <div class="ep-att-section" style="margin-bottom:16px;">
+    <div class="ep-att-section-head">
+      <div>
+        <div class="ep-att-section-title">Attendance Dashboard</div>
+        <div class="ep-att-card-sub">{{ attendance_month_label }} — current month performance</div>
+      </div>
+      {% if request.user.is_staff %}
+      <a href="/admin/attendance/attendancerecord/employee/{{ emp.pk }}/?year={{ attendance_year }}&month={{ attendance_month }}" class="ep-edit-btn" style="padding:10px 16px;">
+        View full report
+      </a>
+      {% endif %}
+    </div>
+    <div class="ep-att-section-body">
+      <div class="ep-att-card-grid">
+        <div class="ep-att-card">
+          <div class="ep-att-card-title">Attendance rate</div>
+          <div class="ep-att-card-value">{{ attendance_pct }}%</div>
+          <div class="ep-att-card-sub">Based on working days in {{ attendance_month_label }}</div>
+          <div class="ep-att-bar"><div class="ep-att-bar-fill" style="width:{{ attendance_pct }}%"></div></div>
+        </div>
+        <div class="ep-att-card">
+          <div class="ep-att-card-title">Present</div>
+          <div class="ep-att-card-value">{{ attendance_present }}</div>
+          <div class="ep-att-card-sub">Days present</div>
+        </div>
+        <div class="ep-att-card">
+          <div class="ep-att-card-title">Absent</div>
+          <div class="ep-att-card-value">{{ attendance_absent }}</div>
+          <div class="ep-att-card-sub">Days absent</div>
+        </div>
+        <div class="ep-att-card">
+          <div class="ep-att-card-title">Holidays</div>
+          <div class="ep-att-card-value">{{ attendance_holiday }}</div>
+          <div class="ep-att-card-sub">Public holidays</div>
+        </div>
+      </div>
+      <div class="ep-att-meta-list">
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Leave (Paid)</span><span class="ep-att-meta-value">{{ attendance_leave_paid }}</span></div>
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Leave (Unpaid)</span><span class="ep-att-meta-value">{{ attendance_leave_unpaid }}</span></div>
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Hourly leave</span><span class="ep-att-meta-value">{{ attendance_hourly_leave }}</span></div>
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Half days</span><span class="ep-att-meta-value">{{ attendance_half_day }}</span></div>
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Late check-ins</span><span class="ep-att-meta-value">{{ attendance_late }}</span></div>
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Early checkouts</span><span class="ep-att-meta-value">{{ attendance_early_checkout }}</span></div>
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Not recorded</span><span class="ep-att-meta-value">{{ attendance_not_recorded }}</span></div>
+        <div class="ep-att-meta-item"><span class="ep-att-meta-label">Working days</span><span class="ep-att-meta-value">{{ attendance_working_days }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  {# Row 1: Personal + Contact #}
+  <div class="ep-grid" style="margin-bottom:16px;">
+
+    {# Personal #}
+    <div class="ep-card">
+      <div class="ep-card-head">
+        <div class="ep-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <span class="ep-card-title">Personal Information</span>
+      </div>
+      <div class="ep-card-body">
+        <div class="ep-field">
+          <span class="ep-field-lbl">Full Name</span>
+          <span class="ep-field-val">{{ emp.full_name }}</span>
+        </div>
+        {% if emp.gender %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Gender</span>
+          <span class="ep-field-val">{{ emp.gender }}</span>
+        </div>
+        {% endif %}
+        {% if emp.date_of_birth %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Date of Birth</span>
+          <span class="ep-field-val">{{ emp.date_of_birth|date:"d M Y" }}</span>
+        </div>
+        {% endif %}
+        {% if emp.marital_status %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Marital Status</span>
+          <span class="ep-field-val">{{ emp.marital_status }}</span>
+        </div>
+        {% endif %}
+        {% if emp.cnic %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">CNIC / National ID</span>
+          <span class="ep-field-val" style="font-family:monospace;letter-spacing:.04em;">{{ emp.cnic }}</span>
+        </div>
+        {% endif %}
+        {% if emp.nationality %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Nationality</span>
+          <span class="ep-field-val">{{ emp.nationality }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Contact #}
+    <div class="ep-card">
+      <div class="ep-card-head">
+        <div class="ep-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.61 19 19.5 19.5 0 0 1 5 12.39 19.79 19.79 0 0 1 2.12 4.16 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <span class="ep-card-title">Contact Details</span>
+      </div>
+      <div class="ep-card-body">
+        {% if emp.personal_phone %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Personal Phone</span>
+          <span class="ep-field-val"><a href="tel:{{ emp.personal_phone }}">{{ emp.personal_phone }}</a></span>
+        </div>
+        {% endif %}
+        {% if emp.official_email %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Official Email</span>
+          <span class="ep-field-val"><a href="mailto:{{ emp.official_email }}">{{ emp.official_email }}</a></span>
+        </div>
+        {% endif %}
+        {% if emp.personal_email %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Personal Email</span>
+          <span class="ep-field-val"><a href="mailto:{{ emp.personal_email }}">{{ emp.personal_email }}</a></span>
+        </div>
+        {% endif %}
+        {% if emp.current_address %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Address</span>
+          <span class="ep-field-val" style="white-space:pre-line;">{{ emp.current_address }}{% if emp.city %}, {{ emp.city }}{% endif %}{% if emp.country %}, {{ emp.country }}{% endif %}</span>
+        </div>
+        {% endif %}
+        {% if emp.emergency_contact_name %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Emergency Contact</span>
+          <span class="ep-field-val">{{ emp.emergency_contact_name }}{% if emp.emergency_contact_number %} &nbsp;·&nbsp; {{ emp.emergency_contact_number }}{% endif %}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  {# Row 2: Employment + Salary #}
+  <div class="ep-grid" style="margin-bottom:16px;">
+
+    {# Employment #}
+    <div class="ep-card">
+      <div class="ep-card-head">
+        <div class="ep-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <span class="ep-card-title">Employment</span>
+      </div>
+      <div class="ep-card-body">
+        <div class="ep-field">
+          <span class="ep-field-lbl">Status</span>
+          <span class="ep-field-val">
+            {% if emp.employment_status == 'Active' %}<span class="ep-badge ep-badge--active"><span class="ep-badge-dot"></span>Active</span>
+            {% elif emp.employment_status == 'On Leave' %}<span class="ep-badge ep-badge--leave"><span class="ep-badge-dot"></span>On Leave</span>
+            {% elif emp.employment_status == 'Onboarding' %}<span class="ep-badge ep-badge--onboarding"><span class="ep-badge-dot"></span>Onboarding</span>
+            {% else %}<span class="ep-badge ep-badge--inactive"><span class="ep-badge-dot"></span>Inactive</span>{% endif %}
+          </span>
+        </div>
+        <div class="ep-field">
+          <span class="ep-field-lbl">Employee Code</span>
+          <span class="ep-field-val" style="font-family:monospace;">{{ emp.employee_code }}</span>
+        </div>
+        <div class="ep-field">
+          <span class="ep-field-lbl">Designation</span>
+          <span class="ep-field-val">{{ emp.designation|default:"—" }}</span>
+        </div>
+        <div class="ep-field">
+          <span class="ep-field-lbl">Department</span>
+          <span class="ep-field-val">{{ emp.department|default:"—" }}</span>
+        </div>
+        <div class="ep-field">
+          <span class="ep-field-lbl">Employment Type</span>
+          <span class="ep-field-val">{{ emp.employment_type|default:"—" }}</span>
+        </div>
+        <div class="ep-field">
+          <span class="ep-field-lbl">Joining Date</span>
+          <span class="ep-field-val">{{ emp.joining_date|date:"d M Y"|default:"—" }}</span>
+        </div>
+        {% if emp.reporting_manager %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Line Manager</span>
+          <span class="ep-field-val">
+            <a href="/employees/{{ emp.reporting_manager.pk }}/">{{ emp.reporting_manager.full_name }}</a>
+          </span>
+        </div>
+        {% endif %}
+        {% if emp.shift %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Shift</span>
+          <span class="ep-field-val">{{ emp.shift }}</span>
+        </div>
+        {% endif %}
+        {% if emp.work_location %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Work Location</span>
+          <span class="ep-field-val">{{ emp.work_location }}</span>
+        </div>
+        {% endif %}
+        {% if emp.role %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">System Role</span>
+          <span class="ep-field-val">{{ emp.role }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Salary — only visible to staff #}
+    {% if request.user.is_staff %}
+    <div class="ep-card">
+      <div class="ep-card-head">
+        <div class="ep-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <span class="ep-card-title">Salary & Compensation</span>
+      </div>
+      <div class="ep-card-body">
+        {% with gross=emp.basic_salary|add:emp.house_rent_allowance|add:emp.conveyance_allowance|add:emp.medical_allowance|add:emp.other_allowance %}
+        <div class="ep-salary-grid" style="margin-bottom:12px;">
+          <div class="ep-sal-item" style="grid-column:1/-1;background:#FFF8EE;border-color:rgba(245,132,0,.2);">
+            <div class="ep-sal-lbl">Gross Monthly</div>
+            <div class="ep-sal-val ep-sal-val--gross">PKR {{ gross|floatformat:0 }}</div>
+          </div>
+          <div class="ep-sal-item">
+            <div class="ep-sal-lbl">Basic (60%)</div>
+            <div class="ep-sal-val">{{ emp.basic_salary|floatformat:0 }}</div>
+          </div>
+          <div class="ep-sal-item">
+            <div class="ep-sal-lbl">HRA (20%)</div>
+            <div class="ep-sal-val">{{ emp.house_rent_allowance|floatformat:0 }}</div>
+          </div>
+          <div class="ep-sal-item">
+            <div class="ep-sal-lbl">Conveyance</div>
+            <div class="ep-sal-val">{{ emp.conveyance_allowance|floatformat:0 }}</div>
+          </div>
+          <div class="ep-sal-item">
+            <div class="ep-sal-lbl">Medical</div>
+            <div class="ep-sal-val">{{ emp.medical_allowance|floatformat:0 }}</div>
+          </div>
+          <div class="ep-sal-item">
+            <div class="ep-sal-lbl">Other</div>
+            <div class="ep-sal-val">{{ emp.other_allowance|floatformat:0 }}</div>
+          </div>
+        </div>
+        {% endwith %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Payment Mode</span>
+          <span class="ep-field-val">{{ emp.payment_mode }}</span>
+        </div>
+        {% if emp.bank_name %}
+        <div class="ep-field">
+          <span class="ep-field-lbl">Bank</span>
+          <span class="ep-field-val">{{ emp.bank_name }}{% if emp.account_title %} — {{ emp.account_title }}{% endif %}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    {# Non-staff: show documents instead #}
+    <div class="ep-card">
+      <div class="ep-card-head">
+        <div class="ep-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        </div>
+        <span class="ep-card-title">Documents</span>
+      </div>
+      <div class="ep-card-body">
+        <div class="ep-doc-list">
+          {% if emp.cnic_copy %}<div class="ep-doc-row"><span class="ep-doc-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>CNIC Copy</span><a href="{{ emp.cnic_copy.url }}" class="ep-doc-link" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>View</a></div>{% endif %}
+          {% if not emp.cnic_copy and not emp.resume and not emp.offer_letter and not emp.contract %}<p class="ep-doc-none">No documents uploaded.</p>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# Row 3: Documents (staff only, shown below salary) #}
+  {% if request.user.is_staff %}
+  <div class="ep-card" style="margin-bottom:16px;">
+    <div class="ep-card-head">
+      <div class="ep-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      </div>
+      <span class="ep-card-title">Documents</span>
+    </div>
+    <div class="ep-card-body">
+      <div class="ep-doc-list">
+        {% if emp.cnic_copy %}
+        <div class="ep-doc-row">
+          <span class="ep-doc-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>CNIC Copy</span>
+          <a href="{{ emp.cnic_copy.url }}" class="ep-doc-link" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</a>
+        </div>
+        {% endif %}
+        {% if emp.resume %}
+        <div class="ep-doc-row">
+          <span class="ep-doc-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Resume / CV</span>
+          <a href="{{ emp.resume.url }}" class="ep-doc-link" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</a>
+        </div>
+        {% endif %}
+        {% if emp.offer_letter %}
+        <div class="ep-doc-row">
+          <span class="ep-doc-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Offer Letter</span>
+          <a href="{{ emp.offer_letter.url }}" class="ep-doc-link" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</a>
+        </div>
+        {% endif %}
+        {% if emp.contract %}
+        <div class="ep-doc-row">
+          <span class="ep-doc-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Contract</span>
+          <a href="{{ emp.contract.url }}" class="ep-doc-link" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</a>
+        </div>
+        {% endif %}
+        {% if not emp.cnic_copy and not emp.resume and not emp.offer_letter and not emp.contract %}
+        <p class="ep-doc-none">No documents uploaded yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

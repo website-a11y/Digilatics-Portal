@@ -1,0 +1,204 @@
+{% extends "portal/base.html" %}
+{% block title %}My Profile — Portal{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+
+<!-- Profile Header -->
+<div class="ep-profile-header">
+  <div class="ep-profile-avatar">
+    {% if emp.profile_photo %}
+    <img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}">
+    {% else %}
+    {{ emp.full_name|first|upper }}
+    {% endif %}
+  </div>
+  <div>
+    <div class="ep-profile-name">{{ emp.full_name }}</div>
+    <div class="ep-profile-sub">{{ emp.designation }} &middot; {{ emp.department }}</div>
+    <div class="ep-profile-chips">
+      <span class="ep-profile-chip">{{ emp.employee_code }}</span>
+      <span class="ep-profile-chip">{{ emp.employment_type }}</span>
+      <span class="ep-profile-chip">{{ emp.employment_status }}</span>
+      {% if emp.role %}<span class="ep-profile-chip">{{ emp.role }}</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="ep-profile-grid">
+
+  <!-- Personal Info -->
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">Personal Information</div>
+    </div>
+    <div class="ep-card-body">
+      <div class="ep-detail-list">
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Full Name</span>
+          <span class="ep-detail-val">{{ emp.full_name }}</span>
+        </div>
+        {% if emp.gender %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Gender</span>
+          <span class="ep-detail-val">{{ emp.gender }}</span>
+        </div>
+        {% endif %}
+        {% if emp.date_of_birth %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Date of Birth</span>
+          <span class="ep-detail-val">{{ emp.date_of_birth|date:"F j, Y" }}</span>
+        </div>
+        {% endif %}
+        {% if emp.marital_status %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Marital Status</span>
+          <span class="ep-detail-val">{{ emp.marital_status }}</span>
+        </div>
+        {% endif %}
+        {% if emp.cnic %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">CNIC</span>
+          <span class="ep-detail-val">{{ emp.cnic }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Info -->
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">Contact Information</div>
+    </div>
+    <div class="ep-card-body">
+      <div class="ep-detail-list">
+        {% if emp.official_email %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Official Email</span>
+          <span class="ep-detail-val">{{ emp.official_email }}</span>
+        </div>
+        {% endif %}
+        {% if emp.personal_email %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Personal Email</span>
+          <span class="ep-detail-val">{{ emp.personal_email }}</span>
+        </div>
+        {% endif %}
+        {% if emp.personal_phone %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Phone</span>
+          <span class="ep-detail-val">{{ emp.personal_phone }}</span>
+        </div>
+        {% endif %}
+        {% if emp.current_address %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Address</span>
+          <span class="ep-detail-val">{{ emp.current_address }}{% if emp.city %}, {{ emp.city }}{% endif %}</span>
+        </div>
+        {% endif %}
+        {% if emp.emergency_contact_name %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Emergency Contact</span>
+          <span class="ep-detail-val">{{ emp.emergency_contact_name }} · {{ emp.emergency_contact_number }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Employment Info -->
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">Employment Details</div>
+    </div>
+    <div class="ep-card-body">
+      <div class="ep-detail-list">
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Employee Code</span>
+          <span class="ep-detail-val">{{ emp.employee_code }}</span>
+        </div>
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Department</span>
+          <span class="ep-detail-val">{{ emp.department }}</span>
+        </div>
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Designation</span>
+          <span class="ep-detail-val">{{ emp.designation }}</span>
+        </div>
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Employment Type</span>
+          <span class="ep-detail-val">{{ emp.employment_type }}</span>
+        </div>
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Status</span>
+          <span class="ep-detail-val">{{ emp.employment_status }}</span>
+        </div>
+        {% if emp.joining_date %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Joining Date</span>
+          <span class="ep-detail-val">{{ emp.joining_date|date:"F j, Y" }}</span>
+        </div>
+        {% endif %}
+        {% if emp.reporting_manager %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Reporting Manager</span>
+          <span class="ep-detail-val">{{ emp.reporting_manager.full_name }}</span>
+        </div>
+        {% endif %}
+        {% if emp.shift_master %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Shift</span>
+          <span class="ep-detail-val">{{ emp.shift_master.name }} ({{ emp.shift_master.start_time|time:"g:i A" }} – {{ emp.shift_master.end_time|time:"g:i A" }})</span>
+        </div>
+        {% elif emp.scheduled_checkin %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Shift</span>
+          <span class="ep-detail-val">{{ emp.scheduled_checkin|time:"g:i A" }} – {{ emp.scheduled_checkout|time:"g:i A" }}</span>
+        </div>
+        {% elif emp.shift %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Shift</span>
+          <span class="ep-detail-val">{{ emp.shift }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bank / Payment Info -->
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">Payment Information</div>
+    </div>
+    <div class="ep-card-body">
+      <div class="ep-detail-list">
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Payment Mode</span>
+          <span class="ep-detail-val">{{ emp.payment_mode|default:"—" }}</span>
+        </div>
+        {% if emp.bank_name %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Bank</span>
+          <span class="ep-detail-val">{{ emp.bank_name }}</span>
+        </div>
+        {% endif %}
+        {% if emp.account_title %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Account Title</span>
+          <span class="ep-detail-val">{{ emp.account_title }}</span>
+        </div>
+        {% endif %}
+        {% if emp.account_number %}
+        <div class="ep-detail-row">
+          <span class="ep-detail-key">Account Number</span>
+          <span class="ep-detail-val">{{ emp.account_number }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,8 @@
+<svg width="340" height="72" viewBox="0 0 340 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="340" height="72" rx="20" fill="#00182C"/>
+  <circle cx="42" cy="36" r="20" fill="#F58400"/>
+  <path d="M36 26H45.5C51.299 26 56 30.701 56 36.5C56 42.299 51.299 47 45.5 47H36V26Z" fill="white"/>
+  <path d="M36 31H44.5C47.5376 31 50 33.4624 50 36.5C50 39.5376 47.5376 42 44.5 42H36V31Z" fill="#F58400"/>
+  <text x="78" y="32" fill="white" font-family="Plus Jakarta Sans, Inter, sans-serif" font-size="19" font-weight="800">Digilatics HRIS</text>
+  <text x="78" y="50" fill="#B8C5D4" font-family="Plus Jakarta Sans, Inter, sans-serif" font-size="11" font-weight="600" letter-spacing="1.4">PREMIUM WORKFORCE CONTROL CENTER</text>
+</svg>

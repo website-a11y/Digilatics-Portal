@@ -1,0 +1,151 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{{ run }} Payslips — Digilatics HR{% endblock %}
+{% block page_title %}Payroll — {{ run.get_month_display }} {{ run.year }}{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+  <a href="{% url 'portal:hr_payroll' %}" class="ep-btn-sm" style="text-decoration:none;">← All Runs</a>
+  <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;">
+    {% if run.status != 'Locked' %}
+    <form method="post" action="{% url 'portal:hr_payroll_generate' run.pk %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="hr-filter-btn" style="height:38px;background:#3b82f6;">
+        ⚡ Generate Payslips
+      </button>
+    </form>
+    {% if run.payslips.count > 0 %}
+    <form method="post" action="{% url 'portal:hr_payroll_finalize' run.pk %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="hr-filter-btn" style="height:38px;background:#22c55e;">
+        ✓ Finalize &amp; Approve
+      </button>
+    </form>
+    {% endif %}
+    {% endif %}
+    {% if run.status == 'Approved' %}
+    <form method="post" action="{% url 'portal:hr_payroll_lock' run.pk %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="hr-filter-btn" style="height:38px;background:#1e293b;" onclick="return confirm('Lock this run? No further edits will be allowed.')">
+        🔒 Lock Run
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ══ RUN SUMMARY ══ -->
+<div class="hr-stat-grid" style="margin-bottom:24px;">
+  <div class="hr-stat-card green">
+    <div class="hr-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">PKR {{ total_gross|floatformat:0 }}</div>
+      <div class="hr-stat-lbl">Total Gross</div>
+    </div>
+  </div>
+  <div class="hr-stat-card orange">
+    <div class="hr-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12l7-7 7 7"/></svg></div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">PKR {{ total_deductions|floatformat:0 }}</div>
+      <div class="hr-stat-lbl">Total Deductions</div>
+    </div>
+  </div>
+  <div class="hr-stat-card blue">
+    <div class="hr-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5M5 12l7 7 7-7"/></svg></div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">PKR {{ total_net|floatformat:0 }}</div>
+      <div class="hr-stat-lbl">Total Net Pay</div>
+    </div>
+  </div>
+  <div class="hr-stat-card purple">
+    <div class="hr-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+    <div class="hr-stat-body">
+      <div class="hr-stat-val">{{ payslips|length }}</div>
+      <div class="hr-stat-lbl">Employees</div>
+    </div>
+    <span class="ep-badge {{ run.status|slugify }}" style="margin-left:auto;">{{ run.status }}</span>
+  </div>
+</div>
+
+<!-- ══ SEARCH ══ -->
+<div style="margin-bottom:16px;">
+  <form method="get" class="hr-filter-row">
+    <div class="hr-search-wrap" style="max-width:360px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" name="q" value="{{ q }}" placeholder="Search employee…" class="hr-search-input">
+    </div>
+    <button type="submit" class="hr-filter-btn">Search</button>
+    {% if q %}<a href="?q=" class="hr-clear-btn">Clear</a>{% endif %}
+  </form>
+</div>
+
+<!-- ══ PAYSLIPS TABLE ══ -->
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="hr-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Gross</th>
+          <th>Overtime / Bonus</th>
+          <th>Deductions</th>
+          <th>Net Pay</th>
+          <th>Paid</th>
+          <th>Status</th>
+          {% if run.status != 'Locked' %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ps in payslips %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ep-avatar-sm">{{ ps.employee.full_name|slice:":1" }}</div>
+              <div>
+                <div style="font-weight:700;font-size:13px;">{{ ps.employee.full_name }}</div>
+                <div style="font-size:11px;color:var(--text-2);">{{ ps.employee.employee_code }} · {{ ps.employee.department }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:600;font-size:13px;">{{ ps.gross_salary|floatformat:0 }}</td>
+          <td style="font-size:12px;color:var(--text-2);">
+            {% if ps.overtime_hours %}OT: {{ ps.overtime_hours }}h{% endif %}
+            {% if ps.bonus %} Bonus: {{ ps.bonus|floatformat:0 }}{% endif %}
+            {% if not ps.overtime_hours and not ps.bonus %}—{% endif %}
+          </td>
+          <td style="font-size:13px;color:#b91c1c;font-weight:600;">{{ ps.total_deductions|floatformat:0 }}</td>
+          <td style="font-weight:800;font-size:15px;color:var(--brand);">{{ ps.net_salary|floatformat:0 }}</td>
+          <td>{% if ps.is_paid %}<span class="ep-badge active">Paid</span>{% else %}<span class="ep-badge draft">Unpaid</span>{% endif %}</td>
+          <td><span class="ep-badge {{ ps.status|slugify }}">{{ ps.status }}</span></td>
+          {% if run.status != 'Locked' %}
+          <td><a href="{% url 'portal:hr_payslip_edit' ps.pk %}" class="ep-btn-sm" style="text-decoration:none;">Edit</a></td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">
+            <div class="hr-empty">
+              <div>No payslips found</div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if payslips %}
+      <tfoot>
+        <tr style="background:var(--surface);font-weight:800;">
+          <td style="padding:12px 16px;font-size:13px;">Total ({{ payslips|length }} employees)</td>
+          <td style="padding:12px 8px;font-size:13px;">{{ total_gross|floatformat:0 }}</td>
+          <td></td>
+          <td></td>
+          <td style="padding:12px 8px;font-size:13px;color:#b91c1c;">{{ total_deductions|floatformat:0 }}</td>
+          <td style="padding:12px 8px;font-size:14px;color:var(--brand);">{{ total_net|floatformat:0 }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+{% endblock %}

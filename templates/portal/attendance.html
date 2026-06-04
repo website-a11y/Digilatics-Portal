@@ -1,0 +1,165 @@
+{% extends "portal/base.html" %}
+{% block title %}My Attendance — Portal{% endblock %}
+{% block page_title %}My Attendance{% endblock %}
+
+{% block content %}
+
+<!-- Stats Strip -->
+<div class="ep-att-stats">
+  <div class="ep-att-chip present">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 6,11 12,3" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <strong>{{ stats.present }}</strong> Present
+  </div>
+  <div class="ep-att-chip absent">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="3" y1="3" x2="11" y2="11" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><line x1="11" y1="3" x2="3" y2="11" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <strong>{{ stats.absent }}</strong> Absent
+  </div>
+  <div class="ep-att-chip leave">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="1" stroke="#f97316" stroke-width="2"/></svg>
+    <strong>{{ stats.leave }}</strong> Leave
+  </div>
+  <div class="ep-att-chip wfh">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L7 3l5 4v5a1 1 0 0 1-1 1H9V9H5v4H3a1 1 0 0 1-1-1V7z" stroke="#8b5cf6" stroke-width="1.8"/></svg>
+    <strong>{{ stats.wfh }}</strong> WFH
+  </div>
+  <div class="ep-att-chip late">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="#eab308" stroke-width="2"/><path d="M7 4.5v3l2 2" stroke="#eab308" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <strong>{{ stats.late }}</strong> Late
+  </div>
+  {% if stats.holiday %}
+  <div class="ep-att-chip holiday">
+    <strong>{{ stats.holiday }}</strong> Holiday{{ stats.holiday|pluralize }}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Horizontal Calendar Grid -->
+<div class="ep-card" style="margin-bottom:24px;">
+  <div class="ep-card-body">
+
+    <!-- Month Navigator -->
+    <div class="ep-cal-nav">
+      <a href="?year={{ prev_year }}&month={{ prev_month }}" class="ep-cal-arrow">&#8249;</a>
+      <span class="ep-cal-nav-month">{{ month_label }}</span>
+      <a href="?year={{ next_year }}&month={{ next_month }}" class="ep-cal-arrow">&#8250;</a>
+    </div>
+
+    <!-- Horizontal Day Grid -->
+    <div class="ep-hgrid-wrap">
+      <div class="ep-hgrid">
+        {% for cell in cells %}
+        <div class="ep-hgrid-col {% if cell.is_today %}is-today{% endif %}">
+          <div class="ep-hgrid-num">{{ cell.num }}</div>
+          <div class="ep-hgrid-day">{{ cell.name|slice:":1" }}</div>
+          <div class="ep-hgrid-cell {{ cell.status }}"
+               title="{{ cell.day|date:'l, N j' }}{% if cell.record and cell.record.check_in %} · In: {{ cell.record.check_in|time:'H:i' }}{% endif %}{% if cell.record and cell.record.check_out %} · Out: {{ cell.record.check_out|time:'H:i' }}{% endif %}{% if cell.record and cell.record.is_late %} (Late){% endif %}">
+            {% if cell.status == "present" %}
+              {% if cell.record.is_late %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><polyline points="8,5 8,8 10.5,8"/></svg>
+              {% else %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><polyline points="5,8 7,10.5 11,5.5"/></svg>
+              {% endif %}
+            {% elif cell.status == "absent" %}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5"/></svg>
+            {% elif cell.status == "leave" %}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="12" height="10.5" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5.5" y1="1.5" x2="5.5" y2="4.5"/><line x1="10.5" y1="1.5" x2="10.5" y2="4.5"/><line x1="5" y1="10" x2="11" y2="10"/></svg>
+            {% elif cell.status == "wfh" %}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8L8 3l6 5v5.5a.8.8 0 0 1-.8.8H10.5V10H5.5v4.3H2.8A.8.8 0 0 1 2 13.5z"/></svg>
+            {% elif cell.status == "holiday" %}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="8,1.5 9.8,5.8 14.5,6.2 11,9.3 12.1,14 8,11.5 3.9,14 5,9.3 1.5,6.2 6.2,5.8"/></svg>
+            {% elif cell.status == "half_day" %}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2"/><polyline points="8,5 8,8 10.5,8"/></svg>
+            {% elif cell.status == "not_recorded" %}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><path d="M6,6.5 a2,2 0 1,1 4,0 c0,1.2 -2,1.5 -2,2.8"/><circle cx="8" cy="12" r=".9" fill="currentColor" stroke="none"/></svg>
+            {% elif cell.status == "weekend" %}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="12" height="10.5" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><circle cx="5.5" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="10" r="1" fill="currentColor" stroke="none"/></svg>
+            {% else %}
+              <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg>
+            {% endif %}
+          </div>
+          {% if cell.record and cell.record.is_late %}
+          <div class="ep-hgrid-late-dot" title="Late arrival"></div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="ep-cal-legend">
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#dcfce7;border:1px solid #22c55e;"></div>Present</div>
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#fee2e2;border:1px solid #ef4444;"></div>Absent</div>
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#ffedd5;border:1px solid #f97316;"></div>Leave</div>
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#f3e8ff;border:1px solid #8b5cf6;"></div>WFH</div>
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#eef2ff;border:1px solid #6366f1;"></div>Holiday</div>
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#fef9c3;border:1px solid #eab308;"></div>Half Day</div>
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#eff6ff;border:1px solid #3b82f6;"></div>Not Recorded</div>
+      <div class="ep-cal-legend-item"><div class="ep-cal-legend-dot" style="background:#f3f4f6;border:1px solid var(--border);"></div>Weekend</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Daily Log Table -->
+<div class="ep-card">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">Daily Log</div>
+      <div class="ep-card-sub">{{ month_label }}</div>
+    </div>
+  </div>
+  <div class="ep-card-body" style="padding:0;">
+    <div class="ep-table-wrap">
+      <table class="ep-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Status</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Source / Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cell in cells %}
+          {% if not cell.is_weekend and not cell.is_future %}
+          <tr>
+            <td style="font-weight:600;">{{ cell.day|date:"M j, Y" }}</td>
+            <td style="color:var(--muted);">{{ cell.name }}</td>
+            <td>
+              {% if cell.status == "present" %}<span class="ep-badge" style="background:#dcfce7;color:#14532d;">Present</span>
+              {% elif cell.status == "absent" %}<span class="ep-badge" style="background:#fee2e2;color:#7f1d1d;">Absent</span>
+              {% elif cell.status == "leave" %}<span class="ep-badge" style="background:#ffedd5;color:#9a3412;">On Leave</span>
+              {% elif cell.status == "wfh" %}<span class="ep-badge" style="background:#f3e8ff;color:#6b21a8;">WFH</span>
+              {% elif cell.status == "holiday" %}<span class="ep-badge" style="background:#eef2ff;color:#3730a3;">Holiday</span>
+              {% elif cell.status == "half_day" %}<span class="ep-badge" style="background:#fef9c3;color:#713f12;">Half Day</span>
+              {% elif cell.status == "not_recorded" %}<span class="ep-badge" style="background:#eff6ff;color:#1e3a8a;">Not Recorded</span>
+              {% else %}—
+              {% endif %}
+            </td>
+            <td>
+              {% if cell.record and cell.record.check_in %}
+                <span style="font-weight:600;font-variant-numeric:tabular-nums;">{{ cell.record.check_in|time:"H:i" }}</span>
+                {% if cell.record.is_late %}<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#fef9c3;color:#92400e;">Late</span>{% endif %}
+              {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
+            </td>
+            <td>
+              {% if cell.record and cell.record.check_out %}
+                <span style="font-weight:600;font-variant-numeric:tabular-nums;">{{ cell.record.check_out|time:"H:i" }}</span>
+                {% if cell.record.is_early_checkout %}<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#ffedd5;color:#9a3412;">Early</span>{% endif %}
+              {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
+            </td>
+            <td style="font-size:12px;color:var(--muted);">
+              {% if cell.record %}{{ cell.record.notes|default:"—"|truncatechars:45 }}{% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

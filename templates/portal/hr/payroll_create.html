@@ -1,0 +1,51 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Create Payroll Run — Digilatics HR{% endblock %}
+{% block page_title %}Create Payroll Run{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;">
+    <a href="{% url 'portal:hr_payroll' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Payroll</a>
+  </div>
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">New Payroll Run</div>
+      <div class="ep-card-sub">Create a run, then generate payslips from employee salary setups.</div>
+    </div>
+    <div class="ep-card-body">
+      {% if errors.general %}
+      <div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>
+      {% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Year <span class="hr-required">*</span></label>
+            <input type="number" name="year" class="hr-form-input"
+                   value="{{ current_year }}" min="2020" max="2099" required>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Month <span class="hr-required">*</span></label>
+            <select name="month" class="hr-form-input" required>
+              {% for num, name in months %}
+              <option value="{{ num }}" {% if num == current_month %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Notes</label>
+          <textarea name="notes" class="hr-form-input hr-textarea" rows="3"
+                    placeholder="Optional notes for this run…"></textarea>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">
+            Create Run
+          </button>
+          <a href="{% url 'portal:hr_payroll' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}HR Panel — Digilatics{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}?v=3">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="hr-theme">
+
+<div class="ep-overlay" id="overlay"></div>
+<div class="ep-layout">
+
+  <!-- ══ HR SIDEBAR ══ -->
+  <aside class="ep-sidebar hr-sidebar" id="sidebar">
+
+    <div class="ep-logo hr-logo">
+      <div class="hr-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div>
+        <span class="ep-logo-text">Digilatics</span>
+        <div class="hr-logo-sub">HR Admin Panel</div>
+      </div>
+    </div>
+
+    <nav class="ep-nav">
+
+      <div class="ep-nav-section">Overview</div>
+
+      <a href="{% url 'portal:hr_dashboard' %}"
+         class="ep-nav-item {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        Dashboard
+      </a>
+
+      <div class="ep-nav-section">People</div>
+
+      <a href="{% url 'portal:hr_employees' %}"
+         class="ep-nav-item {% if 'hr_employee' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Employees
+      </a>
+
+      <a href="{% url 'portal:hr_teams' %}"
+         class="ep-nav-item {% if 'hr_team' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="8" cy="7" r="3"/><circle cx="16" cy="7" r="3"/>
+          <path d="M1 21v-1a7 7 0 0 1 14 0v1M9 21v-1a7 7 0 0 1 14 0v1"/>
+        </svg>
+        Teams
+      </a>
+
+
+      <a href="{% url 'portal:hr_users' %}"
+         class="ep-nav-item {% if 'hr_user' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="7" r="4"/>
+          <path d="M3 21v-2a9 9 0 0 1 18 0v2"/>
+          <circle cx="18" cy="9" r="2" fill="currentColor"/>
+        </svg>
+        Users
+      </a>
+
+      <div class="ep-nav-section">Attendance</div>
+
+      <a href="{% url 'portal:hr_attendance' %}"
+         class="ep-nav-item {% if request.resolver_match.url_name == 'hr_attendance' or 'hr_attendance_record' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+          <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+        </svg>
+        Attendance Records
+      </a>
+
+      <a href="{% url 'portal:hr_holidays' %}"
+         class="ep-nav-item {% if 'hr_holiday' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        Public Holidays
+      </a>
+
+      <a href="{% url 'portal:hr_shifts' %}"
+         class="ep-nav-item {% if 'hr_shift' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Shifts
+      </a>
+
+      <a href="{% url 'portal:hr_attendance_policy' %}"
+         class="ep-nav-item {% if request.resolver_match.url_name == 'hr_attendance_policy' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Attendance Policies
+      </a>
+
+      <a href="{% url 'portal:hr_device_employees' %}"
+         class="ep-nav-item {% if 'hr_device_employee' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>
+        </svg>
+        Device Employees
+      </a>
+
+      <a href="{% url 'portal:hr_sync_schedules' %}"
+         class="ep-nav-item {% if 'hr_sync_schedule' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Sync Schedules
+      </a>
+
+      <div class="ep-nav-section">Leave Management</div>
+
+      <a href="{% url 'portal:hr_leaves' %}"
+         class="ep-nav-item {% if request.resolver_match.url_name == 'hr_leaves' or request.resolver_match.url_name == 'hr_leave_action' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Leave Requests
+      </a>
+
+      <a href="{% url 'portal:hr_leave_allocations' %}"
+         class="ep-nav-item {% if 'hr_leave_allocation' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+        </svg>
+        Leave Allocations
+      </a>
+
+      <a href="{% url 'portal:hr_leave_types' %}"
+         class="ep-nav-item {% if 'hr_leave_type' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+        Leave Types
+      </a>
+
+
+      <div class="ep-nav-section">Payroll</div>
+
+      <a href="{% url 'portal:hr_payroll' %}"
+         class="ep-nav-item {% if request.resolver_match.url_name == 'hr_payroll' or request.resolver_match.url_name == 'hr_payroll_create' or request.resolver_match.url_name == 'hr_payroll_detail' or request.resolver_match.url_name == 'hr_payslip_edit' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
+          <path d="M6 15h4M14 15h4"/>
+        </svg>
+        Payroll Runs
+      </a>
+
+      <a href="{% url 'portal:hr_salary_setups' %}"
+         class="ep-nav-item {% if 'hr_salary_setup' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Salary Setups
+      </a>
+
+      <a href="{% url 'portal:hr_statutory_deductions' %}"
+         class="ep-nav-item {% if 'hr_statutory_deduction' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4M12 16h.01"/>
+        </svg>
+        Statutory Deductions
+      </a>
+
+      <a href="{% url 'portal:hr_tax_years' %}"
+         class="ep-nav-item {% if 'hr_tax_year' in request.resolver_match.url_name %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          <path d="M8 15l2 2 4-4"/>
+        </svg>
+        Tax Years
+      </a>
+
+      <div class="ep-nav-section">My Portal</div>
+
+      <a href="{% url 'portal:dashboard' %}" class="ep-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Employee Portal
+      </a>
+
+    </nav>
+
+    <div class="ep-sidebar-footer">
+      <a href="{% url 'portal:logout' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Logout
+      </a>
+    </div>
+
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="ep-main">
+
+    <!-- TOPBAR -->
+    <header class="ep-topbar hr-topbar">
+      <div class="ep-topbar-left">
+        <button class="ep-hamburger" id="hamburger" onclick="toggleSidebar()">
+          <span></span><span></span><span></span>
+        </button>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.6px;line-height:1;">HR Admin</div>
+          <span class="ep-page-title" style="font-size:16px;">{% block page_title %}HR Panel{% endblock %}</span>
+        </div>
+      </div>
+      <div class="ep-topbar-right">
+        {% with emp=request.user.employee_profile %}
+        <div class="ep-user">
+          <div class="ep-user-info">
+            <span class="ep-user-name">{{ emp.full_name|default:request.user.username }}</span>
+            <span class="ep-user-role" style="color:var(--brand);">{{ emp.role|default:"Super Admin" }}</span>
+          </div>
+          <div class="ep-avatar" style="background:var(--brand);">
+            {% if emp.profile_photo %}
+              <img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}">
+            {% else %}
+              {{ emp.full_name|first|upper }}
+            {% endif %}
+          </div>
+        </div>
+        {% endwith %}
+      </div>
+    </header>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div style="padding: 0 32px; margin-top: 16px;">
+      {% for msg in messages %}
+      <div class="ep-alert {{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- CONTENT -->
+    <div class="ep-content">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('overlay');
+  function open()  { sidebar.classList.add('open');  overlay.classList.add('visible');  document.body.style.overflow='hidden'; }
+  function close() { sidebar.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow=''; }
+  window.toggleSidebar = function() { sidebar.classList.contains('open') ? close() : open(); };
+  overlay.addEventListener('click', close);
+  window.addEventListener('resize', function() { if (window.innerWidth > 768) close(); });
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

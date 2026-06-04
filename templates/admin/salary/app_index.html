@@ -1,0 +1,602 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static salary_admin_tags %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ── Reset & base ── */
+.sal-page { padding: 28px 62px; max-width: 1400px; background: #f8fafc; }
+
+/* ── Page header ── */
+.sal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.sal-header-left h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+.sal-header-left p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 400;
+}
+.sal-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Card grid ── */
+.sal-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.sal-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+/* ── Card ── */
+.sal-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+.sal-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* accent bar */
+.sal-card-accent {
+  height: 4px;
+  width: 100%;
+}
+
+.sal-card-body { padding: 24px; flex: 1; }
+
+/* icon + title row */
+.sal-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.sal-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sal-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.sal-card-count {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+
+/* sub-stats */
+.sal-sub-stats {
+  display: flex;
+  gap: 20px;
+  margin: 12px 0 16px;
+  flex-wrap: wrap;
+}
+
+.sal-sub-stat {
+     display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: #f8fafc;
+    padding: 12px 18px;
+    border-radius: 8px;
+}
+
+.sal-sub-val {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.sal-sub-lbl {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+}
+
+/* divider */
+.sal-card-divider {
+  height: 1px;
+  background: #f1f5f9;
+}
+
+/* info line */
+.sal-info-line {
+  padding: 12px 0 0;
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.5;
+}
+
+.sal-info-line strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* action bar */
+.sal-card-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  flex-wrap: wrap;
+}
+
+.sal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border: none;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.sal-btn-primary {
+  background: #f58400;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(245, 132, 0, 0.2);
+}
+
+.sal-btn-primary:hover {
+  background: #e67e00;
+  box-shadow: 0 4px 12px rgba(245, 132, 0, 0.3);
+}
+
+.sal-btn-outline {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.sal-btn-outline:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* progress bar */
+.sal-bar-track {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+
+.sal-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.sal-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* status pill */
+.sal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.sal-pill-green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.sal-pill-amber {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.sal-pill-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.sal-pill-slate {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sal-pill-orange {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+/* dot */
+.sal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* big stat inline */
+.sal-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+@media (max-width: 1100px) {
+  .sal-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .sal-grid-3,
+  .sal-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .sal-page {
+    padding: 16px;
+  }
+  .sal-header-left h1 {
+    font-size: 24px;
+  }
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; Salary Management
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+{% salary_dashboard_stats as s %}
+
+<div class="sal-page">
+
+  <!-- ── Header ── -->
+  <div class="sal-header">
+    <div class="sal-header-left">
+      <h1>Salary Management</h1>
+      <p>Payroll, payslips, tax configuration and deduction policies</p>
+    </div>
+    <span class="sal-header-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Live data
+    </span>
+  </div>
+
+  <!-- ── Row 1: 3 cards ── -->
+  <div class="sal-grid-3">
+
+    <!-- ① Payroll Runs -->
+    <div class="sal-card">
+      <div class="sal-card-accent" ></div>
+      <div class="sal-card-body">
+        <div class="sal-card-top">
+          <div>
+            <div class="sal-card-title">Payroll Runs</div>
+            <div class="sal-card-count">{{ s.payroll.total }}</div>
+          </div>
+          <div class="sal-icon-wrap" style="background:#fff7ed;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f58400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sal-sub-stats">
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.payroll.draft }}</span>
+            <span class="sal-sub-lbl">draft</span>
+          </div>
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.payroll.locked }}</span>
+            <span class="sal-sub-lbl">locked</span>
+          </div>
+        </div>
+
+        <div class="sal-info-line">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Latest: <strong>{{ s.payroll.latest }}</strong>
+          &nbsp;
+          {% if s.payroll.latest_status == "Locked" %}
+            <span class="sal-pill sal-pill-blue"><span class="sal-dot" style="background:#1d4ed8;"></span>{{ s.payroll.latest_status }}</span>
+          {% elif s.payroll.latest_status == "Approved" %}
+            <span class="sal-pill sal-pill-green"><span class="sal-dot" style="background:#15803d;"></span>{{ s.payroll.latest_status }}</span>
+          {% elif s.payroll.latest_status == "Draft" %}
+            <span class="sal-pill sal-pill-slate"><span class="sal-dot" style="background:#94a3b8;"></span>{{ s.payroll.latest_status }}</span>
+          {% else %}
+            <span class="sal-pill sal-pill-amber"><span class="sal-dot" style="background:#b45309;"></span>{{ s.payroll.latest_status }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="sal-card-divider"></div>
+      <div class="sal-card-actions">
+        <a href="{% url 'admin:salary_payrollrun_changelist' %}" class="sal-btn sal-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          View all
+        </a>
+        <a href="{% url 'admin:salary_payrollrun_add' %}" class="sal-btn sal-btn-outline">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + New run
+        </a>
+      </div>
+    </div>
+
+    <!-- ② Payslips -->
+    <div class="sal-card">
+      <div class="sal-card-accent"  ></div>
+      <div class="sal-card-body">
+        <div class="sal-card-top">
+          <div>
+            <div class="sal-card-title">Payslips</div>
+            <div class="sal-card-count">{{ s.payslip.total }}</div>
+          </div>
+          <div class="sal-icon-wrap" style="background:#eef2ff;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sal-sub-stats">
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.payslip.this_month }}</span>
+            <span class="sal-sub-lbl">this month</span>
+          </div>
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.payslip.paid }}</span>
+            <span class="sal-sub-lbl">paid</span>
+          </div>
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.payslip.Unpaid }}</span>
+            <span class="sal-sub-lbl">Unpaid</span>
+          </div>
+        </div>
+
+        {% if s.payslip.total %}
+        <div class="sal-bar-track">
+          <div class="sal-bar-fill" width:{% widthratio s.payslip.paid s.payslip.total 100 %}%;"></div>
+        </div>
+        <div class="sal-bar-label">
+          <span>Paid</span>
+          <span>{% widthratio s.payslip.paid s.payslip.total 100 %}%</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="sal-card-divider"></div>
+      <div class="sal-card-actions">
+        <a href="{% url 'admin:salary_payslip_changelist' %}" class="sal-btn sal-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          View all
+        </a>
+        <a href="{% url 'admin:salary_payslip_add' %}" class="sal-btn sal-btn-outline">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + New payslip
+        </a>
+      </div>
+    </div>
+
+    <!-- ③ Salary Setups -->
+    <div class="sal-card">
+      <div class="sal-card-accent" ></div>
+      <div class="sal-card-body">
+        <div class="sal-card-top">
+          <div>
+            <div class="sal-card-title">Salary Setups</div>
+            <div class="sal-card-count">{{ s.setup.total }}</div>
+          </div>
+          <div class="sal-icon-wrap" style="background:#ecfdf5;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sal-sub-stats">
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.setup.active }}</span>
+            <span class="sal-sub-lbl">active</span>
+          </div>
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.setup.total|add:"-"|add:s.setup.active }}</span>
+            <span class="sal-sub-lbl">inactive</span>
+          </div>
+        </div>
+
+        <div class="sal-info-line">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Total gross payroll:
+          <strong>PKR {{ s.setup.total_gross|floatformat:0 }}</strong>
+        </div>
+
+        {% if s.setup.total %}
+        <div class="sal-bar-track">
+          <div class="sal-bar-fill" style="background:linear-gradient(90deg,#10b981,#34d399);width:{% widthratio s.setup.active s.setup.total 100 %}%;"></div>
+        </div>
+        <div class="sal-bar-label">
+          <span>Active setups</span>
+          <span>{% widthratio s.setup.active s.setup.total 100 %}%</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="sal-card-divider"></div>
+      <div class="sal-card-actions">
+        <a href="{% url 'admin:salary_salarysetup_changelist' %}" class="sal-btn sal-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          View all
+        </a>
+        <a href="{% url 'admin:salary_salarysetup_add' %}" class="sal-btn sal-btn-outline">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + Add setup
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /sal-grid-3 -->
+
+  <!-- ── Row 2: 2 cards ── -->
+  <div class="sal-grid-2">
+
+    <!-- ④ Statutory Deduction Policies -->
+    <div class="sal-card">
+      <div class="sal-card-accent" ></div>
+      <div class="sal-card-body">
+        <div class="sal-card-top">
+          <div>
+            <div class="sal-card-title">Deduction Policies</div>
+            <div class="sal-card-count">{{ s.statutory.total }}</div>
+          </div>
+          <div class="sal-icon-wrap" style="background:#f0f9ff;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sal-sub-stats">
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.statutory.active }}</span>
+            <span class="sal-sub-lbl">active</span>
+          </div>
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{% with inactive=s.statutory.total|add:"-0" %}{{ s.statutory.total|add:"-"|add:s.statutory.active }}{% endwith %}</span>
+            <span class="sal-sub-lbl">inactive</span>
+          </div>
+        </div>
+
+        <div class="sal-info-line">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Covers EOBI, Provident Fund, PESSI &amp; Social Security
+        </div>
+      </div>
+      <div class="sal-card-divider"></div>
+      <div class="sal-card-actions">
+        <a href="{% url 'admin:salary_statutorydeductionpolicy_changelist' %}" class="sal-btn sal-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          View all
+        </a>
+        <a href="{% url 'admin:salary_statutorydeductionpolicy_add' %}" class="sal-btn sal-btn-outline">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + Add policy
+        </a>
+      </div>
+    </div>
+
+    <!-- ⑤ Tax Years -->
+    <div class="sal-card">
+      <div class="sal-card-accent" ></div>
+      <div class="sal-card-body">
+        <div class="sal-card-top">
+          <div>
+            <div class="sal-card-title">Tax Years</div>
+            <div class="sal-card-count">{{ s.tax.total }}</div>
+          </div>
+          <div class="sal-icon-wrap" style="background:#f5f3ff;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sal-sub-stats">
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val" style="color:#8b5cf6;">{{ s.tax.active_year }}</span>
+            <span class="sal-sub-lbl">Active Year</span>
+          </div>
+          <div class="sal-sub-stat">
+            <span class="sal-sub-val">{{ s.tax.active_from }}</span>
+            <span class="sal-sub-lbl">Effective From</span>
+          </div>
+        </div>
+
+        <div class="sal-info-line">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Manage tax slabs and fiscal year ranges
+        </div>
+      </div>
+      <div class="sal-card-divider"></div>
+      <div class="sal-card-actions">
+        <a href="{% url 'admin:salary_taxyear_changelist' %}" class="sal-btn sal-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          View all
+        </a>
+        <a href="{% url 'admin:salary_taxyear_add' %}" class="sal-btn sal-btn-outline">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + Add year
+        </a>
+      </div>
+    </div>
+
+
+  </div><!-- /sal-grid-2 -->
+
+</div><!-- /sal-page -->
+{% endblock %}

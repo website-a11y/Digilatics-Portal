@@ -1,0 +1,358 @@
+{% extends "portal/base.html" %}
+{% block title %}Payslip — {{ payslip.payroll_run.get_month_display }} {{ payslip.payroll_run.year }}{% endblock %}
+{% block page_title %}Payslip{% endblock %}
+
+{% block extra_css %}
+<style>
+.ps-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 12.5px;
+  color: #111827;
+}
+
+/* ─ Top accent line ─ */
+.ps-wrap::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: #F58400;
+}
+
+/* ─ Header ─ */
+.ps-head {
+  padding: 24px 32px 18px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.ps-head-right { text-align: right; }
+.ps-head-title { font-size: 14px; font-weight: 700; color: #374151; }
+.ps-head-sub   { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+
+/* ─ Employee info table ─ */
+.ps-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #e5e7eb;
+}
+.ps-info-cell {
+  display: flex;
+  padding: 7px 24px;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 8px;
+}
+.ps-info-cell:nth-child(odd) { background: #fafafa; border-right: 1px solid #f3f4f6; }
+.ps-info-lbl { min-width: 120px; font-size: 11px; font-weight: 600; color: #6b7280; flex-shrink: 0; }
+.ps-info-val { font-size: 12.5px; font-weight: 600; color: #111827; }
+
+/* ─ Table section header ─ */
+.ps-tbl-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  border-top: 1px solid #e5e7eb;
+}
+.ps-tbl-head > div {
+  padding: 8px 24px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: #374151;
+  display: flex;
+  justify-content: space-between;
+}
+.ps-tbl-head > div:first-child { border-right: 1px solid #e5e7eb; }
+
+/* ─ Pay rows ─ */
+.ps-pay-body { display: grid; grid-template-columns: 1fr 1fr; }
+.ps-pay-col  { display: flex; flex-direction: column; }
+.ps-pay-col:first-child { border-right: 1px solid #f3f4f6; }
+.ps-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 24px;
+  border-bottom: 1px solid #f9fafb;
+  font-size: 12.5px;
+  color: #374151;
+}
+.ps-row .n { color: #111827; font-family: 'Courier New', monospace; font-weight: 600; font-size: 12px; }
+
+/* ─ Totals row ─ */
+.ps-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1.5px solid #e5e7eb;
+  border-bottom: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+}
+.ps-totals > div {
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ps-totals > div:first-child { border-right: 1px solid #e5e7eb; }
+.ps-totals .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #374151; }
+.ps-totals .val { font-size: 14px; font-weight: 800; font-family: monospace; color: #111827; }
+
+/* ─ Net pay strip ─ */
+.ps-net {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  background: #111827;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ps-net-words-lbl { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 3px; }
+.ps-net-words-val { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); }
+.ps-net-right { text-align: right; flex-shrink: 0; }
+.ps-net-fig-lbl { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 3px; }
+.ps-net-fig-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #F58400; }
+
+/* ─ Sub sections (Loan / PF) ─ */
+.ps-sub-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f3f4f6;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+.ps-sub-head > div {
+  padding: 7px 24px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+.ps-sub-head > div:first-child { border-right: 1px solid #e5e7eb; }
+
+.ps-loan-pf { display: grid; grid-template-columns: 1fr 1fr; }
+.ps-loan-pf > div:first-child { border-right: 1px solid #f3f4f6; }
+
+.ps-pf-cols-head {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 5px 24px;
+  background: #fafafa;
+  border-bottom: 1px solid #f3f4f6;
+}
+.ps-pf-cols-head > div { font-size: 10px; font-weight: 700; color: #9ca3af; text-align: right; text-transform: uppercase; }
+.ps-pf-cols-head > div:first-child { text-align: left; }
+
+.ps-pf-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 6px 24px;
+  border-bottom: 1px solid #f9fafb;
+  font-size: 12px;
+}
+.ps-pf-row > div { text-align: right; font-family: monospace; color: #374151; }
+.ps-pf-row > div:first-child { text-align: left; font-family: inherit; color: #374151; }
+.ps-pf-row.bold > div { font-weight: 700; color: #111827; border-top: 1px solid #e5e7eb; padding-top: 5px; }
+
+/* ─ Bank section ─ */
+.ps-bank {
+  border-top: 1px solid #e5e7eb;
+  padding: 14px 24px;
+  background: #fafafa;
+}
+.ps-bank-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: #9ca3af; margin-bottom: 10px; }
+.ps-bank-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.ps-bank-item .l { font-size: 10px; font-weight: 600; color: #9ca3af; margin-bottom: 2px; }
+.ps-bank-item .v { font-size: 12.5px; font-weight: 700; color: #111827; }
+
+/* ─ Footer ─ */
+.ps-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #fff;
+}
+.ps-footer-note   { font-size: 11px; color: #9ca3af; }
+.ps-footer-status { font-size: 11px; font-weight: 600; color: #374151; }
+
+@media print {
+  .ps-actions, .ep-sidebar, .ep-topbar { display: none !important; }
+  .ep-main { margin-left: 0 !important; }
+  .ep-content { padding: 0 !important; background: #fff !important; }
+  body { background: #fff !important; }
+  .ps-wrap { border: none; border-radius: 0; max-width: 100%; box-shadow: none; }
+  .ps-wrap::before { display: block; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="ps-actions" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+  <a href="{% url 'portal:payslips' %}" class="ep-btn ep-btn-outline" style="text-decoration:none;">← Back</a>
+  <button onclick="window.print()" class="ep-btn ep-btn-primary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-right:6px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Export PDF
+  </button>
+</div>
+
+<div class="ps-wrap">
+
+  <!-- Header -->
+  <div class="ps-head">
+    <div>
+      <img src="/media/salaryslip%20logo.png" alt="Company Logo"
+           style="max-height:56px;max-width:220px;object-fit:contain;display:block;">
+    </div>
+    <div class="ps-head-right">
+      <div class="ps-head-title">Payslip — {{ payslip.payroll_run.get_month_display }} {{ payslip.payroll_run.year }}</div>
+      <div class="ps-head-sub">{{ payslip.payroll_run.period_start|date:"d M Y" }} – {{ payslip.payroll_run.period_end|date:"d M Y" }}</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#9ca3af;margin-top:5px;">Confidential</div>
+    </div>
+  </div>
+
+  <!-- Employee Info -->
+  <div class="ps-info">
+    <div class="ps-info-cell"><span class="ps-info-lbl">Employee Code</span><span class="ps-info-val">{{ emp.employee_code }}</span></div>
+    <div class="ps-info-cell"><span class="ps-info-lbl">Gender</span><span class="ps-info-val">{{ emp.gender|default:"—" }}</span></div>
+
+    <div class="ps-info-cell"><span class="ps-info-lbl">Employee Name</span><span class="ps-info-val">{{ emp.full_name }}</span></div>
+    <div class="ps-info-cell"><span class="ps-info-lbl">Joining Date</span><span class="ps-info-val">{{ emp.joining_date|date:"d-M-Y" }}</span></div>
+
+    <div class="ps-info-cell"><span class="ps-info-lbl">Department</span><span class="ps-info-val">{{ emp.department|default:"—" }}</span></div>
+    <div class="ps-info-cell"><span class="ps-info-lbl">Currency</span><span class="ps-info-val">{{ currency_code }}</span></div>
+
+    <div class="ps-info-cell"><span class="ps-info-lbl">Working Days</span><span class="ps-info-val">{{ period_days }}</span></div>
+    <div class="ps-info-cell"><span class="ps-info-lbl">NTN No.</span><span class="ps-info-val">{% with rev=payslip.salary_revision %}{% if rev and rev.ntn_no %}{{ rev.ntn_no }}{% else %}—{% endif %}{% endwith %}</span></div>
+
+    <div class="ps-info-cell"><span class="ps-info-lbl">Work Location</span><span class="ps-info-val">{{ emp.work_location|default:"—" }}</span></div>
+    <div class="ps-info-cell"><span class="ps-info-lbl">CNIC</span><span class="ps-info-val">{{ emp.cnic|default:"—" }}</span></div>
+
+    <div class="ps-info-cell"><span class="ps-info-lbl">Designation</span><span class="ps-info-val">{{ emp.designation|default:"—" }}</span></div>
+    <div class="ps-info-cell"><span class="ps-info-lbl">Employee Type</span><span class="ps-info-val">{{ emp.get_employment_type_display }}</span></div>
+  </div>
+
+  <!-- Payment & Deductions header -->
+  <div class="ps-tbl-head">
+    <div><span>Payment &amp; Allowance</span><span>Amount</span></div>
+    <div><span>Deductions</span><span>Amount</span></div>
+  </div>
+
+  <!-- Payment & Deductions body -->
+  <div class="ps-pay-body">
+    <div class="ps-pay-col">
+      {% with rev=payslip.salary_revision %}
+      {% if rev %}
+        <div class="ps-row"><span>Basic Salary</span><span class="n">{{ rev.basic_salary|floatformat:"0g" }}</span></div>
+        {% if rev.house_rent_allowance %}<div class="ps-row"><span>House Rent Allowance</span><span class="n">{{ rev.house_rent_allowance|floatformat:"0g" }}</span></div>{% endif %}
+        {% if rev.conveyance_allowance %}<div class="ps-row"><span>Con. Allowance</span><span class="n">{{ rev.conveyance_allowance|floatformat:"0g" }}</span></div>{% endif %}
+        {% if rev.medical_allowance %}<div class="ps-row"><span>Medical Allowance</span><span class="n">{{ rev.medical_allowance|floatformat:"0g" }}</span></div>{% endif %}
+        {% if rev.utility_allowance %}<div class="ps-row"><span>Utility Allowance</span><span class="n">{{ rev.utility_allowance|floatformat:"0g" }}</span></div>{% endif %}
+        {% if rev.other_allowance %}<div class="ps-row"><span>Other Allowance</span><span class="n">{{ rev.other_allowance|floatformat:"0g" }}</span></div>{% endif %}
+      {% else %}
+        <div class="ps-row"><span>Basic Salary</span><span class="n">{{ emp.basic_salary|floatformat:"0g" }}</span></div>
+        {% if emp.house_rent_allowance %}<div class="ps-row"><span>House Rent Allowance</span><span class="n">{{ emp.house_rent_allowance|floatformat:"0g" }}</span></div>{% endif %}
+        {% if emp.conveyance_allowance %}<div class="ps-row"><span>Con. Allowance</span><span class="n">{{ emp.conveyance_allowance|floatformat:"0g" }}</span></div>{% endif %}
+        {% if emp.medical_allowance %}<div class="ps-row"><span>Medical Allowance</span><span class="n">{{ emp.medical_allowance|floatformat:"0g" }}</span></div>{% endif %}
+        {% if emp.other_allowance %}<div class="ps-row"><span>Other Allowance</span><span class="n">{{ emp.other_allowance|floatformat:"0g" }}</span></div>{% endif %}
+      {% endif %}
+      {% endwith %}
+      {% if payslip.bonus %}<div class="ps-row"><span>Bonus</span><span class="n">{{ payslip.bonus|floatformat:"0g" }}</span></div>{% endif %}
+      {% if payslip.overtime_amount %}<div class="ps-row"><span>Overtime ({{ payslip.overtime_hours|floatformat:0 }}h)</span><span class="n">{{ payslip.overtime_amount|floatformat:"0g" }}</span></div>{% endif %}
+      {% if payslip.adjustment_addition %}<div class="ps-row"><span>Adjustment</span><span class="n">{{ payslip.adjustment_addition|floatformat:"0g" }}</span></div>{% endif %}
+    </div>
+    <div class="ps-pay-col">
+      {% if payslip.income_tax %}<div class="ps-row"><span>Income Tax</span><span class="n">{{ payslip.income_tax|floatformat:"0g" }}</span></div>{% endif %}
+      {% if payslip.eobi %}<div class="ps-row"><span>EOBI</span><span class="n">{{ payslip.eobi|floatformat:"0g" }}</span></div>{% endif %}
+      {% if payslip.provident_fund %}<div class="ps-row"><span>Provident Fund</span><span class="n">{{ payslip.provident_fund|floatformat:"0g" }}</span></div>{% endif %}
+      {% if payslip.unpaid_leave_deduction %}<div class="ps-row"><span>Unpaid Leave ({{ payslip.unpaid_leave_days|floatformat:0 }}d)</span><span class="n">{{ payslip.unpaid_leave_deduction|floatformat:"0g" }}</span></div>{% endif %}
+      {% if payslip.adjustment_deduction %}<div class="ps-row"><span>Adjustment Deduction</span><span class="n">{{ payslip.adjustment_deduction|floatformat:"0g" }}</span></div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Totals -->
+  <div class="ps-totals">
+    <div>
+      <span class="lbl">Gross Pay</span>
+      <span class="val">{{ currency_code }} {{ payslip.gross_salary|floatformat:"0g" }}</span>
+    </div>
+    <div>
+      <span class="lbl">Total Deductions</span>
+      <span class="val">{{ currency_code }} {{ payslip.total_deductions|floatformat:"0g" }}</span>
+    </div>
+  </div>
+
+  <!-- Net Pay -->
+  <div class="ps-net">
+    <div>
+      <div class="ps-net-words-lbl">Net Pay (in words)</div>
+      <div class="ps-net-words-val">{{ net_salary_words }} Only</div>
+    </div>
+    <div class="ps-net-right">
+      <div class="ps-net-fig-lbl">Net Pay (in figures)</div>
+      <div class="ps-net-fig-val">{{ currency_code }} {{ payslip.net_salary|floatformat:"0g" }}</div>
+    </div>
+  </div>
+
+  <!-- Loan & PF header -->
+  <div class="ps-sub-head">
+    <div>Loan &amp; Advances</div>
+    <div>Provident Fund Details</div>
+  </div>
+
+  <!-- Loan & PF body -->
+  <div class="ps-loan-pf">
+    <div>
+      <div class="ps-row"><span>General Total Loan</span><span class="n">0</span></div>
+      <div class="ps-row"><span>General Paid Loan</span><span class="n">0</span></div>
+      <div class="ps-row"><span>General Balance</span><span class="n">0</span></div>
+      <div class="ps-row"><span>PF Total Loan</span><span class="n">{% with rev=payslip.salary_revision %}{% if rev %}{{ rev.provident_fund_deduction|floatformat:"0g" }}{% else %}0{% endif %}{% endwith %}</span></div>
+      <div class="ps-row"><span>PF Paid Loan</span><span class="n">0</span></div>
+      <div class="ps-row"><span>PF Balance</span><span class="n">0</span></div>
+    </div>
+    <div>
+      <div class="ps-pf-cols-head">
+        <div></div><div>Own</div><div>Co.</div><div>Total</div>
+      </div>
+      <div class="ps-pf-row"><div>Starting Balance</div><div>0</div><div>0</div><div>0</div></div>
+      <div class="ps-pf-row"><div>{{ payslip.payroll_run.period_end|date:"d-M-Y" }}</div><div>0</div><div>0</div><div>0</div></div>
+      <div class="ps-pf-row"><div>PF Permanent Loan</div><div>0</div><div>0</div><div>0</div></div>
+      <div class="ps-pf-row"><div>Less: Refundable Loan</div><div>0</div><div>0</div><div>0</div></div>
+      <div class="ps-pf-row bold"><div>Total Provident Fund</div><div>0</div><div>0</div><div>0</div></div>
+    </div>
+  </div>
+
+  <!-- Bank -->
+  <div class="ps-bank">
+    <div class="ps-bank-title">Deposited to Account</div>
+    <div class="ps-bank-grid">
+      <div class="ps-bank-item"><div class="l">Payment Mode</div><div class="v">{{ emp.payment_mode|default:"Bank" }}</div></div>
+      <div class="ps-bank-item"><div class="l">Bank Name</div><div class="v">{{ emp.bank_name|default:"—" }}</div></div>
+      <div class="ps-bank-item"><div class="l">Account Title</div><div class="v">{{ emp.account_title|default:"—" }}</div></div>
+      <div class="ps-bank-item"><div class="l">Account Number</div><div class="v">{{ emp.account_number|default:"—" }}</div></div>
+    </div>
+    {% if emp.iban %}<div style="margin-top:8px;font-size:11px;color:#6b7280;">IBAN: <strong style="color:#374151;font-family:monospace;">{{ emp.iban }}</strong></div>{% endif %}
+  </div>
+
+  <!-- Footer -->
+  <div class="ps-footer">
+    <div class="ps-footer-note">System-generated payslip — no signature required.</div>
+    <div class="ps-footer-status">
+      {{ payslip.get_status_display }}{% if payslip.paid_at %} · Paid {{ payslip.paid_at|date:"d M Y" }}{% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

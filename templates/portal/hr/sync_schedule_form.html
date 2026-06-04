@@ -1,0 +1,34 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if obj %}Edit{% else %}Add{% endif %} Sync Schedule — Digilatics HR{% endblock %}
+{% block page_title %}{% if obj %}Edit{% else %}Add{% endif %} Sync Schedule{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;"><a href="{% url 'portal:hr_sync_schedules' %}" class="ep-btn-sm" style="text-decoration:none;">← Back</a></div>
+  <div class="ep-card">
+    <div class="ep-card-body">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Sync Time 1 <span class="hr-required">*</span></label>
+            <input type="time" name="sync_time_1" class="hr-form-input" value="{{ obj.sync_time_1|time:'H:i'|default:'' }}" required>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Sync Time 2</label>
+            <input type="time" name="sync_time_2" class="hr-form-input" value="{{ obj.sync_time_2|time:'H:i'|default:'' }}">
+          </div>
+        </div>
+        <label class="hr-checkbox-label" style="margin-bottom:16px;">
+          <input type="checkbox" name="is_active" {% if obj.is_active or not obj %}checked{% endif %}> Active
+        </label>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save</button>
+          <a href="{% url 'portal:hr_sync_schedules' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

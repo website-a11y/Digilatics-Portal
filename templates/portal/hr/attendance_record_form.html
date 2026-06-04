@@ -1,0 +1,92 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if record %}Edit{% else %}Add{% endif %} Attendance Record — Digilatics HR{% endblock %}
+{% block page_title %}{% if record %}Edit{% else %}Add{% endif %} Attendance Record{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;">
+    <a href="{% url 'portal:hr_attendance' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Attendance</a>
+  </div>
+
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">{% if record %}Edit Record — {{ record.employee.full_name }} {{ record.date }}{% else %}Add Attendance Record{% endif %}</div>
+    </div>
+    <div class="ep-card-body">
+      {% if errors.general %}
+      <div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>
+      {% endif %}
+
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+
+        <div class="hr-form-group">
+          <label class="hr-form-label">Employee <span class="hr-required">*</span></label>
+          <select name="employee" class="hr-form-input" required {% if record %}disabled{% endif %}>
+            <option value="">Select employee…</option>
+            {% for emp in all_employees %}
+            <option value="{{ emp.pk }}" {% if record and record.employee.pk == emp.pk %}selected{% endif %}>
+              {{ emp.full_name }} ({{ emp.employee_code }}) — {{ emp.department }}
+            </option>
+            {% endfor %}
+          </select>
+          {% if record %}<input type="hidden" name="employee" value="{{ record.employee.pk }}">{% endif %}
+        </div>
+
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Date <span class="hr-required">*</span></label>
+            <input type="date" name="date" class="hr-form-input" required
+                   value="{% if record %}{{ record.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
+                   {% if record %}readonly{% endif %}>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Status <span class="hr-required">*</span></label>
+            <select name="status" class="hr-form-input" required>
+              {% for val, label in status_choices %}
+              <option value="{{ val }}" {% if record and record.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Check In</label>
+            <input type="time" name="check_in" class="hr-form-input"
+                   value="{{ record.check_in|time:'H:i'|default:'' }}">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Check Out</label>
+            <input type="time" name="check_out" class="hr-form-input"
+                   value="{{ record.check_out|time:'H:i'|default:'' }}">
+          </div>
+        </div>
+
+        <div class="hr-form-row" style="gap:32px;align-items:center;">
+          <label class="hr-checkbox-label">
+            <input type="checkbox" name="is_late" {% if record.is_late %}checked{% endif %}>
+            Late Arrival
+          </label>
+          <label class="hr-checkbox-label">
+            <input type="checkbox" name="is_early_checkout" {% if record.is_early_checkout %}checked{% endif %}>
+            Early Checkout
+          </label>
+        </div>
+
+        <div class="hr-form-group">
+          <label class="hr-form-label">Notes</label>
+          <textarea name="notes" class="hr-form-input hr-textarea" rows="3" placeholder="Optional notes…">{{ record.notes|default:'' }}</textarea>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">
+            {% if record %}Update Record{% else %}Save Record{% endif %}
+          </button>
+          <a href="{% url 'portal:hr_attendance' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

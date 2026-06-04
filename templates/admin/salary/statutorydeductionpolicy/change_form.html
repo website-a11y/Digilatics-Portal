@@ -1,0 +1,416 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} sdp-form{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ════════════════════════════════════════════════════════
+   STATUTORY DEDUCTION POLICY FORM  —  ss-* design language
+   ════════════════════════════════════════════════════════ */
+.sdp-header {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  padding:20px 24px; display:flex; align-items:center; gap:18px;
+  margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.sdp-icon {
+  width:60px; height:60px; border-radius:16px; flex-shrink:0;
+  background:linear-gradient(135deg,#6366F1,#4F46E5);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 12px rgba(99,102,241,0.25);
+}
+.sdp-icon svg { width:28px; height:28px; stroke:#fff; }
+.sdp-title { font-size:18px; font-weight:800; color:#111827; line-height:1.2; }
+.sdp-meta  { font-size:12.5px; color:#6B7280; display:flex; gap:14px; flex-wrap:wrap; margin-top:4px; }
+.sdp-meta span { display:flex; align-items:center; gap:4px; }
+.sdp-active-pill   { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#DCFCE7; color:#16A34A; border:1px solid #BBF7D0; }
+.sdp-inactive-pill { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB; }
+
+/* KPI row */
+.sdp-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+.sdp-kpi {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  display:flex; flex-direction:column; gap:6px; position:relative; overflow:hidden;
+}
+.sdp-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
+.sdp-kpi-eobi::before { background:#F58400; }
+.sdp-kpi-pfe::before  { background:#16A34A; }
+.sdp-kpi-pfr::before  { background:#7C3AED; }
+.sdp-kpi-ss::before   { background:#2563EB; }
+.sdp-kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.sdp-kpi-icon svg { width:16px; height:16px; }
+.sdp-kpi-eobi .sdp-kpi-icon { background:#FFF8EE; color:#F58400; }
+.sdp-kpi-pfe  .sdp-kpi-icon { background:#DCFCE7; color:#16A34A; }
+.sdp-kpi-pfr  .sdp-kpi-icon { background:#F3E8FF; color:#7C3AED; }
+.sdp-kpi-ss   .sdp-kpi-icon { background:#DBEAFE; color:#2563EB; }
+.sdp-kpi-label { font-size:11.5px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
+.sdp-kpi-value { font-size:22px; font-weight:800; color:#111827; line-height:1; letter-spacing:-0.02em; }
+.sdp-kpi-sub   { font-size:11px; color:#9CA3AF; }
+
+/* Rate breakdown card */
+.sdp-rate-card {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04); margin-bottom:18px;
+}
+.sdp-rate-head {
+  display:flex; align-items:center; gap:8px;
+  padding:13px 18px; border-bottom:1px solid #E5E7EB;
+  background:#F9FAFB; font-size:12px; font-weight:700; color:#374151;
+}
+.sdp-rate-body { padding:12px 18px; display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.sdp-rate-item { display:flex; flex-direction:column; gap:4px; background:#F9FAFB; border-radius:10px; padding:12px 14px; border:1px solid #E5E7EB; }
+.sdp-rate-label { font-size:10.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; }
+.sdp-rate-val   { font-size:18px; font-weight:800; color:#111827; }
+.sdp-rate-hint  { font-size:11px; color:#9CA3AF; }
+
+/* Annual strip */
+.sdp-annual-strip {
+  background:#111827; border-radius:12px; padding:16px 20px;
+  display:flex; gap:0; overflow:hidden; margin-bottom:18px;
+}
+.sdp-annual-item { flex:1; text-align:center; border-right:1px solid rgba(255,255,255,0.1); padding:0 12px; }
+.sdp-annual-item:last-child { border-right:none; }
+.sdp-annual-label { font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; }
+.sdp-annual-value { font-size:16px; font-weight:800; color:#fff; margin-top:5px; letter-spacing:-0.01em; }
+
+/* Tabs */
+.sdp-tabs-wrapper {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.sdp-tab-nav { display:flex; overflow-x:auto; border-bottom:1px solid #E5E7EB; background:#F9FAFB; scrollbar-width:none; }
+.sdp-tab-nav::-webkit-scrollbar { display:none; }
+.sdp-tab-btn {
+  display:flex; align-items:center; gap:7px;
+  padding:13px 18px; font-size:12.5px; font-weight:600; color:#6B7280;
+  background:none; border:none; border-bottom:2px solid transparent;
+  cursor:pointer; white-space:nowrap; transition:all 0.15s; font-family:inherit; flex-shrink:0;
+}
+.sdp-tab-btn:hover { color:#F58400; background:rgba(245,132,0,0.04); }
+.sdp-tab-btn.active { color:#F58400; border-bottom-color:#F58400; background:#fff; }
+.sdp-tab-pane { display:none; }
+.sdp-tab-pane.active { display:block; }
+
+/* Form rows */
+.sdp-row { display:flex; gap:24px; padding:16px 20px; border-bottom:1px solid #F3F4F6; align-items:flex-start; }
+.sdp-row:last-child { border-bottom:none; }
+.sdp-col { flex:0 0 calc(50% - 12px); min-width:0; display:flex; flex-direction:column; gap:6px; }
+.sdp-col-full { flex:0 0 100%; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.sdp-label { font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; display:block; }
+.sdp-col input, .sdp-col select, .sdp-col textarea,
+.sdp-col-full input, .sdp-col-full select, .sdp-col-full textarea {
+  width:100% !important; box-sizing:border-box !important;
+  border:1px solid #E5E7EB !important; border-radius:8px !important;
+  padding:9px 13px !important; font-size:13.5px !important;
+  color:#111827 !important; background:#F9FAFB !important;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif !important;
+  outline:none !important; transition:border-color 0.15s,box-shadow 0.15s !important;
+  max-width:100% !important;
+}
+.sdp-col input:focus, .sdp-col select:focus, .sdp-col textarea:focus,
+.sdp-col-full input:focus, .sdp-col-full select:focus {
+  border-color:#F58400 !important;
+  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  background:#fff !important;
+}
+.sdp-help   { font-size:11.5px; color:#9CA3AF; line-height:1.5; }
+.sdp-errors { background:#FFF1F2; border:1px solid #FECDD3; border-radius:8px; color:#BE123C; font-size:12.5px; padding:8px 12px; margin:0; list-style:none; }
+.sdp-readonly { font-size:13.5px; color:#374151; padding:9px 0; }
+
+/* Submit row */
+.sdp-submit-row {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:14px 20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px;
+}
+.sdp-btn-save { background:#F58400; color:#fff; border:none; border-radius:8px; padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; font-family:inherit; }
+.sdp-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.sdp-btn-ghost { background:#F3F4F6; color:#374151; border:1px solid #E5E7EB; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.15s; font-family:inherit; }
+.sdp-btn-ghost:hover { background:#E5E7EB; }
+.sdp-btn-delete { margin-left:auto; color:#DC2626; font-size:13px; font-weight:500; padding:9px 16px; border:1px solid #FECDD3; border-radius:8px; background:#FFF1F2; text-decoration:none; transition:background 0.15s; }
+.sdp-btn-delete:hover { background:#FFE4E6; color:#DC2626; }
+</style>
+{% endblock %}
+
+{% block field_sets %}
+{% with form=adminform.form %}
+
+{% if adminform.form.non_field_errors %}
+<ul class="sdp-errors" style="margin-bottom:14px">
+  {% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<!-- Header -->
+<div class="sdp-header">
+  <div class="sdp-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  </div>
+  <div style="flex:1;min-width:0;">
+    <div class="sdp-title">
+      {% if original %}{{ original.name }}{% else %}New Statutory Deduction Policy{% endif %}
+    </div>
+    <div class="sdp-meta">
+      {% if original %}
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          From: {{ original.effective_from|date:"d M Y" }}
+        </span>
+        {% if original.effective_to %}
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+          To: {{ original.effective_to|date:"d M Y" }}
+        </span>
+        {% else %}
+        <span style="color:#16A34A;font-weight:600;">Ongoing</span>
+        {% endif %}
+        {% if original.is_active %}
+          <span class="sdp-active-pill">Active</span>
+        {% else %}
+          <span class="sdp-inactive-pill">Inactive</span>
+        {% endif %}
+      {% else %}
+        <span>Configure EOBI, Provident Fund, and Social Security rates.</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if original %}
+  <div style="text-align:right;flex-shrink:0;">
+    <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">PF Rate</div>
+    <div style="font-size:18px;font-weight:800;color:#16A34A;">{{ original.provident_fund_employee_percent }}%</div>
+    <div style="font-size:11.5px;color:#9CA3AF;margin-top:2px;">Employer: {{ original.provident_fund_employer_percent }}%</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- KPI cards -->
+{% if original %}
+<div class="sdp-kpi-row">
+  <div class="sdp-kpi sdp-kpi-eobi">
+    <div class="sdp-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+    <div class="sdp-kpi-label">EOBI (Employee)</div>
+    <div class="sdp-kpi-value">PKR {{ original.eobi_employee_fixed|floatformat:0 }}</div>
+    <div class="sdp-kpi-sub">Fixed monthly amount</div>
+  </div>
+  <div class="sdp-kpi sdp-kpi-pfe">
+    <div class="sdp-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+    <div class="sdp-kpi-label">PF Employee %</div>
+    <div class="sdp-kpi-value">{{ original.provident_fund_employee_percent }}%</div>
+    <div class="sdp-kpi-sub">of basic salary</div>
+  </div>
+  <div class="sdp-kpi sdp-kpi-pfr">
+    <div class="sdp-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+    <div class="sdp-kpi-label">PF Employer %</div>
+    <div class="sdp-kpi-value">{{ original.provident_fund_employer_percent }}%</div>
+    <div class="sdp-kpi-sub">employer contribution</div>
+  </div>
+  <div class="sdp-kpi sdp-kpi-ss">
+    <div class="sdp-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+    <div class="sdp-kpi-label">Social Security</div>
+    <div class="sdp-kpi-value">PKR {{ original.social_security_fixed|floatformat:0 }}</div>
+    <div class="sdp-kpi-sub">PESSI monthly fixed</div>
+  </div>
+</div>
+
+<!-- Annual strip -->
+<div class="sdp-annual-strip">
+  <div class="sdp-annual-item">
+    <div class="sdp-annual-label">EOBI / Month</div>
+    <div class="sdp-annual-value">PKR {{ original.eobi_employee_fixed|floatformat:0 }}</div>
+  </div>
+  <div class="sdp-annual-item">
+    <div class="sdp-annual-label">PF Employee</div>
+    <div class="sdp-annual-value">{{ original.provident_fund_employee_percent }}%</div>
+  </div>
+  <div class="sdp-annual-item">
+    <div class="sdp-annual-label">PF Employer</div>
+    <div class="sdp-annual-value">{{ original.provident_fund_employer_percent }}%</div>
+  </div>
+  <div class="sdp-annual-item">
+    <div class="sdp-annual-label">Social Security</div>
+    <div class="sdp-annual-value">PKR {{ original.social_security_fixed|floatformat:0 }}</div>
+  </div>
+  <div class="sdp-annual-item">
+    <div class="sdp-annual-label">Other Statutory</div>
+    <div class="sdp-annual-value">PKR {{ original.other_statutory_fixed|floatformat:0 }}</div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tabs -->
+<div class="sdp-tabs-wrapper">
+  <nav class="sdp-tab-nav">
+    <button class="sdp-tab-btn active" type="button" data-tab="details">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Policy Details
+    </button>
+    <button class="sdp-tab-btn" type="button" data-tab="rates">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Statutory Rates
+    </button>
+    <button class="sdp-tab-btn" type="button" data-tab="notes">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+      Notes &amp; Audit
+    </button>
+  </nav>
+
+  <!-- Policy Details -->
+  <div class="sdp-tab-pane active" id="sdptab-details">
+    <div class="sdp-row">
+      <div class="sdp-col-full">
+        <label class="sdp-label" for="{{ form.name.id_for_label }}">Policy Name *</label>
+        {{ form.name }}
+        {% if form.name.errors %}<ul class="sdp-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+    <div class="sdp-row">
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.effective_from.id_for_label }}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:3px;vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Effective From *
+        </label>
+        {{ form.effective_from }}
+        {% if form.effective_from.errors %}<ul class="sdp-errors">{% for e in form.effective_from.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.effective_to.id_for_label }}">Effective To</label>
+        {{ form.effective_to }}
+        {% if form.effective_to.errors %}<ul class="sdp-errors">{% for e in form.effective_to.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="sdp-help">Leave blank for open-ended / currently active policy.</span>
+      </div>
+    </div>
+    <div class="sdp-row">
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.is_active.id_for_label }}">Status</label>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;">
+          {{ form.is_active }}
+          <span style="font-size:13.5px;color:#374151;">Active policy</span>
+        </div>
+        {% if form.is_active.errors %}<ul class="sdp-errors">{% for e in form.is_active.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="sdp-col"></div>
+    </div>
+  </div>
+
+  <!-- Statutory Rates -->
+  <div class="sdp-tab-pane" id="sdptab-rates">
+    <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:12px 16px;margin:16px 20px;font-size:12.5px;color:#4338CA;">
+      <strong>Note:</strong> EOBI and Social Security are fixed monthly amounts. Provident Fund is a percentage of the employee's basic salary.
+    </div>
+    <div class="sdp-row">
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.eobi_employee_fixed.id_for_label }}">
+          EOBI Contribution (Employee)
+          <span style="background:#FFF8EE;color:#F58400;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">Fixed</span>
+        </label>
+        {{ form.eobi_employee_fixed }}
+        {% if form.eobi_employee_fixed.errors %}<ul class="sdp-errors">{% for e in form.eobi_employee_fixed.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="sdp-help">Fixed monthly PKR amount deducted from employee.</span>
+      </div>
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.social_security_fixed.id_for_label }}">
+          Social Security (PESSI)
+          <span style="background:#DBEAFE;color:#2563EB;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">Fixed</span>
+        </label>
+        {{ form.social_security_fixed }}
+        {% if form.social_security_fixed.errors %}<ul class="sdp-errors">{% for e in form.social_security_fixed.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="sdp-help">Punjab Employees Social Security — fixed monthly.</span>
+      </div>
+    </div>
+    <div class="sdp-row">
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.provident_fund_employee_percent.id_for_label }}">
+          Provident Fund — Employee %
+          <span style="background:#DCFCE7;color:#16A34A;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">%</span>
+        </label>
+        {{ form.provident_fund_employee_percent }}
+        {% if form.provident_fund_employee_percent.errors %}<ul class="sdp-errors">{% for e in form.provident_fund_employee_percent.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="sdp-help">Percentage of basic salary deducted from employee.</span>
+      </div>
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.provident_fund_employer_percent.id_for_label }}">
+          Provident Fund — Employer %
+          <span style="background:#F3E8FF;color:#7C3AED;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">%</span>
+        </label>
+        {{ form.provident_fund_employer_percent }}
+        {% if form.provident_fund_employer_percent.errors %}<ul class="sdp-errors">{% for e in form.provident_fund_employer_percent.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="sdp-help">Employer matching contribution percentage.</span>
+      </div>
+    </div>
+    <div class="sdp-row">
+      <div class="sdp-col">
+        <label class="sdp-label" for="{{ form.other_statutory_fixed.id_for_label }}">Other Statutory Deductions (Fixed)</label>
+        {{ form.other_statutory_fixed }}
+        {% if form.other_statutory_fixed.errors %}<ul class="sdp-errors">{% for e in form.other_statutory_fixed.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="sdp-col"></div>
+    </div>
+  </div>
+
+  <!-- Notes & Audit -->
+  <div class="sdp-tab-pane" id="sdptab-notes">
+    <div class="sdp-row">
+      <div class="sdp-col-full">
+        <label class="sdp-label" for="{{ form.notes.id_for_label }}">Notes</label>
+        {{ form.notes }}
+        {% if form.notes.errors %}<ul class="sdp-errors">{% for e in form.notes.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+    <div class="sdp-row">
+      <div class="sdp-col">
+        <label class="sdp-label">Created At</label>
+        <div class="sdp-readonly">{% if original %}{{ original.created_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div>
+      </div>
+      <div class="sdp-col">
+        <label class="sdp-label">Last Updated</label>
+        <div class="sdp-readonly">{% if original %}{{ original.updated_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div>
+      </div>
+    </div>
+  </div>
+
+</div>{# /tabs #}
+
+{% endwith %}
+{% endblock field_sets %}
+
+{% block submit_buttons_bottom %}
+<div class="sdp-submit-row">
+  <button type="submit" name="_save" class="sdp-btn-save">{% trans "Save" %} →</button>
+  <button type="submit" name="_continue" class="sdp-btn-ghost">{% trans "Save and continue editing" %}</button>
+  <button type="submit" name="_addanother" class="sdp-btn-ghost">{% trans "Save and add another" %}</button>
+  {% if original %}
+  <a href="{% url 'admin:salary_statutorydeductionpolicy_delete' original.pk %}"
+     class="sdp-btn-delete"
+     onclick="return confirm('Delete policy: {{ original.name }}?')">{% trans "Delete" %}</a>
+  {% endif %}
+</div>
+{% endblock submit_buttons_bottom %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script>
+(function () {
+  document.querySelectorAll('.sdp-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.sdp-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.sdp-tab-pane').forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      var pane = document.getElementById('sdptab-' + btn.dataset.tab);
+      if (pane) pane.classList.add('active');
+      try { sessionStorage.setItem('sdp_tab', btn.dataset.tab); } catch(e) {}
+    });
+  });
+  var errorTab = null;
+  document.querySelectorAll('.sdp-tab-pane').forEach(function(p) {
+    if (p.querySelector('.sdp-errors')) errorTab = p.id.replace('sdptab-', '');
+  });
+  var saved = ''; try { saved = sessionStorage.getItem('sdp_tab') || ''; } catch(e) {}
+  var active = errorTab || saved || 'details';
+  document.querySelectorAll('.sdp-tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === active); });
+  document.querySelectorAll('.sdp-tab-pane').forEach(function(p) { p.classList.toggle('active', p.id === 'sdptab-' + active); });
+})();
+</script>
+{% endblock %}

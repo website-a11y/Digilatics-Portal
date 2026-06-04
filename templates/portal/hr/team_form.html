@@ -1,0 +1,257 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if obj %}Edit{% else %}Add{% endif %} Team — Digilatics HR{% endblock %}
+{% block page_title %}{% if obj %}Edit{% else %}Add{% endif %} Team{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;"><a href="{% url 'portal:hr_teams' %}" class="ep-btn-sm" style="text-decoration:none;">← Back</a></div>
+
+  <!-- Team Details Card -->
+  <div class="ep-card" style="margin-bottom:24px;">
+    <div class="ep-card-body">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+      <form method="post" class="hr-form" id="team-form">
+        {% csrf_token %}
+        <div class="hr-form-row">
+          <div class="hr-form-group" style="grid-column:span 2;">
+            <label class="hr-form-label">Team Name <span class="hr-required">*</span></label>
+            <input type="text" name="name" class="hr-form-input" value="{{ obj.name|default:'' }}" required>
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Manager <span class="hr-required">*</span></label>
+            <select name="manager" class="hr-form-input">
+              <option value="">No manager</option>
+              {% for emp in all_employees %}
+              <option value="{{ emp.pk }}" {% if obj and obj.manager and obj.manager.pk == emp.pk %}selected{% endif %}>{{ emp.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Parent Team</label>
+          <select name="parent_team" class="hr-form-input">
+            <option value="">No parent</option>
+            {% for t in all_teams %}
+            <option value="{{ t.pk }}" {% if obj and obj.parent_team and obj.parent_team.pk == t.pk %}selected{% endif %}>{{ t.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Description</label>
+          <textarea name="description" class="hr-form-input hr-textarea" rows="3">{{ obj.description|default:'' }}</textarea>
+        </div>
+        <label class="hr-checkbox-label" style="margin-bottom:16px;">
+          <input type="checkbox" name="is_active" {% if obj.is_active or not obj %}checked{% endif %}> Active
+        </label>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save Team</button>
+          <a href="{% url 'portal:hr_teams' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Team Members Card (only shown when editing an existing team) -->
+  {% if obj and obj.pk %}
+  <div class="ep-card">
+    <div class="ep-card-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:16px;font-weight:600;">Team Members <span id="member-count" style="font-size:13px;color:#6b7280;font-weight:400;">({{ team_members|length }})</span></h3>
+        <button type="button" class="hr-filter-btn" style="height:36px;padding:0 16px;font-size:13px;" onclick="showAddMemberForm()">+ Add Member</button>
+      </div>
+
+      <!-- Add Member Form (hidden by default) -->
+      <div id="add-member-form" style="display:none;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:16px;">
+        <div style="font-weight:600;font-size:14px;margin-bottom:12px;">Add New Member</div>
+        <div id="add-member-error" style="display:none;color:#dc2626;font-size:13px;margin-bottom:10px;"></div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Employee <span class="hr-required">*</span></label>
+            <select id="add-emp" class="hr-form-input">
+              <option value="">Select employee…</option>
+              {% for emp in all_employees %}
+              <option value="{{ emp.pk }}">{{ emp.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Role</label>
+            <select id="add-role" class="hr-form-input">
+              {% for val, label in role_choices %}
+              <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <label class="hr-checkbox-label" style="margin-bottom:14px;">
+          <input type="checkbox" id="add-primary"> Primary team for this employee
+        </label>
+        <div style="display:flex;gap:10px;">
+          <button type="button" class="hr-filter-btn" style="height:36px;padding:0 20px;font-size:13px;" onclick="submitAddMember()">Add</button>
+          <button type="button" class="hr-modal-cancel" style="height:36px;padding:0 16px;font-size:13px;cursor:pointer;border:none;background:none;" onclick="hideAddMemberForm()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Members Table -->
+      <div id="members-table-wrap">
+        {% if team_members %}
+        <table class="hr-table" id="members-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Role</th>
+              <th>Primary</th>
+              <th style="width:120px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="members-tbody">
+            {% for tm in team_members %}
+            <tr id="member-row-{{ tm.pk }}">
+              <td>{{ tm.employee.full_name }}</td>
+              <td>
+                <select class="hr-form-input" style="height:32px;padding:0 8px;font-size:13px;width:auto;" onchange="updateMember({{ tm.pk }}, this)">
+                  {% for val, label in role_choices %}
+                  <option value="{{ val }}" {% if tm.role_in_team == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <input type="checkbox" {% if tm.is_primary %}checked{% endif %} onchange="updateMemberPrimary({{ tm.pk }}, this)">
+              </td>
+              <td>
+                <button type="button" class="ep-btn-sm" style="background:#fee2e2;color:#dc2626;border:none;cursor:pointer;" onclick="removeMember({{ tm.pk }}, '{{ tm.employee.full_name|escapejs }}')">Remove</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p id="no-members-msg" style="color:#6b7280;font-size:14px;margin:0;">No members yet. Add members using the button above.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TEAM_PK = {{ obj.pk }};
+    const ADD_URL = "{% url 'portal:hr_team_member_inline_add' obj.pk %}";
+    const CSRF = "{{ csrf_token }}";
+    const REMOVE_URL_TPL = "{% url 'portal:hr_team_member_inline_remove' 99999 %}";
+    const UPDATE_URL_TPL = "{% url 'portal:hr_team_member_inline_update' 99999 %}";
+    const ROLE_OPTIONS = [{% for val, label in role_choices %}{ value: "{{ val }}", label: "{{ label }}" },{% endfor %}];
+
+    function showAddMemberForm() {
+      document.getElementById("add-member-form").style.display = "block";
+      document.getElementById("add-member-error").style.display = "none";
+    }
+    function hideAddMemberForm() {
+      document.getElementById("add-member-form").style.display = "none";
+      document.getElementById("add-emp").value = "";
+      document.getElementById("add-role").value = "Member";
+      document.getElementById("add-primary").checked = false;
+    }
+
+    function submitAddMember() {
+      const empId = document.getElementById("add-emp").value;
+      const role = document.getElementById("add-role").value;
+      const isPrimary = document.getElementById("add-primary").checked;
+      const errEl = document.getElementById("add-member-error");
+
+      if (!empId) { errEl.textContent = "Please select an employee."; errEl.style.display = "block"; return; }
+      errEl.style.display = "none";
+
+      fetch(ADD_URL, {
+        method: "POST",
+        headers: { "X-CSRFToken": CSRF, "Content-Type": "application/x-www-form-urlencoded" },
+        body: `employee=${empId}&role_in_team=${encodeURIComponent(role)}&is_primary=${isPrimary}`
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { errEl.textContent = data.error; errEl.style.display = "block"; return; }
+        appendMemberRow(data);
+        hideAddMemberForm();
+        updateMemberCount(1);
+        // Remove "no members" message if present
+        const noMsg = document.getElementById("no-members-msg");
+        if (noMsg) noMsg.remove();
+      })
+      .catch(() => { errEl.textContent = "An error occurred. Please try again."; errEl.style.display = "block"; });
+    }
+
+    function appendMemberRow(data) {
+      let tbody = document.getElementById("members-tbody");
+      if (!tbody) {
+        // Table doesn't exist yet — create it
+        const wrap = document.getElementById("members-table-wrap");
+        wrap.innerHTML = `<table class="hr-table" id="members-table"><thead><tr><th>Employee</th><th>Role</th><th>Primary</th><th style="width:120px;">Actions</th></tr></thead><tbody id="members-tbody"></tbody></table>`;
+        tbody = document.getElementById("members-tbody");
+      }
+      const roleOpts = ROLE_OPTIONS.map(o => `<option value="${o.value}" ${o.value===data.role?"selected":""}>${o.label}</option>`).join("");
+      const row = document.createElement("tr");
+      row.id = `member-row-${data.id}`;
+      row.innerHTML = `
+        <td>${data.name}</td>
+        <td><select class="hr-form-input" style="height:32px;padding:0 8px;font-size:13px;width:auto;" onchange="updateMember(${data.id}, this)">${roleOpts}</select></td>
+        <td><input type="checkbox" ${data.is_primary?"checked":""} onchange="updateMemberPrimary(${data.id}, this)"></td>
+        <td><button type="button" class="ep-btn-sm" style="background:#fee2e2;color:#dc2626;border:none;cursor:pointer;" onclick="removeMember(${data.id}, '${data.name.replace(/'/g,"\\'")}')">Remove</button></td>`;
+      tbody.appendChild(row);
+    }
+
+    function updateMember(pk, selectEl) {
+      const roleRow = selectEl.closest("tr");
+      const isPrimaryEl = roleRow.querySelector("input[type=checkbox]");
+      doUpdate(pk, selectEl.value, isPrimaryEl.checked);
+    }
+
+    function updateMemberPrimary(pk, checkEl) {
+      const row = checkEl.closest("tr");
+      const roleEl = row.querySelector("select");
+      doUpdate(pk, roleEl.value, checkEl.checked);
+    }
+
+    function doUpdate(pk, role, isPrimary) {
+      fetch(UPDATE_URL_TPL.replace('99999', pk), {
+        method: "POST",
+        headers: { "X-CSRFToken": CSRF, "Content-Type": "application/x-www-form-urlencoded" },
+        body: `role_in_team=${encodeURIComponent(role)}&is_primary=${isPrimary}`
+      })
+      .then(r => r.json())
+      .then(data => { if (data.error) alert(data.error); });
+    }
+
+    function removeMember(pk, name) {
+      if (!confirm(`Remove ${name} from this team?`)) return;
+      fetch(REMOVE_URL_TPL.replace('99999', pk), {
+        method: "POST",
+        headers: { "X-CSRFToken": CSRF }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { alert(data.error); return; }
+        document.getElementById(`member-row-${pk}`).remove();
+        updateMemberCount(-1);
+        const tbody = document.getElementById("members-tbody");
+        if (tbody && tbody.children.length === 0) {
+          document.getElementById("members-table-wrap").innerHTML = `<p id="no-members-msg" style="color:#6b7280;font-size:14px;margin:0;">No members yet. Add members using the button above.</p>`;
+        }
+      });
+    }
+
+    function updateMemberCount(delta) {
+      const el = document.getElementById("member-count");
+      const m = el.textContent.match(/\d+/);
+      const current = m ? parseInt(m[0]) : 0;
+      el.textContent = `(${current + delta})`;
+    }
+  </script>
+  {% elif not obj %}
+  <div class="ep-card" style="background:#f9fafb;">
+    <div class="ep-card-body" style="color:#6b7280;font-size:14px;">
+      Save the team first, then you can add members.
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

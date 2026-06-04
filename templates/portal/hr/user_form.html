@@ -1,0 +1,69 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if user_obj %}Edit{% else %}Add{% endif %} User — Digilatics HR{% endblock %}
+{% block page_title %}{% if user_obj %}Edit User — {{ user_obj.username }}{% else %}Add User{% endif %}{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;"><a href="{% url 'portal:hr_users' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Users</a></div>
+  <div class="ep-card">
+    <div class="ep-card-body">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+
+        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Account</div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Username <span class="hr-required">*</span></label>
+            <input type="text" name="username" class="hr-form-input" value="{{ user_obj.username|default:'' }}" required>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Email</label>
+            <input type="email" name="email" class="hr-form-input" value="{{ user_obj.email|default:'' }}">
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">First Name</label>
+            <input type="text" name="first_name" class="hr-form-input" value="{{ user_obj.first_name|default:'' }}">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Last Name</label>
+            <input type="text" name="last_name" class="hr-form-input" value="{{ user_obj.last_name|default:'' }}">
+          </div>
+        </div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Password {% if user_obj %}<span style="font-weight:400;color:var(--text-2);">(leave blank to keep current)</span>{% else %}<span class="hr-required">*</span>{% endif %}</label>
+          <input type="password" name="password" class="hr-form-input" {% if not user_obj %}required{% endif %} autocomplete="new-password">
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin:4px 0;">HR Role</div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Portal Role</label>
+          <select name="role" class="hr-form-input">
+            <option value="">No employee profile</option>
+            {% for val, label in role_choices %}
+            {% with p=user_obj.employee_profile %}
+            <option value="{{ val }}" {% if p and p.role == val %}selected{% endif %}>{{ label }}</option>
+            {% endwith %}
+            {% endfor %}
+          </select>
+          <div style="font-size:11px;color:var(--text-2);margin-top:4px;">Only applies if this user has a linked employee profile.</div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin:4px 0;">Permissions</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <label class="hr-checkbox-label"><input type="checkbox" name="is_active" {% if user_obj.is_active or not user_obj %}checked{% endif %}> Active</label>
+          <label class="hr-checkbox-label"><input type="checkbox" name="is_staff" {% if user_obj.is_staff %}checked{% endif %}> Staff (can access Django admin)</label>
+          <label class="hr-checkbox-label"><input type="checkbox" name="is_superuser" {% if user_obj.is_superuser %}checked{% endif %}> Superuser (all permissions)</label>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save User</button>
+          <a href="{% url 'portal:hr_users' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

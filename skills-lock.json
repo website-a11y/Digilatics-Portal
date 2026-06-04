@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "unfold-admin": {
+      "source": "0xdarkmatter/claude-mods",
+      "sourceType": "github",
+      "computedHash": "84e2166c4e6579af97ade25aad9c94a5ff292ed274dde9ced2a59577197289e9"
+    }
+  }
+}

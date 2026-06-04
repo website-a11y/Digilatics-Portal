@@ -1,0 +1,102 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Short Leave Policy — Digilatics HR{% endblock %}
+{% block page_title %}Short Leave Policy{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start;">
+
+  <div class="ep-card">
+    <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+      <div class="ep-card-title">Short Leave Settings</div>
+      <div class="ep-card-sub">Controls how employees apply for half-day short leaves</div>
+    </div>
+    <div class="ep-card-body" style="padding:28px;">
+
+      {% if errors.general %}
+      <div class="ep-alert error" style="margin-bottom:20px;">{{ errors.general }}</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Enable toggle -->
+        <div style="background:{% if policy.is_enabled %}#f0fdf4{% else %}#fef2f2{% endif %};border:1px solid {% if policy.is_enabled %}#bbf7d0{% else %}#fecaca{% endif %};border-radius:12px;padding:16px 18px;margin-bottom:24px;">
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+            <input type="checkbox" name="is_enabled" {% if policy.is_enabled %}checked{% endif %}
+                   style="width:18px;height:18px;accent-color:var(--brand);cursor:pointer;">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);">Short Leave Enabled</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">
+                When off, employees cannot submit short leave requests.
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Max short leaves per month <span class="hr-required">*</span></label>
+            <input type="number" name="max_per_month" min="1" max="31"
+                   class="hr-form-input" style="font-size:18px;font-weight:700;height:52px;"
+                   value="{{ policy.max_per_month }}" required>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+              Each employee can take at most this many short leaves per calendar month.
+            </div>
+          </div>
+
+          <div class="hr-form-group">
+            <label class="hr-form-label">Min hours worked (afternoon) <span class="hr-required">*</span></label>
+            <input type="number" step="0.5" min="0.5" name="min_hours_before_afternoon"
+                   class="hr-form-input" style="font-size:18px;font-weight:700;height:52px;"
+                   value="{{ policy.min_hours_before_afternoon|floatformat:'-2' }}" required>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+              Employee must have checked in and worked at least this many hours before applying for afternoon short leave.
+            </div>
+          </div>
+
+          <div class="hr-form-group form-grid-full">
+            <label class="hr-form-label">Notes (internal)</label>
+            <textarea name="notes" class="hr-form-input hr-textarea" rows="3"
+                      placeholder="Any policy notes for HR team…">{{ policy.notes }}</textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:12px;">
+          <button type="submit" class="ep-btn ep-btn-primary">Save Policy</button>
+          <a href="{% url 'portal:hr_short_leaves' %}" class="ep-btn ep-btn-outline" style="text-decoration:none;">View Requests</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Summary sidebar -->
+  <div style="position:sticky;top:16px;">
+    <div class="ep-card">
+      <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:16px 20px;">
+        <div class="ep-card-title">Current Policy</div>
+      </div>
+      <div class="ep-card-body" style="padding:20px;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--muted);">Status</span>
+            {% if policy.is_enabled %}<span class="ep-badge active">Enabled</span>
+            {% else %}<span class="ep-badge draft">Disabled</span>{% endif %}
+          </div>
+          <div style="border-top:1px solid var(--border);"></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--muted);">Max per month</span>
+            <span style="font-size:20px;font-weight:800;color:var(--brand);">{{ policy.max_per_month }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--muted);">Min hours (afternoon)</span>
+            <span style="font-size:16px;font-weight:700;color:var(--text);">{{ policy.min_hours_before_afternoon|floatformat:"-2" }} hrs</span>
+          </div>
+          <div style="border-top:1px solid var(--border);"></div>
+          <div style="font-size:11px;color:var(--muted);">Updated: {{ policy.updated_at|date:"d M Y, g:i A" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

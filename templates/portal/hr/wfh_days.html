@@ -1,0 +1,113 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Company WFH Days — Digilatics HR{% endblock %}
+{% block page_title %}Company WFH Days{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;">
+
+  <!-- Table -->
+  <div>
+    <div class="ep-card" style="padding:0;overflow:hidden;">
+      <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+        <div>
+          <div class="ep-card-title">Declared Company WFH Days</div>
+          <div class="ep-card-sub">All employees are WFH on these dates — no personal balance used</div>
+        </div>
+      </div>
+      <table class="hr-table">
+        <thead>
+          <tr><th>Start Date</th><th>End Date</th><th>Days</th><th>Title</th><th>Declared By</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td style="font-weight:700;">{{ item.start_date|date:"d M Y" }}</td>
+            <td style="font-size:13px;">
+              {% if item.end_date and item.end_date != item.start_date %}
+                {{ item.end_date|date:"d M Y" }}
+              {% else %}
+                <span style="color:var(--muted);">—</span>
+              {% endif %}
+            </td>
+            <td style="font-size:13px;font-weight:600;color:var(--brand);">{{ item.duration_days }} day{{ item.duration_days|pluralize }}</td>
+            <td>{{ item.title }}</td>
+            <td style="font-size:13px;color:var(--muted);">{{ item.declared_by.get_full_name|default:item.declared_by.username|default:"—" }}</td>
+            <td>
+              {% if item.is_active %}
+              <span class="ep-badge active">Active</span>
+              {% else %}
+              <span class="ep-badge draft">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="post" action="{% url 'portal:hr_wfh_day_delete' item.pk %}"
+                    onsubmit="return confirm('Remove {{ item.display_date }} as a company WFH period?')">
+                {% csrf_token %}
+                <button type="submit" class="ep-btn-sm" style="background:#fef2f2;color:#dc2626;border:none;cursor:pointer;">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5"><div class="hr-empty">No company WFH days declared yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Declare form -->
+  <div style="position:sticky;top:16px;">
+    <div class="ep-card">
+      <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+        <div>
+          <div class="ep-card-title">Declare Company WFH Day</div>
+          <div class="ep-card-sub">All active employees will be marked WFH on this date</div>
+        </div>
+      </div>
+      <div class="ep-card-body" style="padding:24px;">
+        {% if errors.general %}
+        <div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>
+        {% endif %}
+
+        <form method="post" class="hr-form">
+          {% csrf_token %}
+
+          <div class="form-grid">
+            <div class="hr-form-group">
+              <label class="hr-form-label">Start Date <span class="hr-required">*</span></label>
+              <input type="date" name="start_date" class="hr-form-input" required>
+            </div>
+            <div class="hr-form-group">
+              <label class="hr-form-label">End Date
+                <span style="font-size:10px;font-weight:500;color:var(--muted);margin-left:4px;">(blank = single day)</span>
+              </label>
+              <input type="date" name="end_date" class="hr-form-input">
+            </div>
+          </div>
+
+          <div class="hr-form-group" style="margin-top:14px;">
+            <label class="hr-form-label">Title</label>
+            <input type="text" name="title" class="hr-form-input"
+                   value="Company WFH Day" placeholder="e.g. Team Wellness Day">
+          </div>
+
+          <div class="hr-form-group" style="margin-top:14px;">
+            <label class="hr-form-label">Note (optional)</label>
+            <textarea name="description" class="hr-form-input hr-textarea" rows="2"
+                      placeholder="Reason or context…"></textarea>
+          </div>
+
+          <div style="margin-top:16px;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;font-size:12px;color:#15803d;line-height:1.6;">
+            <strong>Note:</strong> Employees on approved leave on this date will remain marked as on leave, not WFH. This date does not consume anyone's personal WFH balance.
+          </div>
+
+          <button type="submit" class="ep-btn ep-btn-primary" style="margin-top:18px;width:100%;justify-content:center;">
+            Declare WFH Day
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

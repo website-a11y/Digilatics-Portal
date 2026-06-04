@@ -1,0 +1,1025 @@
+/* ================================================================
+   ADMIN OVERRIDE — Digilatics HRIS
+   Neutralises Django admin's default layout CSS so our portal
+   layout takes over, then re-skins every admin UI element to
+   match the Plus Jakarta Sans / #F58400 design system.
+   ================================================================ */
+
+/* ── 0. Force font everywhere ─────────────────── */
+*, *::before, *::after {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+}
+
+/* ── 1. Neutralise admin layout shells ────────── */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #F9FAFB !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide the built-in admin header & nav sidebar entirely */
+#header,
+#nav-sidebar,
+.toggle-nav-sidebar-column { display: none !important; }
+
+/* The admin wraps everything in #container — flatten it */
+#container {
+  all: unset !important;
+  display: contents !important;
+}
+
+/* .main is the flex row admin uses — we handle layout ourselves */
+.main {
+  all: unset !important;
+  display: contents !important;
+}
+
+/* #content is inside our portal-content — give it full width */
+#content {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  float: none !important;
+}
+
+#content-main {
+  float: none !important;
+  /* padding intentionally left to portal_base.css (.portal-content: 26px 28px 36px) */
+}
+
+#footer { display: none !important; }
+
+
+/* ── 2a. Page-header actions slot ────────────── */
+.admin-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── 2. Topbar logout link ────────────────────── */
+.topbar-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--p-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.topbar-logout svg { width: 18px; height: 18px; }
+.topbar-logout:hover { background: #FEE2E2; color: #DC2626; }
+
+
+/* ── 3. Flash messages ────────────────────────── */
+.messagelist { display: none !important; } /* hide old-style messagelist */
+
+.admin-messages {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+.admin-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.admin-message svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+.admin-message--success, .admin-message--info {
+  background: #F0FFF4;
+  color: #166534;
+  border-color: #BBF7D0;
+}
+
+.admin-message--warning {
+  background: #FFFBEB;
+  color: #92400E;
+  border-color: #FDE68A;
+}
+
+.admin-message--error {
+  background: #FFF1F2;
+  color: #BE123C;
+  border-color: #FECDD3;
+}
+
+
+/* ── 4. Page header (title + breadcrumb) ─────── */
+
+/* Django may inject its own .breadcrumbs div — hide it everywhere;
+   we render our own inside .admin-page-header */
+.breadcrumbs { display: none !important; }
+
+.admin-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 14px 0 0;
+}
+
+.admin-page-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Title — matches .ed-page-title */
+.admin-page-title,
+.admin-page-header h1 {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Breadcrumb — matches .ed-breadcrumb */
+.admin-breadcrumbs {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #6B7280;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.admin-breadcrumbs__link  { color: #6B7280 !important; text-decoration: none !important; transition: color 0.15s; }
+.admin-breadcrumbs__link:hover { color: #F58400 !important; }
+.admin-breadcrumbs__sep   { color: #9CA3AF !important; }
+.admin-breadcrumbs__current { color: #374151 !important; }
+
+/* When Django's changelist/change overrides {% block breadcrumbs %},
+   it renders <div class="breadcrumbs"> — show and style it inside our header */
+.admin-page-header-left .breadcrumbs {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px !important;
+  color: #6B7280 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  float: none !important;
+}
+
+.admin-page-header-left .breadcrumbs a {
+  color: #6B7280 !important;
+  text-decoration: none !important;
+  transition: color 0.15s;
+}
+
+.admin-page-header-left .breadcrumbs a:hover {
+  color: #F58400 !important;
+}
+
+
+/* ── 6. Object tools (Add button) — matches .ed-btn-add ── */
+ul.object-tools {
+  float: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  gap: 8px !important;
+  list-style: none !important;
+  align-items: center !important;
+}
+
+ul.object-tools li { margin: 0 !important; padding: 0 !important; }
+
+ul.object-tools a {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: #F58400 !important;
+  color: #ffffff !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 9px 18px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transition: background 0.15s, box-shadow 0.15s !important;
+  cursor: pointer !important;
+}
+
+ul.object-tools a:hover,
+ul.object-tools a:focus {
+  background: #C86A00 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(245, 132, 0, 0.35) !important;
+  text-decoration: none !important;
+}
+
+ul.object-tools a.addlink::before { content: '+ '; }
+
+
+/* ── 7. Change list (table) ───────────────────── */
+#changelist {
+  background: #fff !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+}
+
+#changelist .actions {
+  padding: 12px 16px !important;
+  background: #F9FAFB !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#changelist-search {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  background: #fff !important;
+}
+
+#changelist-search input[type="text"],
+#changelist-search input[type="search"] {
+  height: 2.2875rem !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px !important;
+  padding: 7px 12px !important;
+  font-size: 13.5px !important;
+  outline: none !important;
+  transition: border-color 0.15s !important;
+  background: #F9FAFB !important;
+  color: #111827 !important;
+}
+
+#changelist-search input:focus {
+  border-color: var(--p-brand) !important;
+  box-shadow: 0 0 0 3px rgba(245,132,0,0.12) !important;
+  background: #fff !important;
+}
+
+#changelist-search input[type="submit"] {
+  height: 2.2875rem !important;
+  background: var(--p-brand) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.15s !important;
+}
+
+#changelist-search input[type="submit"]:hover {
+  background: var(--p-brand-dark) !important;
+}
+
+/* Table */
+#result_list {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: none !important;
+}
+
+#result_list thead th {
+  background: #F9FAFB !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  padding: 10px 14px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: #6B7280 !important;
+  white-space: nowrap !important;
+}
+
+#result_list thead th a,
+#result_list thead th.sorted a {
+  color: #6B7280 !important;
+  text-decoration: none !important;
+}
+
+#result_list thead th.sorted {
+  color: var(--p-brand) !important;
+}
+
+#result_list thead th.sorted a { color: var(--p-brand) !important; }
+
+#result_list tbody tr {
+  border-bottom: 1px solid #F3F4F6 !important;
+  transition: background 0.12s !important;
+}
+
+#result_list tbody tr:hover { background: #FFFBF5 !important; }
+#result_list tbody tr:last-child { border-bottom: none !important; }
+
+#result_list tbody td {
+  padding: 12px 14px !important;
+  font-size: 13.5px !important;
+  color: #374151 !important;
+  vertical-align: middle !important;
+  border: none !important;
+}
+
+#result_list tbody td a {
+  color: var(--p-brand) !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+}
+
+#result_list tbody td a:hover { color: var(--p-brand-dark) !important; }
+
+/* Checkboxes */
+#result_list thead th:first-child,
+#result_list tbody td:first-child { width: 50px; }
+
+/* Pagination */
+.paginator {
+  padding: 12px 16px !important;
+  font-size: 13px !important;
+  color: var(--p-muted) !important;
+  background: #F9FAFB !important;
+  border-top: 1px solid #E5E7EB !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.paginator a {
+  color: var(--p-brand) !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+}
+
+.paginator .this-page {
+  background: var(--p-brand) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  padding: 2px 8px !important;
+  font-weight: 600 !important;
+}
+
+/* Filters sidebar */
+#changelist-filter {
+  background: #fff !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  font-size: 13.5px !important;
+  margin-left: 16px !important;
+  min-width: 200px !important;
+}
+
+#changelist-filter h2 {
+  background: #F9FAFB !important;
+  padding: 10px 14px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--p-brand) !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  margin: 0 !important;
+}
+
+#changelist-filter h3 {
+  padding: 10px 14px 4px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: var(--p-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  margin: 0 !important;
+}
+
+#changelist-filter ul {
+  padding: 0 0 8px !important;
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+#changelist-filter li {
+  padding: 0 !important;
+}
+
+#changelist-filter a {
+  display: block !important;
+  padding: 6px 14px !important;
+  color: var(--p-muted) !important;
+  text-decoration: none !important;
+  font-size: 13px !important;
+  transition: color 0.15s, background 0.15s !important;
+}
+
+#changelist-filter a:hover {
+  color: var(--p-brand) !important;
+  background: var(--p-brand-bg) !important;
+}
+
+#changelist-filter li.selected a {
+  color: var(--p-brand) !important;
+  font-weight: 600 !important;
+}
+
+
+/* ── 8. Change form ───────────────────────────── */
+fieldset {
+  background: #fff !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 14px !important;
+  padding: 0 !important;
+  width: 100% !important;
+  margin-bottom: 16px !important;
+  overflow: hidden !important;
+}
+
+fieldset h2 {
+  background: #F9FAFB !important;
+  padding: 12px 18px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--p-brand) !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  margin: 0 !important;
+}
+
+/* ── 8a. Stacked form layout: labels above inputs ─ */
+
+/* form-row: just a block container — padding/border come from its inner wrapper */
+.form-row {
+  display: block !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  border-bottom: none !important;
+}
+
+/* ── Paired-field rows use .form-multiline as the real flex container ── */
+.flex-container.form-multiline {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 16px 28px !important;
+  width: 100% !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid #F3F4F6 !important;
+  box-sizing: border-box !important;
+  align-items: flex-start !important;
+}
+
+/* Each wrapper <div> inside form-multiline = one 50% column */
+.form-multiline > div {
+  flex: 0 0 calc(50% - 14px) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+/* fieldBox / flex-container inside the column wrapper → fill it 100% */
+.form-multiline > div > .fieldBox,
+.form-multiline > div > .flex-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  float: none !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ── Single-field rows (no .form-multiline): wrapper div + inner flex-container ── */
+.form-row > div:not(.form-multiline) {
+  width: 100% !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid #F3F4F6 !important;
+  box-sizing: border-box !important;
+}
+.form-row:last-child > div:not(.form-multiline) { border-bottom: none !important; }
+
+.form-row > div:not(.form-multiline) > .flex-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  width: 100% !important;
+  float: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ── Fallback: bare .fieldBox outside form-multiline (e.g. inlines) ── */
+.fieldBox {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  float: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Override Django admin's aligned layout that floats labels */
+.aligned label,
+.fieldBox > label,
+.form-row > label {
+  display: block !important;
+  float: none !important;
+  width: auto !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #6B7280 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  line-height: 1.4 !important;
+}
+
+/* Required star */
+.fieldBox label.required::after,
+.form-row label.required::after {
+  content: ' *';
+  color: #EF4444 !important;
+  font-weight: 700 !important;
+}
+
+/* Strip the colon Django appends to labels */
+.fieldBox label::after { content: '' !important; }
+.fieldBox label.required::after { content: ' *' !important; }
+
+/* Inputs / selects fill their fieldBox */
+.fieldBox input[type="text"],
+.fieldBox input[type="email"],
+.fieldBox input[type="password"],
+.fieldBox input[type="number"],
+.fieldBox input[type="url"],
+.fieldBox input[type="tel"],
+.fieldBox input[type="date"],
+.fieldBox input[type="time"],
+.fieldBox input[type="month"],
+.fieldBox input[type="search"],
+.fieldBox input[type="file"],
+.fieldBox select,
+.fieldBox textarea,
+.fieldBox .vTextField,
+.fieldBox .vLargeTextField,
+.fieldBox .vURLField {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Override Django's fixed vTextField / vLargeTextField widths globally */
+.vTextField,
+.vLargeTextField,
+.vURLField,
+.vDateField,
+.vTimeField,
+.vIntegerField,
+.vForeignKeyRawIdAdminField {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* All admin form inputs — clean style */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="month"],
+input[type="search"],
+select,
+textarea {
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px !important;
+  padding: 9px 13px !important;
+  font-size: 13.5px !important;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+  color: #111827 !important;
+  background: #F9FAFB !important;
+  outline: none !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
+  max-width: 100% !important;
+  line-height: 1.45 !important;
+}
+
+input::placeholder,
+textarea::placeholder { color: #B0B7C3 !important; }
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--p-brand) !important;
+  box-shadow: 0 0 0 3px rgba(245,132,0,0.12) !important;
+  background: #fff !important;
+}
+
+/* Related widget (FK autocomplete): keep select + action icons in a row */
+.fieldBox .related-widget-wrapper,
+.form-row .related-widget-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.fieldBox .related-widget-wrapper select,
+.fieldBox .related-widget-wrapper input,
+.form-row .related-widget-wrapper select,
+.form-row .related-widget-wrapper input {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: 0 !important;
+}
+
+/* Select2: override the inline style="width: Xpx" injected by JS */
+.fieldBox .related-widget-wrapper .select2-container,
+.form-row .related-widget-wrapper .select2-container {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: 0 !important;
+}
+/* The select2 selection inner element must also stretch */
+.fieldBox .select2-container .select2-selection,
+.form-row .select2-container .select2-selection {
+  width: 100% !important;
+}
+/* Outside related-widget-wrapper (bare selects / autocomplete without FK links) */
+.fieldBox > .select2-container,
+.form-row > div > .flex-container > .select2-container {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Checkbox / radio: keep inline in original flow */
+.fieldBox input[type="checkbox"],
+.fieldBox input[type="radio"] {
+  width: auto !important;
+  max-width: none !important;
+  flex-shrink: 0 !important;
+}
+
+/* Help text */
+.help,
+.fieldBox .help {
+  font-size: 11.5px !important;
+  color: var(--p-muted) !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Error notes */
+.errornote,
+.errorlist li {
+  background: #FFF1F2 !important;
+  border: 1px solid #FECDD3 !important;
+  border-radius: 8px !important;
+  color: #BE123C !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  margin-bottom: 8px !important;
+}
+
+.errorlist { padding: 0 !important; margin: 4px 0 0 !important; list-style: none !important; }
+
+
+/* ── 9. Submit row ────────────────────────────── */
+.submit-row {
+  background: #fff !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 14px !important;
+  padding: 14px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin-top: 16px !important;
+}
+
+.submit-row input[type="submit"],
+.submit-row button[type="submit"] {
+  background: var(--p-brand) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 9px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.15s, box-shadow 0.15s !important;
+}
+
+.submit-row input[type="submit"]:hover {
+  background: var(--p-brand-dark) !important;
+  box-shadow: 0 4px 12px rgba(245,132,0,0.30) !important;
+}
+
+.submit-row a.deletelink {
+  color: #DC2626 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  margin-left: auto !important;
+  padding: 9px 16px !important;
+  border: 1px solid #FECDD3 !important;
+  border-radius: 8px !important;
+  background: #FFF1F2 !important;
+  transition: background 0.15s !important;
+}
+
+.submit-row a.deletelink:hover { background: #FFE4E6 !important; }
+
+.submit-row p { margin: 0 !important; font-size: 12.5px !important; color: var(--p-muted) !important; }
+
+
+/* ── 10. Dashboard (app index) ────────────────── */
+#content-main .app-accounts,
+#content-main .app-attendance,
+#content-main .app-leaves,
+#content-main .app-salary,
+#content-main .app-teams {
+  background: #fff !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 14px !important;
+  margin-bottom: 16px !important;
+  overflow: hidden !important;
+}
+
+caption, .app-accounts caption {
+  background: #F9FAFB !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: var(--p-brand) !important;
+  text-align: left !important;
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+caption a { color: var(--p-brand) !important; text-decoration: none !important; }
+
+td.addlink a,
+td.changelink a {
+  font-size: 12.5px !important;
+  color: var(--p-muted) !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: color 0.15s !important;
+}
+
+td.addlink a:hover,
+td.changelink a:hover { color: var(--p-brand) !important; }
+
+
+/* ── 11. Inline forms ─────────────────────────── */
+.inline-group {
+  background: #fff !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  margin-bottom: 16px !important;
+}
+
+.inline-group h2 {
+  background: #F9FAFB !important;
+  padding: 12px 18px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--p-brand) !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  margin: 0 !important;
+}
+
+.add-row a {
+  color: var(--p-brand) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+
+
+/* ── 12. Login page override ──────────────────── */
+body.login {
+  background: linear-gradient(135deg, #FFF8F0 0%, #F9FAFB 100%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: auto !important;
+}
+
+#login-form {
+  background: #fff !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 16px !important;
+  padding: 32px !important;
+  width: 100% !important;
+  max-width: 380px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+}
+
+.login #content { max-width: 380px !important; margin: 0 auto !important; }
+
+.login h1 a {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: var(--p-brand) !important;
+  text-decoration: none !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* On login page, hide portal chrome */
+body.login .portal-layout { display: block !important; }
+body.login .sidebar,
+body.login .quick-actions,
+body.login .topbar { display: none !important; }
+body.login .portal-main { width: 100% !important; }
+body.login .portal-content { overflow: auto !important; display: flex !important; align-items: center !important; justify-content: center !important; min-height: 100vh !important; }
+
+
+/* ── 13. Delete confirmation ──────────────────── */
+.delete-confirmation h2 {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #DC2626 !important;
+  margin-bottom: 12px !important;
+}
+
+.delete-confirmation .cancel-link {
+  color: var(--p-muted) !important;
+  font-size: 13px !important;
+  margin-left: 12px !important;
+}
+
+
+/* ── 14. Misc fixes ───────────────────────────── */
+.related-widget-wrapper { display: inline-flex !important; align-items: center !important; gap: 6px !important; }
+
+.select2-container .select2-selection {
+  border-color: #E5E7EB !important;
+  border-radius: 8px !important;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+}
+
+.select2-container--default .select2-selection--single {
+  height: 36px !important;
+  padding: 4px 8px !important;
+}
+
+.vDateField, .vTimeField {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Autocomplete dropdown */
+.autocomplete-suggestions {
+  border-radius: 10px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+}
+
+.autocomplete-suggestion.selected { background: var(--p-brand-bg) !important; color: var(--p-brand) !important; }
+
+
+/* ── Sidebar colour guards — beat Django admin base.css ──────────
+   Django's base.css sets a { color: ... } at equal or lower
+   specificity but loads before our CSS, so we use !important here.
+   ──────────────────────────────────────────────────────────────── */
+.sidebar-item,
+.sidebar-item:link,
+.sidebar-item:visited {
+  color: #6B7280 !important;
+  text-decoration: none !important;
+  background: transparent !important;
+}
+
+.sidebar-item:hover {
+  color: #F58400 !important;
+  background: rgba(245, 132, 0, 0.08) !important;
+  text-decoration: none !important;
+}
+
+.sidebar-item.active,
+.sidebar-item.active:link,
+.sidebar-item.active:visited {
+  color: #ffffff !important;
+  background: #F58400 !important;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2) !important;
+  text-decoration: none !important;
+}
+
+.sidebar-item.active:hover {
+  background: #C86A00 !important;
+  color: #ffffff !important;
+}
+
+.sidebar-section {
+  color: #F58400 !important;
+}
+
+.sidebar-logo-name {
+  color: #F58400 !important;
+}
+
+.sidebar-help,
+.sidebar-help:link,
+.sidebar-help:visited {
+  color: #6B7280 !important;
+  text-decoration: none !important;
+}
+
+.sidebar-help:hover {
+  color: #F58400 !important;
+  background: rgba(245, 132, 0, 0.08) !important;
+  border-color: #F58400 !important;
+}
+
+
+/* ── 15. Date / time inputs — fill their column ───────────────────────────── */
+
+.vDateField,
+.vTimeField {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure all form labels in form-rows are unstyled by Django's float layout */
+.form-row label,
+.form-multiline label {
+  display: block !important;
+  float: none !important;
+  width: auto !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+
+/* ── 16. Global select / input height fix ─────────────────────────────────── */
+/* Django admin renders <select> with insufficient height on some pages.
+   This ensures every select across all custom templates has a consistent
+   comfortable height and vertically centred text. */
+
+select,
+select.vForeignKeyRawIdAdminField {
+  min-height: 42px !important;
+  height: auto !important;
+  padding-top: 9px !important;
+  padding-bottom: 9px !important;
+  line-height: 1.4 !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+/* Standard text/number inputs for consistency */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+input[type="url"],
+textarea {
+  min-height: 40px !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+}
+
+/* Inline table selects — slightly more compact */
+.tabular td select,
+.stacked td select {
+  min-height: 36px !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}

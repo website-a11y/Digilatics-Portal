@@ -1,0 +1,59 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if obj %}Edit{% else %}Add{% endif %} Leave Allocation — Digilatics HR{% endblock %}
+{% block page_title %}{% if obj %}Edit{% else %}Add{% endif %} Leave Allocation{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;"><a href="{% url 'portal:hr_leave_allocations' %}" class="ep-btn-sm" style="text-decoration:none;">← Back</a></div>
+  <div class="ep-card">
+    <div class="ep-card-body">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Employee <span class="hr-required">*</span></label>
+            <select name="employee" class="hr-form-input" required>
+              <option value="">Select employee…</option>
+              {% for emp in all_employees %}
+              <option value="{{ emp.pk }}" {% if obj and obj.employee.pk == emp.pk %}selected{% endif %}>{{ emp.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Leave Type <span class="hr-required">*</span></label>
+            <select name="leave_type" class="hr-form-input" required>
+              <option value="">Select type…</option>
+              {% for lt in all_types %}
+              <option value="{{ lt.pk }}" {% if obj and obj.leave_type.pk == lt.pk %}selected{% endif %}>{{ lt.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Year <span class="hr-required">*</span></label>
+            <input type="number" name="year" class="hr-form-input" value="{{ obj.year|default:current_year }}" required>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Allocated Days</label>
+            <input type="number" step="0.5" min="0" name="allocated_days" class="hr-form-input" value="{{ obj.allocated_days|default:'0' }}">
+          </div>
+        </div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Carry Forward Days</label>
+          <input type="number" step="0.5" min="0" name="carry_forward_days" class="hr-form-input" value="{{ obj.carry_forward_days|default:'0' }}">
+        </div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Notes</label>
+          <textarea name="notes" class="hr-form-input hr-textarea" rows="3">{{ obj.notes|default:'' }}</textarea>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save</button>
+          <a href="{% url 'portal:hr_leave_allocations' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#00182C"/>
+  <circle cx="1260" cy="180" r="260" fill="#0D3554"/>
+  <circle cx="1240" cy="180" r="170" fill="#F58400" fill-opacity="0.16"/>
+  <circle cx="280" cy="1020" r="300" fill="#062640"/>
+  <circle cx="300" cy="1020" r="180" fill="#F58400" fill-opacity="0.14"/>
+  <rect x="180" y="150" width="820" height="900" rx="44" fill="white" fill-opacity="0.04" stroke="white" stroke-opacity="0.08"/>
+  <rect x="250" y="260" width="420" height="28" rx="14" fill="#F58400"/>
+  <rect x="250" y="322" width="560" height="18" rx="9" fill="white" fill-opacity="0.20"/>
+  <rect x="250" y="370" width="490" height="18" rx="9" fill="white" fill-opacity="0.14"/>
+  <rect x="250" y="476" width="680" height="220" rx="28" fill="white" fill-opacity="0.06"/>
+  <rect x="250" y="524" width="280" height="20" rx="10" fill="#F58400"/>
+  <rect x="250" y="566" width="390" height="16" rx="8" fill="white" fill-opacity="0.18"/>
+  <rect x="250" y="626" width="580" height="16" rx="8" fill="white" fill-opacity="0.12"/>
+  <rect x="250" y="734" width="220" height="120" rx="24" fill="white" fill-opacity="0.08"/>
+  <rect x="500" y="734" width="220" height="120" rx="24" fill="white" fill-opacity="0.08"/>
+  <rect x="750" y="734" width="220" height="120" rx="24" fill="white" fill-opacity="0.08"/>
+  <text x="250" y="182" fill="white" font-family="Plus Jakarta Sans, Inter, sans-serif" font-size="56" font-weight="800">Digilatics HRIS</text>
+  <text x="250" y="222" fill="#B8C5D4" font-family="Plus Jakarta Sans, Inter, sans-serif" font-size="20" font-weight="600">Premium employee registration and access control workspace</text>
+</svg>

@@ -1,0 +1,612 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+
+{% block title %}Employee Directory — Digilatics HRIS{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+*,.ed-wrap *{font-family:'Plus Jakarta Sans',sans-serif;box-sizing:border-box;}
+
+/* ─── Page ─────────────────────────────────────────────────────── */
+.ed-wrap{max-width:100%;padding:0;}
+
+/* ─── Hero banner ───────────────────────────────────────────────── */
+.ed-hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  border-radius:20px;padding:32px 36px 28px;margin-bottom:24px;
+}
+.ed-hero::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,132,0,.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+.ed-hero::after{
+  content:'';position:absolute;bottom:-80px;left:20%;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,132,0,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.ed-hero-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;}
+.ed-hero-left{display:flex;align-items:center;gap:16px;}
+.ed-hero-icon{
+  width:52px;height:52px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,#F58400,#C86A00);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 24px rgba(245,132,0,.4);
+}
+.ed-hero-icon svg{width:26px;height:26px;color:#fff;}
+.ed-hero-title{font-size:26px;font-weight:900;color:#fff;margin:0 0 4px;letter-spacing:-.03em;}
+.ed-hero-sub{font-size:13px;color:rgba(255,255,255,.55);margin:0;}
+.ed-hero-actions{display:flex;gap:10px;align-items:center;flex-shrink:0;}
+.ed-btn-ghost{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;
+  border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;
+  text-decoration:none;transition:all .15s;backdrop-filter:blur(4px);
+}
+.ed-btn-ghost:hover{border-color:rgba(245,132,0,.6);background:rgba(245,132,0,.15);color:#F58400;}
+.ed-btn-primary{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;
+  background:linear-gradient(135deg,#F58400,#C86A00);color:#fff;
+  text-decoration:none;transition:all .15s;border:none;cursor:pointer;
+  box-shadow:0 4px 16px rgba(245,132,0,.4);
+}
+.ed-btn-primary:hover{background:linear-gradient(135deg,#FF9500,#D97400);box-shadow:0 6px 20px rgba(245,132,0,.5);color:#fff;transform:translateY(-1px);}
+.ed-btn-primary svg,.ed-btn-ghost svg{width:14px;height:14px;}
+
+/* ─── KPI cards ────────────────────────────────────────────────── */
+.ed-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.ed-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.ed-kpi{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:16px 18px;backdrop-filter:blur(8px);
+  display:flex;align-items:center;gap:12px;transition:background .15s;
+}
+.ed-kpi:hover{background:rgba(255,255,255,.11);}
+.ed-kpi-icon{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.ed-kpi-icon svg{width:18px;height:18px;}
+.ed-kpi--total .ed-kpi-icon{background:rgba(245,132,0,.2);color:#F58400;}
+.ed-kpi--active .ed-kpi-icon{background:rgba(22,163,74,.2);color:#22c55e;}
+.ed-kpi--leave .ed-kpi-icon{background:rgba(234,179,8,.2);color:#eab308;}
+.ed-kpi--inactive .ed-kpi-icon{background:rgba(239,68,68,.2);color:#ef4444;}
+.ed-kpi-body{}
+.ed-kpi-num{font-size:24px;font-weight:900;color:#fff;line-height:1;}
+.ed-kpi-lbl{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+
+/* ─── Toolbar ───────────────────────────────────────────────────── */
+.ed-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;flex-wrap:wrap;gap:12px;
+}
+.ed-toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ed-toolbar-right{display:flex;align-items:center;gap:10px;}
+
+/* Status pills */
+.ed-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;
+  border:1.5px solid #E5E7EB;background:#fff;color:#6B7280;
+  text-decoration:none;transition:all .15s;white-space:nowrap;
+}
+.ed-pill:hover{border-color:#F58400;color:#F58400;background:#FFF8EE;}
+.ed-pill.ed-pill--all.is-active{background:#FFF8EE;border-color:#F58400;color:#F58400;}
+.ed-pill.ed-pill--active.is-active{background:#F0FDF4;border-color:#16A34A;color:#16A34A;}
+.ed-pill.ed-pill--leave.is-active{background:#FFFBEB;border-color:#D97706;color:#D97706;}
+.ed-pill.ed-pill--inactive.is-active{background:#FFF1F2;border-color:#DC2626;color:#DC2626;}
+.ed-pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.ed-pill--all .ed-pill-dot{background:#F58400;}
+.ed-pill--active .ed-pill-dot{background:#16A34A;}
+.ed-pill--leave .ed-pill-dot{background:#D97706;}
+.ed-pill--inactive .ed-pill-dot{background:#DC2626;}
+
+/* Show entries */
+.ed-show-wrap{display:flex;align-items:center;gap:6px;font-size:13px;color:#6B7280;font-weight:500;}
+.ed-show-select{
+  border:1.5px solid #E5E7EB;border-radius:8px;padding:6px 10px;
+  font-size:13px;color:#374151;background:#fff;cursor:pointer;font-weight:600;
+  outline:none;transition:border-color .15s;
+}
+.ed-show-select:focus{border-color:#F58400;}
+
+/* Search */
+.ed-search-box{
+  display:flex;align-items:center;gap:8px;
+  border:1.5px solid #E5E7EB;border-radius:10px;padding:8px 14px;
+  background:#fff;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.ed-search-box:focus-within{border-color:#F58400;box-shadow:0 0 0 3px rgba(245,132,0,.1);}
+.ed-search-box svg{width:15px;height:15px;color:#9CA3AF;flex-shrink:0;}
+.ed-search-input{
+  border:none;outline:none;font-size:13px;color:#111827;
+  background:transparent;width:200px;font-weight:500;
+}
+.ed-search-input::placeholder{color:#9CA3AF;}
+
+/* ─── Table ─────────────────────────────────────────────────────── */
+.ed-card{
+  background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+  overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+.ed-table-scroll{overflow-x:auto;}
+.ed-table{width:100%;border-collapse:collapse;font-size:13px;}
+
+/* Head */
+.ed-table thead{background:#F8F9FA;border-bottom:2px solid #E5E7EB;}
+.ed-table th{
+  padding:12px 16px;text-align:left;font-size:11px;font-weight:700;
+  color:#6B7280;text-transform:uppercase;letter-spacing:.07em;
+  white-space:nowrap;user-select:none;
+}
+.ed-th-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  background:none;border:none;padding:0;cursor:pointer;
+  font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.07em;
+}
+.ed-th-btn:hover{color:#F58400;}
+.ed-sort-wrap{display:flex;flex-direction:column;gap:1px;margin-left:2px;}
+.ed-sort-wrap span{display:block;width:0;height:0;}
+.ed-sort-wrap .up{border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-bottom:4px solid #D1D5DB;}
+.ed-sort-wrap .dn{border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-top:4px solid #D1D5DB;}
+.ed-sort-wrap.asc .up{border-bottom-color:#F58400;}
+.ed-sort-wrap.desc .dn{border-top-color:#F58400;}
+
+/* Body */
+.ed-table tbody tr{border-bottom:1px solid #F3F4F6;transition:background .1s;}
+.ed-table tbody tr:last-child{border-bottom:none;}
+.ed-table tbody tr:hover{background:#FAFBFF;}
+.ed-table td{padding:14px 16px;color:#374151;vertical-align:middle;}
+
+/* Avatar + name */
+.ed-emp-wrap{display:flex;align-items:center;gap:11px;}
+.ed-avatar{
+  width:38px;height:38px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;letter-spacing:0;
+}
+.ed-avatar img{width:38px;height:38px;border-radius:12px;object-fit:cover;}
+.ed-emp-name{font-weight:700;color:#111827;font-size:13.5px;text-decoration:none;transition:color .12s;display:block;}
+.ed-emp-name:hover{color:#F58400;}
+.ed-emp-code{font-size:11px;color:#9CA3AF;font-weight:500;margin-top:1px;}
+
+/* Emp-code column */
+.ed-code-badge{
+  display:inline-block;
+  background:#F3F4F6;color:#374151;
+  font-size:11.5px;font-weight:700;
+  padding:3px 9px;border-radius:6px;
+  font-family:'Courier New',monospace;letter-spacing:.02em;
+}
+
+/* Department tag */
+.ed-dept-tag{
+  display:inline-block;
+  padding:3px 9px;border-radius:6px;
+  font-size:11.5px;font-weight:600;
+  background:#F0F4FF;color:#3B5BDB;
+}
+
+/* Status */
+.ed-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:700;padding:4px 11px;
+  border-radius:999px;white-space:nowrap;
+}
+.ed-badge--active{background:#ECFDF5;color:#059669;}
+.ed-badge--leave{background:#FFFBEB;color:#D97706;}
+.ed-badge--onboarding{background:#EFF6FF;color:#2563EB;}
+.ed-badge--inactive{background:#FFF1F2;color:#DC2626;}
+.ed-badge-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.ed-badge--active .ed-badge-dot{background:#059669;}
+.ed-badge--leave .ed-badge-dot{background:#D97706;}
+.ed-badge--onboarding .ed-badge-dot{background:#2563EB;}
+.ed-badge--inactive .ed-badge-dot{background:#DC2626;}
+
+/* Action */
+.ed-edit-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;
+  background:#F8F9FA;border:1.5px solid #E5E7EB;color:#374151;
+  text-decoration:none;transition:all .15s;
+}
+.ed-edit-btn svg{width:13px;height:13px;}
+.ed-edit-btn:hover{background:#FFF8EE;border-color:#F58400;color:#F58400;}
+
+/* ─── Footer / pagination ───────────────────────────────────────── */
+.ed-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-top:1px solid #F3F4F6;
+  font-size:12.5px;color:#9CA3AF;flex-wrap:wrap;gap:8px;
+}
+.ed-footer-info{font-weight:500;}
+.ed-pag{display:flex;align-items:center;gap:4px;}
+.ed-pag-btn{
+  min-width:32px;height:32px;border-radius:8px;padding:0 10px;
+  border:1.5px solid #E5E7EB;background:#fff;color:#374151;
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.ed-pag-btn:hover:not(:disabled){border-color:#F58400;color:#F58400;}
+.ed-pag-btn.is-active{background:#F58400;border-color:#F58400;color:#fff;}
+.ed-pag-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* Empty */
+.ed-empty-row td{text-align:center;padding:60px 24px;}
+.ed-empty-icon{color:#E5E7EB;width:52px;height:52px;margin:0 auto 14px;}
+.ed-empty-title{font-size:15px;font-weight:700;color:#374151;margin-bottom:6px;}
+.ed-empty-sub{font-size:13px;color:#9CA3AF;}
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="ed-wrap">
+
+  {# ── Hero ── #}
+  <div class="ed-hero">
+    <div class="ed-hero-top">
+      <div class="ed-hero-left">
+        <div class="ed-hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="ed-hero-title">Employee Directory</h1>
+          <p class="ed-hero-sub">Manage and view all registered employees</p>
+        </div>
+      </div>
+      {% if has_add_permission %}
+      <div class="ed-hero-actions">
+        <a href="/admin/accounts/employeeprofile/import-employees/" class="ed-btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+          </svg>
+          Import
+        </a>
+        <a href="/admin/accounts/employeeprofile/add/" class="ed-btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Employee
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="ed-kpi-grid">
+      <div class="ed-kpi ed-kpi--total">
+        <div class="ed-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="ed-kpi-body">
+          <div class="ed-kpi-num">{{ total_count }}</div>
+          <div class="ed-kpi-lbl">Total</div>
+        </div>
+      </div>
+      <div class="ed-kpi ed-kpi--active">
+        <div class="ed-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="ed-kpi-body">
+          <div class="ed-kpi-num">{{ active_count }}</div>
+          <div class="ed-kpi-lbl">Active</div>
+        </div>
+      </div>
+      <div class="ed-kpi ed-kpi--leave">
+        <div class="ed-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="ed-kpi-body">
+          <div class="ed-kpi-num">{{ on_leave_count }}</div>
+          <div class="ed-kpi-lbl">On Leave</div>
+        </div>
+      </div>
+      <div class="ed-kpi ed-kpi--inactive">
+        <div class="ed-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+        </div>
+        <div class="ed-kpi-body">
+          <div class="ed-kpi-num">{{ inactive_count }}</div>
+          <div class="ed-kpi-lbl">Inactive</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Toolbar ── #}
+  <div class="ed-toolbar">
+    <div class="ed-toolbar-left">
+      <div class="ed-show-wrap">
+        Show
+        <select class="ed-show-select" id="edPageSize" onchange="edSetPageSize(this.value)">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="9999">All</option>
+        </select>
+        entries
+      </div>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <a href="?" class="ed-pill ed-pill--all {% if not status_filter %}is-active{% endif %}">
+          <span class="ed-pill-dot"></span> All
+        </a>
+        <a href="?status=Active{% if search %}&q={{ search }}{% endif %}"
+           class="ed-pill ed-pill--active {% if status_filter == 'Active' %}is-active{% endif %}">
+          <span class="ed-pill-dot"></span> Active
+          <span style="font-size:11px;opacity:.7;">({{ active_count }})</span>
+        </a>
+        <a href="?status=On+Leave{% if search %}&q={{ search }}{% endif %}"
+           class="ed-pill ed-pill--leave {% if status_filter == 'On Leave' %}is-active{% endif %}">
+          <span class="ed-pill-dot"></span> On Leave
+          <span style="font-size:11px;opacity:.7;">({{ on_leave_count }})</span>
+        </a>
+        <a href="?status=Inactive{% if search %}&q={{ search }}{% endif %}"
+           class="ed-pill ed-pill--inactive {% if status_filter == 'Inactive' %}is-active{% endif %}">
+          <span class="ed-pill-dot"></span> Inactive
+          <span style="font-size:11px;opacity:.7;">({{ inactive_count }})</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="ed-toolbar-right">
+      <form method="get" style="display:contents;">
+        {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+        <div class="ed-search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" name="q" value="{{ search }}" placeholder="Search by name, code, department…"
+                 class="ed-search-input" autocomplete="off" id="edSearchInput">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {# ── Table card ── #}
+  <div class="ed-card">
+    <div class="ed-table-scroll">
+      <table class="ed-table" id="edTable">
+        <thead>
+          <tr>
+            <th><button class="ed-th-btn" onclick="edSort(0)">Code<span class="ed-sort-wrap" id="si0"><span class="up"></span><span class="dn"></span></span></button></th>
+            <th><button class="ed-th-btn" onclick="edSort(1)">Employee<span class="ed-sort-wrap" id="si1"><span class="up"></span><span class="dn"></span></span></button></th>
+            <th><button class="ed-th-btn" onclick="edSort(2)">Designation<span class="ed-sort-wrap" id="si2"><span class="up"></span><span class="dn"></span></span></button></th>
+            <th><button class="ed-th-btn" onclick="edSort(3)">Department<span class="ed-sort-wrap" id="si3"><span class="up"></span><span class="dn"></span></span></button></th>
+            <th><button class="ed-th-btn" onclick="edSort(4)">Line Manager<span class="ed-sort-wrap" id="si4"><span class="up"></span><span class="dn"></span></span></button></th>
+            <th><button class="ed-th-btn" onclick="edSort(5)">Status<span class="ed-sort-wrap" id="si5"><span class="up"></span><span class="dn"></span></span></button></th>
+            <th style="text-align:center;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="edTbody">
+          {% for emp in employees %}
+          {% with initials=emp.full_name|slice:":1"|upper %}
+          <tr data-status="{{ emp.employment_status }}">
+
+            {# Code #}
+            <td><span class="ed-code-badge">{{ emp.employee_code }}</span></td>
+
+            {# Employee #}
+            <td>
+              <div class="ed-emp-wrap">
+                {% if emp.profile_photo %}
+                  <div class="ed-avatar"><img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}"></div>
+                {% else %}
+                  <div class="ed-avatar" style="background:{{ emp.employee_code|length|divisibleby:3|yesno:'linear-gradient(135deg,#6366F1,#4F46E5),linear-gradient(135deg,#F58400,#C86A00)' }};">
+                    {{ initials }}
+                  </div>
+                {% endif %}
+                <div>
+                  <a href="/admin/accounts/employeeprofile/{{ emp.pk }}/change/" class="ed-emp-name">{{ emp.full_name }}</a>
+                  <div class="ed-emp-code">{{ emp.official_email|default:emp.personal_email|default:"" }}</div>
+                </div>
+              </div>
+            </td>
+
+            {# Designation #}
+            <td style="color:#374151;font-weight:500;">{{ emp.designation|default:"—" }}</td>
+
+            {# Department #}
+            <td>
+              {% if emp.department %}
+                <span class="ed-dept-tag">{{ emp.department }}</span>
+              {% else %}
+                <span style="color:#D1D5DB;">—</span>
+              {% endif %}
+            </td>
+
+            {# Manager #}
+            <td>
+              {% if emp.reporting_manager %}
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div style="width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,#F58400,#C86A00);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;">
+                    {{ emp.reporting_manager.full_name|slice:":1"|upper }}
+                  </div>
+                  <span style="font-size:12.5px;color:#374151;font-weight:500;">{{ emp.reporting_manager.full_name }}</span>
+                </div>
+              {% else %}
+                <span style="color:#D1D5DB;font-size:13px;">—</span>
+              {% endif %}
+            </td>
+
+            {# Status #}
+            <td>
+              {% if emp.employment_status == 'Active' %}
+                <span class="ed-badge ed-badge--active"><span class="ed-badge-dot"></span>Active</span>
+              {% elif emp.employment_status == 'On Leave' %}
+                <span class="ed-badge ed-badge--leave"><span class="ed-badge-dot"></span>On Leave</span>
+              {% elif emp.employment_status == 'Onboarding' %}
+                <span class="ed-badge ed-badge--onboarding"><span class="ed-badge-dot"></span>Onboarding</span>
+              {% else %}
+                <span class="ed-badge ed-badge--inactive"><span class="ed-badge-dot"></span>Inactive</span>
+              {% endif %}
+            </td>
+
+            {# Action #}
+            <td style="text-align:center;">
+              <div style="display:inline-flex;gap:6px;align-items:center;">
+                <a href="{% url 'accounts:employee_profile' emp.pk %}" class="ed-edit-btn" style="background:#F0F4FF;border-color:#C7D2FE;color:#4F46E5;" title="View Profile">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  View
+                </a>
+                {% if has_add_permission %}
+                <a href="/admin/accounts/employeeprofile/{{ emp.pk }}/change/" class="ed-edit-btn" title="Edit Employee">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Edit
+                </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endwith %}
+          {% empty %}
+          <tr class="ed-empty-row">
+            <td colspan="7">
+              <svg class="ed-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <div class="ed-empty-title">No employees found</div>
+              <div class="ed-empty-sub">
+                {% if search %}No results for "{{ search }}" — try a different search term.
+                {% else %}Get started by adding your first employee.{% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ed-footer">
+      <span id="edInfo" class="ed-footer-info"></span>
+      <div class="ed-pag" id="edPag"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function () {
+  var PS = 10, page = 1, sortCol = -1, sortAsc = true;
+  var tbody = document.getElementById('edTbody');
+  var allRows = Array.from(tbody ? tbody.querySelectorAll('tr[data-status]') : []);
+
+  window.edSetPageSize = function (v) { PS = parseInt(v)||10; page=1; draw(); };
+
+  window.edSort = function (c) {
+    sortCol===c ? sortAsc=!sortAsc : (sortCol=c, sortAsc=true);
+    for (var i=0;i<6;i++){
+      var el=document.getElementById('si'+i);
+      if(el) el.className='ed-sort-wrap'+(i===c?(sortAsc?' asc':' desc'):'');
+    }
+    allRows.sort(function(a,b){
+      var at=cell(a,c), bt=cell(b,c);
+      return sortAsc?at.localeCompare(bt,undefined,{numeric:true}):bt.localeCompare(at,undefined,{numeric:true});
+    });
+    allRows.forEach(function(r){tbody.appendChild(r);});
+    draw();
+  };
+
+  function cell(r,c){
+    var td=r.querySelectorAll('td')[c];
+    return td?(td.textContent||'').trim().toLowerCase():'';
+  }
+
+  function draw() {
+    var n=allRows.length, ps=PS>=9999?n:PS;
+    var tp=ps?Math.ceil(n/ps):1;
+    if(page>tp) page=tp||1;
+    var s=(page-1)*ps, e=Math.min(s+ps,n);
+    allRows.forEach(function(r,i){ r.style.display=(i>=s&&i<e)?'':'none'; });
+
+    var info=document.getElementById('edInfo');
+    if(info) info.textContent = n===0 ? 'No entries' : ps>=n ? 'Showing all '+n+' entries' : 'Showing '+(s+1)+'–'+e+' of '+n+' entries';
+
+    var pag=document.getElementById('edPag');
+    if(!pag) return;
+    pag.innerHTML='';
+    if(tp<=1) return;
+
+    pag.appendChild(mkBtn('‹', page>1, function(){ page--; draw(); }));
+    pages(page,tp).forEach(function(p){
+      if(p==='…'){
+        var sp=document.createElement('span');
+        sp.style.cssText='padding:0 5px;color:#9CA3AF;font-size:13px;line-height:32px;';
+        sp.textContent='…';
+        pag.appendChild(sp);
+      } else {
+        var b=mkBtn(p,true,(function(pp){ return function(){ page=pp; draw(); }; })(p));
+        if(p===page) b.classList.add('is-active');
+        pag.appendChild(b);
+      }
+    });
+    pag.appendChild(mkBtn('›', page<tp, function(){ page++; draw(); }));
+  }
+
+  function mkBtn(lbl, on, cb){
+    var b=document.createElement('button');
+    b.className='ed-pag-btn'; b.innerHTML=lbl; b.disabled=!on;
+    b.addEventListener('click',cb);
+    return b;
+  }
+
+  function pages(cur,tot){
+    if(tot<=7) return Array.from({length:tot},function(_,i){return i+1;});
+    var r=[1];
+    if(cur>3) r.push('…');
+    for(var i=Math.max(2,cur-1);i<=Math.min(tot-1,cur+1);i++) r.push(i);
+    if(cur<tot-2) r.push('…');
+    r.push(tot);
+    return r;
+  }
+
+  draw();
+
+  /* Live search */
+  var si=document.getElementById('edSearchInput');
+  if(si){
+    si.addEventListener('input',function(){
+      var q=this.value.toLowerCase().trim();
+      allRows=Array.from(tbody.querySelectorAll('tr[data-status]'));
+      allRows.forEach(function(r){ r.style.display=(!q||r.textContent.toLowerCase().includes(q))?'':'none'; });
+      allRows=allRows.filter(function(r){ return r.style.display!=='none'; });
+      page=1; draw();
+    });
+  }
+}());
+</script>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ════════════════════════════════════════════════════════════
+   TAX YEAR CHANGELIST  —  ss-* design language
+   ════════════════════════════════════════════════════════════ */
+.ty-header {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  padding:20px 24px; display:flex; align-items:center; gap:18px;
+  margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.ty-header-icon {
+  width:56px; height:56px; border-radius:16px; flex-shrink:0;
+  background:linear-gradient(135deg,#2563EB,#1D4ED8);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 12px rgba(37,99,235,0.30);
+}
+.ty-header-icon svg { width:26px; height:26px; stroke:#fff; }
+.ty-header-title { font-size:18px; font-weight:800; color:#111827; line-height:1.2; }
+.ty-header-sub   { font-size:12.5px; color:#6B7280; margin-top:3px; }
+.ty-header-links { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0; }
+.ty-header-link {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#fff; border:1.5px solid #E5E7EB; border-radius:9px;
+  padding:7px 14px; font-size:12.5px; font-weight:600; color:#6B7280;
+  text-decoration:none; transition:all 0.15s; box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.ty-header-link:hover { border-color:#F58400; color:#C86A00; background:#FFF8EE; }
+
+.ty-kpi-row {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;
+}
+@media(max-width:900px){ .ty-kpi-row{ grid-template-columns:repeat(2,1fr); } }
+.ty-kpi {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  display:flex; flex-direction:column; gap:5px; position:relative; overflow:hidden;
+}
+.ty-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
+.ty-kpi-total::before  { background:#2563EB; }
+.ty-kpi-active::before { background:#16A34A; }
+.ty-kpi-slabs::before  { background:#F58400; }
+.ty-kpi-current::before{ background:#7C3AED; }
+.ty-kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.ty-kpi-icon svg { width:16px; height:16px; }
+.ty-kpi-total  .ty-kpi-icon { background:#DBEAFE; color:#2563EB; }
+.ty-kpi-active .ty-kpi-icon { background:#DCFCE7; color:#16A34A; }
+.ty-kpi-slabs  .ty-kpi-icon { background:#FFF8EE; color:#F58400; }
+.ty-kpi-current .ty-kpi-icon { background:#F3E8FF; color:#7C3AED; }
+.ty-kpi-label { font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
+.ty-kpi-value { font-size:20px; font-weight:800; line-height:1; letter-spacing:-0.02em; color:#111827; }
+.ty-kpi-sub   { font-size:11px; color:#9CA3AF; }
+.ty-kpi-total  .ty-kpi-value { color:#2563EB; }
+.ty-kpi-active .ty-kpi-value { color:#16A34A; }
+
+/* Tax slab visual guide */
+.ty-slab-guide {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04); margin-bottom:18px;
+}
+.ty-slab-head {
+  display:flex; align-items:center; gap:8px;
+  padding:13px 18px; border-bottom:1px solid #E5E7EB;
+  background:#F9FAFB; font-size:12px; font-weight:700; color:#374151;
+}
+.ty-slab-body { padding:16px 18px; }
+.ty-slab-row {
+  display:flex; align-items:center; gap:12px;
+  padding:8px 0; border-bottom:1px solid #F9FAFB; font-size:13px;
+}
+.ty-slab-row:last-child { border-bottom:none; }
+.ty-slab-range { color:#6B7280; min-width:220px; }
+.ty-slab-bar-wrap { flex:1; height:8px; background:#F3F4F6; border-radius:999px; overflow:hidden; }
+.ty-slab-bar { height:100%; border-radius:999px; background:linear-gradient(90deg,#2563EB,#7C3AED); }
+.ty-slab-rate { font-size:13px; font-weight:800; color:#2563EB; min-width:50px; text-align:right; }
+
+.ty-annual-strip {
+  background:#111827; border-radius:12px; padding:16px 20px;
+  display:flex; gap:0; overflow:hidden; margin-bottom:18px;
+}
+.ty-annual-item { flex:1; text-align:center; border-right:1px solid rgba(255,255,255,0.1); padding:0 12px; }
+.ty-annual-item:last-child { border-right:none; }
+.ty-annual-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; }
+.ty-annual-value { font-size:15px; font-weight:800; color:#fff; margin-top:5px; letter-spacing:-0.01em; }
+
+.ty-table-label {
+  display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700;
+  color:#6B7280; text-transform:uppercase; letter-spacing:0.09em; margin-bottom:10px;
+}
+.ty-tl-dot { width:8px; height:8px; border-radius:50%; background:#2563EB; }
+
+#changelist-filter { display:none !important; }
+#changelist { margin-right:0 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="ty-header">
+  <div class="ty-header-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+  </div>
+  <div>
+    <div class="ty-header-title">Tax Years &amp; Slabs</div>
+    <div class="ty-header-sub">FBR income tax year configurations with progressive tax slabs</div>
+  </div>
+  <div class="ty-header-links">
+    <a href="{% url 'admin:salary_statutorydeductionpolicy_changelist' %}" class="ty-header-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Deduction Policies
+    </a>
+    <a href="{% url 'admin:salary_salarysetup_changelist' %}" class="ty-header-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Salary Setups
+    </a>
+  </div>
+</div>
+
+<div class="ty-kpi-row">
+  <div class="ty-kpi ty-kpi-total">
+    <div class="ty-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="ty-kpi-label">Total Tax Years</div>
+    <div class="ty-kpi-value">{{ cl.result_count }}</div>
+    <div class="ty-kpi-sub">all configured</div>
+  </div>
+  <div class="ty-kpi ty-kpi-active">
+    <div class="ty-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="ty-kpi-label">Active Years</div>
+    <div class="ty-kpi-value">—</div>
+    <div class="ty-kpi-sub">currently in use</div>
+  </div>
+  <div class="ty-kpi ty-kpi-slabs">
+    <div class="ty-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+    <div class="ty-kpi-label">Tax Slabs</div>
+    <div class="ty-kpi-value">Progressive</div>
+    <div class="ty-kpi-sub">FBR income tax</div>
+  </div>
+  <div class="ty-kpi ty-kpi-current">
+    <div class="ty-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+    <div class="ty-kpi-label">Current Rate</div>
+    <div class="ty-kpi-value">Up to 35%</div>
+    <div class="ty-kpi-sub">max marginal rate</div>
+  </div>
+</div>
+
+<!-- Pakistan FBR progressive slab guide -->
+<div class="ty-slab-guide">
+  <div class="ty-slab-head" style="color:#2563EB;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    Pakistan FBR Progressive Tax Slabs Reference
+  </div>
+  <div class="ty-slab-body">
+    <div class="ty-slab-row">
+      <span class="ty-slab-range">Up to PKR 600,000</span>
+      <div class="ty-slab-bar-wrap"><div class="ty-slab-bar" style="width:0%;"></div></div>
+      <span class="ty-slab-rate">0%</span>
+    </div>
+    <div class="ty-slab-row">
+      <span class="ty-slab-range">PKR 600,001 – 1,200,000</span>
+      <div class="ty-slab-bar-wrap"><div class="ty-slab-bar" style="width:3%;"></div></div>
+      <span class="ty-slab-rate">1%</span>
+    </div>
+    <div class="ty-slab-row">
+      <span class="ty-slab-range">PKR 1,200,001 – 2,200,000</span>
+      <div class="ty-slab-bar-wrap"><div class="ty-slab-bar" style="width:11%;"></div></div>
+      <span class="ty-slab-rate">11%</span>
+    </div>
+    <div class="ty-slab-row">
+      <span class="ty-slab-range">PKR 2,200,001 – 3,200,000</span>
+      <div class="ty-slab-bar-wrap"><div class="ty-slab-bar" style="width:23%;"></div></div>
+      <span class="ty-slab-rate">23%</span>
+    </div>
+    <div class="ty-slab-row">
+      <span class="ty-slab-range">PKR 3,200,001 – 4,100,000</span>
+      <div class="ty-slab-bar-wrap"><div class="ty-slab-bar" style="width:30%;"></div></div>
+      <span class="ty-slab-rate">30%</span>
+    </div>
+    <div class="ty-slab-row">
+      <span class="ty-slab-range">Above PKR 4,100,000</span>
+      <div class="ty-slab-bar-wrap"><div class="ty-slab-bar" style="width:35%;"></div></div>
+      <span class="ty-slab-rate">35%</span>
+    </div>
+  </div>
+</div>
+
+<div class="ty-annual-strip">
+  <div class="ty-annual-item">
+    <div class="ty-annual-label">Tax System</div>
+    <div class="ty-annual-value">FBR Progressive</div>
+  </div>
+  <div class="ty-annual-item">
+    <div class="ty-annual-label">Min Rate</div>
+    <div class="ty-annual-value">0%</div>
+  </div>
+  <div class="ty-annual-item">
+    <div class="ty-annual-label">Max Rate</div>
+    <div class="ty-annual-value">35%</div>
+  </div>
+  <div class="ty-annual-item">
+    <div class="ty-annual-label">Tax-Free Limit</div>
+    <div class="ty-annual-value">PKR 600,000</div>
+  </div>
+  <div class="ty-annual-item">
+    <div class="ty-annual-label">Configured Years</div>
+    <div class="ty-annual-value">{{ cl.result_count }}</div>
+  </div>
+</div>
+
+<div class="ty-table-label">
+  <span class="ty-tl-dot"></span>
+  Fiscal Tax Years
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block result_list %}
+<div style="border-radius:14px;overflow:hidden;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+  {{ block.super }}
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

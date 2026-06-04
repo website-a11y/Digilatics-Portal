@@ -1,0 +1,39 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Sync Schedules — Digilatics HR{% endblock %}
+{% block page_title %}Sync Schedules{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px;gap:10px;">
+  <a href="{% url 'portal:hr_sync_schedule_fetch' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 16px;background:#2563EB;color:#fff;">Fetch records now</a>
+  <a href="{% url 'portal:hr_sync_schedule_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 16px;">+ Add Schedule</a>
+</div>
+<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:14px;padding:14px 18px;margin-bottom:20px;color:#14532d;font-size:13px;line-height:1.6;display:flex;align-items:flex-start;gap:12px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" width="18" height="18" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+  <div>
+    <strong style="color:#15803d;">Auto-sync is active</strong> — the biometric device pushes attendance data to this server every <strong>1 minute</strong> automatically via ADMS protocol.<br>
+    <span style="color:#166534;">Each time the device polls, the server sends a <code style="background:#dcfce7;padding:1px 5px;border-radius:4px;">DATA QUERY</code> command covering the last 2 days so all recent punches are captured.</span>
+  </div>
+</div>
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <table class="hr-table">
+    <thead>
+      <tr><th>Sync Time 1</th><th>Sync Time 2</th><th>Active</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td style="font-weight:700;font-size:15px;color:var(--brand);">{{ item.sync_time_1|time:"g:i A" }}</td>
+        <td style="font-weight:600;">{{ item.sync_time_2|time:"g:i A"|default:"—" }}</td>
+        <td>{% if item.is_active %}<span class="ep-badge active">Active</span>{% else %}<span class="ep-badge draft">Inactive</span>{% endif %}</td>
+        <td style="white-space:nowrap;">
+          <a href="{% url 'portal:hr_sync_schedule_edit' item.pk %}" class="ep-btn-sm" style="text-decoration:none;">Edit</a>
+          <a href="{% url 'portal:hr_sync_schedule_delete' item.pk %}" class="ep-btn-sm" style="text-decoration:none;background:#fef2f2;color:#dc2626;margin-left:4px;">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4"><div class="hr-empty">No sync schedules configured.</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

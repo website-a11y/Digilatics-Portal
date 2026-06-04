@@ -1,0 +1,87 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}WFH Balances — Digilatics HR{% endblock %}
+{% block page_title %}WFH Balances{% endblock %}
+
+{% block content %}
+
+<!-- Header action -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;">
+  <div style="font-size:13px;color:var(--muted);">
+    {% if policy %}
+      Accrual: <strong>{{ policy.monthly_accrual_days|floatformat:"-2" }} days/month</strong> &bull;
+      Cap: <strong>{{ policy.max_balance|floatformat:"-2" }} days</strong> &bull;
+      Rollover: <strong>{% if policy.rollover_enabled %}On{% else %}Off{% endif %}</strong>
+    {% endif %}
+    &nbsp;<a href="{% url 'portal:hr_wfh_policy' %}" style="color:var(--brand);font-weight:600;">Edit Policy →</a>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="accrue_all">
+    <button type="submit" class="ep-btn ep-btn-primary"
+            onclick="return confirm('Run monthly WFH accrual for all active employees?')">
+      Run Accrual for All
+    </button>
+  </form>
+</div>
+
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <table class="hr-table">
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>Department</th>
+        <th style="text-align:center;">Balance</th>
+        <th style="text-align:center;">Pending</th>
+        <th style="text-align:center;">Available</th>
+        <th>Last Accrual</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bal in balances %}
+      <tr>
+        <td>
+          <div style="font-weight:700;font-size:13px;">{{ bal.employee.full_name }}</div>
+          <div style="font-size:11px;color:var(--muted);">{{ bal.employee.employee_code }}</div>
+        </td>
+        <td style="font-size:13px;color:var(--muted);">{{ bal.employee.department|default:"—" }}</td>
+        <td style="text-align:center;">
+          <span style="font-size:16px;font-weight:800;color:var(--brand);">{{ bal.balance|floatformat:"-2" }}</span>
+          <span style="font-size:11px;color:var(--muted);"> / 5</span>
+        </td>
+        <td style="text-align:center;">
+          {% with pd=bal.pending_days %}
+          {% if pd > 0 %}
+          <span style="font-size:13px;font-weight:600;color:#f97316;">{{ pd|floatformat:"-2" }}</span>
+          {% else %}
+          <span style="color:var(--muted);">—</span>
+          {% endif %}
+          {% endwith %}
+        </td>
+        <td style="text-align:center;">
+          {% with av=bal.available_days %}
+          <span style="font-size:13px;font-weight:700;
+            {% if av <= 0 %}color:#ef4444;{% elif av <= 1 %}color:#f97316;{% else %}color:#16a34a;{% endif %}">
+            {{ av|floatformat:"-2" }}
+          </span>
+          {% endwith %}
+        </td>
+        <td style="font-size:12px;color:var(--muted);">
+          {% if bal.last_accrued_year %}
+            {{ bal.last_accrued_month }}/{{ bal.last_accrued_year }}
+          {% else %}
+            Never
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'portal:hr_wfh_balance_edit' bal.employee.pk %}"
+             class="ep-btn-sm" style="text-decoration:none;">Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7"><div class="hr-empty">No active employees found.</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

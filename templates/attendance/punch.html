@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Punch Portal — Digilatics HRIS</title>
+<link rel="stylesheet" href="{% static 'attendance/css/punch.css' %}">
+</head>
+<body>
+
+{% if error and not employee %}
+<!-- ── No profile error ── -->
+<div class="pp-center">
+  <div class="pp-error-card">
+    <div class="pp-error-icon">⚠</div>
+    <div class="pp-error-title">Profile Not Linked</div>
+    <div class="pp-error-body">{{ error }}</div>
+    <a href="/admin/" class="pp-btn-back">Go to Admin</a>
+  </div>
+</div>
+{% else %}
+
+<div class="pp-wrap">
+
+  <!-- ── Header ── -->
+  <div class="pp-header">
+    <div class="pp-header-left">
+      <div class="pp-logo">Digilatics HRIS</div>
+      <div class="pp-date" id="pp-date">{{ today_str }}</div>
+    </div>
+    <div class="pp-header-right">
+      <a href="/admin/" class="pp-admin-link">Admin Panel →</a>
+    </div>
+  </div>
+
+  <!-- ── Main card ── -->
+  <div class="pp-card">
+
+    <!-- Employee profile strip -->
+    <div class="pp-profile">
+      {% if employee.profile_photo %}
+      <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}" class="pp-avatar">
+      {% else %}
+      <div class="pp-avatar pp-avatar-ph">{{ employee.full_name|first }}</div>
+      {% endif %}
+      <div class="pp-profile-info">
+        <div class="pp-emp-name">{{ employee.full_name }}</div>
+        <div class="pp-emp-meta">
+          <span class="pp-chip">{{ employee.employee_code }}</span>
+          {% if employee.department %}<span class="pp-chip">{{ employee.department }}</span>{% endif %}
+          {% if employee.designation %}<span class="pp-chip">{{ employee.designation }}</span>{% endif %}
+        </div>
+        {% if sched_in or sched_out %}
+        <div class="pp-shift-row">
+          Shift:
+          {% if sched_in %}<span class="pp-shift-time">{{ sched_in }}</span>{% endif %}
+          {% if sched_in and sched_out %} — {% endif %}
+          {% if sched_out %}<span class="pp-shift-time">{{ sched_out }}</span>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Live clock -->
+    <div class="pp-clock-section">
+      <div class="pp-clock" id="pp-clock">--:--:--</div>
+    </div>
+
+    <!-- Flash messages -->
+    {% if success_msg %}
+    <div class="pp-flash pp-flash-ok">✓ {{ success_msg }}</div>
+    {% endif %}
+    {% if error_msg %}
+    <div class="pp-flash pp-flash-err">✗ {{ error_msg }}</div>
+    {% endif %}
+
+    <!-- ── Status display ── -->
+    <div class="pp-status-row">
+      <!-- Check-in status -->
+      <div class="pp-status-item">
+        <div class="pp-status-label">CHECK-IN</div>
+        {% if check_in %}
+        <div class="pp-status-time pp-status-ok">
+          {{ check_in|time:"H:i" }}
+          {% if is_late %}<span class="pp-badge-late">Late</span>{% endif %}
+        </div>
+        {% else %}
+        <div class="pp-status-time pp-status-none">—</div>
+        {% endif %}
+      </div>
+
+      <!-- Elapsed timer (shown when checked in, not yet checked out) -->
+      {% if check_in and not check_out %}
+      <div class="pp-elapsed-wrap">
+        <div class="pp-elapsed-label">ELAPSED</div>
+        <div class="pp-elapsed" id="pp-elapsed">--:--:--</div>
+      </div>
+      {% elif check_in and check_out %}
+      <div class="pp-elapsed-wrap">
+        <div class="pp-elapsed-label">DURATION</div>
+        <div class="pp-elapsed pp-elapsed-done" id="pp-elapsed">--:--:--</div>
+      </div>
+      {% endif %}
+
+      <!-- Check-out status -->
+      <div class="pp-status-item">
+        <div class="pp-status-label">CHECK-OUT</div>
+        {% if check_out %}
+        <div class="pp-status-time pp-status-ok">
+          {{ check_out|time:"H:i" }}
+          {% if is_early_checkout %}<span class="pp-badge-early">Early</span>{% endif %}
+        </div>
+        {% else %}
+        <div class="pp-status-time pp-status-none">—</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Shift ended notice ── -->
+    <div class="pp-shift-ended" id="pp-shift-ended" style="display:none;">
+      <span class="pp-shift-ended-icon">🔒</span>
+      Shift ended — punch access is now closed for today.
+    </div>
+
+    <!-- ── Punch buttons ── -->
+    {% if not check_in %}
+    <!-- State 1: Not checked in -->
+    <form method="post" class="pp-form" id="pp-form-in">
+      {% csrf_token %}
+      <input type="hidden" name="punch_type" value="in">
+      <button type="submit" class="pp-btn pp-btn-in" id="pp-btn-in">
+        <span class="pp-btn-icon">▶</span>
+        CHECK IN
+      </button>
+    </form>
+
+    {% elif check_in and not check_out %}
+    <!-- State 2: Checked in, not yet out -->
+    <form method="post" class="pp-form" id="pp-form-out">
+      {% csrf_token %}
+      <input type="hidden" name="punch_type" value="out">
+      <button type="submit" class="pp-btn pp-btn-out" id="pp-btn-out">
+        <span class="pp-btn-icon">■</span>
+        CHECK OUT
+      </button>
+    </form>
+
+    {% else %}
+    <!-- State 3: Both punched -->
+    <div class="pp-done">
+      <div class="pp-done-icon">✓</div>
+      <div class="pp-done-text">Attendance recorded for today</div>
+    </div>
+    {% endif %}
+
+  </div><!-- /pp-card -->
+</div><!-- /pp-wrap -->
+
+<!-- Hidden data for JavaScript -->
+<script>
+const PUNCH_DATA = {
+  checkIn:   "{{ check_in|time:'H:i'|default:'' }}",
+  checkOut:  "{{ check_out|time:'H:i'|default:'' }}",
+  schedIn:   "{{ sched_in }}",
+  schedOut:  "{{ sched_out }}",
+  today:     "{{ today|date:'Y-m-d' }}"
+};
+</script>
+<script src="{% static 'attendance/js/punch.js' %}"></script>
+
+{% endif %}
+</body>
+</html>

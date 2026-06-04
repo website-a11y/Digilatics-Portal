@@ -1,0 +1,270 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Sync Schedule — Digilatics HRIS{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+.ss-wrap * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+/* ── Header ── */
+.ss-header {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 20px;
+  padding: 24px 28px; display: flex; align-items: center; gap: 20px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.ss-header::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #F58400, #FBBF24); border-radius: 20px 20px 0 0;
+}
+.ss-header-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: linear-gradient(135deg, #F58400, #C86A00);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+}
+.ss-header-icon svg { width: 28px; height: 28px; }
+.ss-header-text { flex: 1; }
+.ss-header-title { font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+.ss-header-sub   { font-size: 13px; color: #6B7280; margin-top: 3px; }
+.ss-header-right { flex-shrink: 0; }
+.ss-btn-add {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, #F58400, #C86A00); color: #fff;
+  border: none; border-radius: 10px; padding: 10px 18px;
+  font-size: 13px; font-weight: 700; text-decoration: none; transition: opacity 0.15s;
+}
+.ss-btn-add:hover { opacity: 0.9; color: #fff; }
+.ss-btnsecondary { background: #f3f4f6; color: #111827; }
+.ss-btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 7px; background: #EFF6FF; color: #2563EB;
+  border: 1px solid #BFDBFE; border-radius: 10px; padding: 10px 18px;
+  font-size: 13px; font-weight: 700; text-decoration: none; transition: opacity 0.15s;
+}
+.ss-btn-secondary:hover { opacity: 0.92; }
+.ss-btn-add svg { width: 14px; height: 14px; }
+
+/* ── Info banner ── */
+.ss-info {
+  background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 14px;
+  padding: 14px 18px; margin-bottom: 20px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.ss-info svg { width: 16px; height: 16px; color: #2563EB; flex-shrink: 0; margin-top: 1px; }
+.ss-info-text { font-size: 13px; color: #1E40AF; line-height: 1.5; }
+.ss-info-text strong { font-weight: 700; }
+
+/* ── KPI grid ── */
+.ss-kpi-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;
+}
+.ss-kpi {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden;
+}
+.ss-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+.ss-kpi-sync1::before  { background: #F58400; }
+.ss-kpi-sync2::before  { background: #2563EB; }
+.ss-kpi-status::before { background: #16A34A; }
+.ss-kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+.ss-kpi-icon svg { width: 17px; height: 17px; }
+.ss-kpi-sync1  .ss-kpi-icon { background: #FFF8EE; color: #F58400; }
+.ss-kpi-sync2  .ss-kpi-icon { background: #EFF6FF; color: #2563EB; }
+.ss-kpi-status .ss-kpi-icon { background: #DCFCE7; color: #16A34A; }
+.ss-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+.ss-kpi-value { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; color: #111827; }
+.ss-kpi-sub   { font-size: 11px; color: #9CA3AF; }
+.ss-kpi-sync1  .ss-kpi-value { color: #C86A00; font-size: 22px; }
+.ss-kpi-sync2  .ss-kpi-value { color: #2563EB; font-size: 22px; }
+.ss-kpi-status .ss-kpi-value { color: #16A34A; }
+
+/* ── Schedule card ── */
+.ss-schedule-card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 20px;
+}
+.ss-schedule-card-head {
+  padding: 14px 20px; border-bottom: 1px solid #E5E7EB; background: #F9FAFB;
+  font-size: 13px; font-weight: 800; color: #374151;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ss-schedule-body { padding: 24px; }
+
+/* Timeline */
+.ss-timeline {
+  position: relative; padding-left: 32px; display: flex; flex-direction: column; gap: 0;
+}
+.ss-timeline::before {
+  content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px;
+  width: 2px; background: linear-gradient(180deg, #F58400, #2563EB);
+  border-radius: 2px;
+}
+.ss-timeline-item {
+  position: relative; padding: 16px 0;
+  display: flex; align-items: center; gap: 20px;
+}
+.ss-timeline-item:not(:last-child) { border-bottom: 1px solid #F3F4F6; }
+.ss-timeline-dot {
+  position: absolute; left: -25px; width: 14px; height: 14px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ss-timeline-dot-1 { background: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.2); }
+.ss-timeline-dot-2 { background: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+.ss-timeline-time {
+  font-size: 28px; font-weight: 800; letter-spacing: -0.02em; min-width: 100px;
+  font-variant-numeric: tabular-nums;
+}
+.ss-timeline-dot-1 ~ .ss-timeline-time { color: #C86A00; }
+.ss-timeline-dot-2 ~ .ss-timeline-time { color: #2563EB; }
+.ss-timeline-meta { flex: 1; }
+.ss-timeline-label { font-size: 13px; font-weight: 700; color: #111827; }
+.ss-timeline-sub   { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
+
+/* Table */
+.ss-table { width: 100%; border-collapse: collapse; }
+.ss-table thead th {
+  padding: 11px 16px; font-size: 11px; font-weight: 700; color: #6B7280;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  background: #F9FAFB; border-bottom: 1px solid #E5E7EB; text-align: left;
+}
+.ss-table tbody tr { border-bottom: 1px solid #F3F4F6; transition: background 0.1s; }
+.ss-table tbody tr:last-child { border-bottom: none; }
+.ss-table tbody tr:hover { background: #FFFBF5; }
+.ss-table tbody td { padding: 14px 16px; font-size: 13px; color: #374151; vertical-align: middle; }
+.ss-table tbody td a { color: #C86A00; text-decoration: none; font-weight: 700; }
+.ss-table tbody td a:hover { color: #F58400; }
+
+.ss-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.ss-badge-active   { background: #DCFCE7; color: #15803D; }
+.ss-badge-inactive { background: #F3F4F6; color: #6B7280; }
+
+.ss-action-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  text-decoration: none; background: #FFF8EE; color: #C86A00;
+  border: 1px solid #FED7AA; transition: all 0.15s;
+}
+.ss-action-btn:hover { background: #FFEDD5; }
+.ss-action-btn svg { width: 12px; height: 12px; }
+
+/* Dark strip */
+.ss-dark-strip {
+  background: #111827; border-radius: 14px; padding: 18px 24px;
+  display: flex; margin-bottom: 20px; overflow: hidden;
+}
+.ss-dark-item {
+  flex: 1; text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.1); padding: 0 16px;
+}
+.ss-dark-item:last-child { border-right: none; }
+.ss-dark-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.45); font-weight: 700; margin-bottom: 6px; }
+.ss-dark-value { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+.ss-dark-sub   { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ss-wrap">
+
+  <!-- Header -->
+  <div class="ss-header">
+    <div class="ss-header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+      </svg>
+    </div>
+    <div class="ss-header-text">
+      <div class="ss-header-title">Sync Schedule</div>
+      <div class="ss-header-sub">Configure automated attendance sync times from ZKTeco devices</div>
+    </div>
+    <div class="ss-header-right">
+      <a href="{% url 'portal:hr_sync_schedule_fetch' %}" class="ss-btn-secondary">Fetch Records</a>
+      {% if has_add_permission %}
+      <a href="{% url 'admin:attendance_syncschedule_add' %}" class="ss-btn-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Schedule
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Info banner -->
+  <div class="ss-info">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="ss-info-text">
+      <strong>Only one sync schedule can be active.</strong>
+      The system automatically pulls attendance records from ZKTeco devices at the two configured times each day.
+      To change the schedule, edit the existing record below.
+      <div style="margin-top:10px;font-size:13px;color:#1E40AF;">
+        Recommended: run <code>python manage.py sync_if_scheduled</code> every 5 minutes via Task Scheduler or cron. The command only performs syncs when the current time falls within the configured window.
+      </div>
+    </div>
+  </div>
+
+  {% if cl.result_list %}
+  {% for obj in cl.result_list %}
+
+  
+
+  <!-- Timeline card -->
+  <div class="ss-schedule-card">
+    <div class="ss-schedule-card-head">
+      <span>Daily Sync Timeline</span>
+      <a href="{{ obj.pk }}/change/" class="ss-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Schedule
+      </a>
+    </div>
+    <div class="ss-schedule-body">
+      <div class="ss-timeline">
+        <div class="ss-timeline-item">
+          <div class="ss-timeline-dot ss-timeline-dot-1"></div>
+          <div class="ss-timeline-time">{{ obj.sync_time_1|time:"H:i" }}</div>
+          <div class="ss-timeline-meta">
+            <div class="ss-timeline-label">First Sync — {{ obj.sync_time_1|time:"g:i A" }}</div>
+            <div class="ss-timeline-sub">System pulls attendance records from ZKTeco device</div>
+          </div>
+        </div>
+        <div class="ss-timeline-item">
+          <div class="ss-timeline-dot ss-timeline-dot-2"></div>
+          <div class="ss-timeline-time">{{ obj.sync_time_2|time:"H:i" }}</div>
+          <div class="ss-timeline-meta">
+            <div class="ss-timeline-label">Second Sync — {{ obj.sync_time_2|time:"g:i A" }}</div>
+            <div class="ss-timeline-sub">Overnight sync captures late punches and corrections</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+
+  {% endfor %}
+  {% else %}
+  <!-- Empty state -->
+  <div style="background:#fff; border:1px solid #E5E7EB; border-radius:16px; padding:60px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+    <div style="width:64px; height:64px; background:#FFF8EE; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#F58400;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+      </svg>
+    </div>
+    <div style="font-size:16px; font-weight:800; color:#111827; margin-bottom:6px;">No sync schedule configured</div>
+    <div style="font-size:13px; color:#6B7280; margin-bottom:20px;">Set up automated sync times to pull attendance from ZKTeco devices.</div>
+    {% if has_add_permission %}
+    <a href="{% url 'admin:attendance_syncschedule_add' %}" class="ss-btn-add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Configure Sync Schedule
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

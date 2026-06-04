@@ -1,0 +1,139 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Edit Payslip — Digilatics HR{% endblock %}
+{% block page_title %}Edit Payslip{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;">
+    <a href="{% url 'portal:hr_payroll_detail' run.pk %}" class="ep-btn-sm" style="text-decoration:none;">← Back to {{ run }}</a>
+  </div>
+
+  <div class="hr-profile-hero" style="margin-bottom:20px;">
+    <div class="hr-profile-avatar" style="width:60px;height:60px;font-size:22px;">{{ payslip.employee.full_name|slice:":1" }}</div>
+    <div class="hr-profile-meta">
+      <div class="hr-profile-name" style="font-size:20px;">{{ payslip.employee.full_name }}</div>
+      <div class="hr-profile-sub">{{ payslip.employee.designation }} · {{ payslip.employee.department }}</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="ep-badge {{ run.status|slugify }}">{{ run }}</span>
+        <span class="ep-badge {{ payslip.status|slugify }}">{{ payslip.status }}</span>
+      </div>
+    </div>
+    <div class="hr-profile-stats">
+      <div class="hr-profile-stat">
+        <div class="hr-profile-stat-val" style="font-size:20px;">{{ payslip.gross_salary|floatformat:0 }}</div>
+        <div class="hr-profile-stat-lbl">Gross</div>
+      </div>
+      <div class="hr-profile-stat">
+        <div class="hr-profile-stat-val" style="font-size:20px;color:#f87171;">{{ payslip.total_deductions|floatformat:0 }}</div>
+        <div class="hr-profile-stat-lbl">Deductions</div>
+      </div>
+      <div class="hr-profile-stat">
+        <div class="hr-profile-stat-val" style="font-size:20px;color:#4ade80;">{{ payslip.net_salary|floatformat:0 }}</div>
+        <div class="hr-profile-stat-lbl">Net</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">Edit Payslip — {{ run.get_month_display }} {{ run.year }}</div>
+    </div>
+    <div class="ep-card-body">
+      {% if errors.general %}
+      <div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>
+      {% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+
+        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Earnings</div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Gross Salary</label>
+            <input type="number" step="0.01" name="gross_salary" class="hr-form-input" value="{{ payslip.gross_salary|floatformat:2 }}" required>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Bonus</label>
+            <input type="number" step="0.01" name="bonus" class="hr-form-input" value="{{ payslip.bonus|floatformat:2 }}">
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Overtime Hours</label>
+            <input type="number" step="0.01" name="overtime_hours" class="hr-form-input" value="{{ payslip.overtime_hours|floatformat:2 }}">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Overtime Rate (per hour)</label>
+            <input type="number" step="0.01" name="overtime_rate" class="hr-form-input" value="{{ payslip.overtime_rate|floatformat:2 }}">
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Adjustment Addition</label>
+            <input type="number" step="0.01" name="adjustment_addition" class="hr-form-input" value="{{ payslip.adjustment_addition|floatformat:2 }}">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Adjustment Deduction</label>
+            <input type="number" step="0.01" name="adjustment_deduction" class="hr-form-input" value="{{ payslip.adjustment_deduction|floatformat:2 }}">
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin:4px 0;">Deductions</div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Income Tax</label>
+            <input type="number" step="0.01" name="income_tax" class="hr-form-input" value="{{ payslip.income_tax|floatformat:2 }}">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">EOBI</label>
+            <input type="number" step="0.01" name="eobi" class="hr-form-input" value="{{ payslip.eobi|floatformat:2 }}">
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Provident Fund</label>
+            <input type="number" step="0.01" name="provident_fund" class="hr-form-input" value="{{ payslip.provident_fund|floatformat:2 }}">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Unpaid Leave Deduction</label>
+            <input type="number" step="0.01" name="unpaid_leave_deduction" class="hr-form-input" value="{{ payslip.unpaid_leave_deduction|floatformat:2 }}">
+          </div>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Total Deductions</label>
+            <input type="number" step="0.01" name="total_deductions" class="hr-form-input" value="{{ payslip.total_deductions|floatformat:2 }}" required>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Net Salary</label>
+            <input type="number" step="0.01" name="net_salary" class="hr-form-input" value="{{ payslip.net_salary|floatformat:2 }}" required>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin:4px 0;">Status</div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Payslip Status</label>
+            <select name="status" class="hr-form-input">
+              {% for val, label in status_choices %}
+              <option value="{{ val }}" {% if payslip.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">&nbsp;</label>
+            <label class="hr-checkbox-label" style="height:40px;">
+              <input type="checkbox" name="is_paid" {% if payslip.is_paid %}checked{% endif %}>
+              Mark as Paid
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save Payslip</button>
+          <a href="{% url 'portal:hr_payroll_detail' run.pk %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block title %}Team Attendance — Digilatics{% endblock %}
+
+{% block content %}
+<div class="ep-page-header">
+  <div>
+    <div class="ep-page-title">Team Attendance</div>
+    <div class="ep-page-sub">Monthly attendance grid for your team</div>
+  </div>
+</div>
+
+{# Month Navigator #}
+<div class="ep-month-nav">
+  <a href="?year={{ prev_year }}&month={{ prev_month }}" class="ep-month-btn">&#8592;</a>
+  <span class="ep-month-label">{{ month_label }}</span>
+  <a href="?year={{ next_year }}&month={{ next_month }}" class="ep-month-btn">&#8594;</a>
+</div>
+
+{# Legend #}
+<div class="ep-att-legend">
+  <span class="ep-legend-item"><span class="ep-hgrid-cell present" style="width:20px;height:20px;border-radius:5px;display:inline-flex;"></span> Present</span>
+  <span class="ep-legend-item"><span class="ep-hgrid-cell absent"  style="width:20px;height:20px;border-radius:5px;display:inline-flex;"></span> Absent</span>
+  <span class="ep-legend-item"><span class="ep-hgrid-cell leave"   style="width:20px;height:20px;border-radius:5px;display:inline-flex;"></span> Leave</span>
+  <span class="ep-legend-item"><span class="ep-hgrid-cell wfh"    style="width:20px;height:20px;border-radius:5px;display:inline-flex;"></span> WFH</span>
+  <span class="ep-legend-item"><span class="ep-hgrid-cell half_day" style="width:20px;height:20px;border-radius:5px;display:inline-flex;"></span> Half Day</span>
+  <span class="ep-legend-item"><span class="ep-hgrid-cell holiday" style="width:20px;height:20px;border-radius:5px;display:inline-flex;"></span> Holiday</span>
+  <span class="ep-legend-item"><span class="ep-hgrid-cell weekend" style="width:20px;height:20px;border-radius:5px;display:inline-flex;"></span> Weekend</span>
+</div>
+
+{% if rows %}
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <div class="ep-team-att-wrap">
+    <table class="ep-team-att-table">
+      <thead>
+        <tr>
+          <th class="ep-team-att-name-col">Employee</th>
+          {% for day in days %}
+          <th class="ep-team-att-day-th {% if day.weekday >= 5 %}ep-day-weekend{% endif %} {% if day == today %}ep-day-today{% endif %}">
+            <div class="ep-hgrid-num {% if day == today %}is-today-num{% endif %}">{{ day.day }}</div>
+            <div class="ep-hgrid-day">{{ day|date:"D"|slice:":1" }}</div>
+          </th>
+          {% endfor %}
+          <th class="ep-team-att-summary-col">Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td class="ep-team-att-name-col">
+            <div class="ep-team-att-member">
+              <div class="ep-avatar-sm">{{ row.employee.full_name|slice:":1" }}</div>
+              <div>
+                <div class="ep-team-att-empname">{{ row.employee.full_name }}</div>
+                <div class="ep-team-att-dept">{{ row.employee.department|default:"—" }}</div>
+              </div>
+            </div>
+          </td>
+          {% for cell in row.cells %}
+          <td class="ep-team-att-cell-td {% if cell.day.weekday >= 5 %}ep-day-weekend{% endif %} {% if cell.day == today %}ep-day-today{% endif %}">
+            <div class="ep-hgrid-cell {{ cell.status }}"
+              {% if cell.record and cell.record.check_in %}
+              title="{{ cell.day }} | In: {{ cell.record.check_in|time:'g:i A' }}{% if cell.record.check_out %} Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}"
+              {% else %}
+              title="{{ cell.day }} | {{ cell.status|title }}"
+              {% endif %}
+            >
+              {% if cell.status == "present" %}
+                {% if cell.record.is_late %}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><polyline points="8,5 8,8 10.5,8"/></svg>
+                {% else %}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><polyline points="5,8 7,10.5 11,5.5"/></svg>
+                {% endif %}
+              {% elif cell.status == "absent" %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5"/></svg>
+              {% elif cell.status == "leave" %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="12" height="10.5" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5.5" y1="1.5" x2="5.5" y2="4.5"/><line x1="10.5" y1="1.5" x2="10.5" y2="4.5"/><line x1="5" y1="10" x2="11" y2="10"/></svg>
+              {% elif cell.status == "wfh" %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8L8 3l6 5v5.5a.8.8 0 0 1-.8.8H10.5V10H5.5v4.3H2.8A.8.8 0 0 1 2 13.5z"/></svg>
+              {% elif cell.status == "holiday" %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="8,1.5 9.8,5.8 14.5,6.2 11,9.3 12.1,14 8,11.5 3.9,14 5,9.3 1.5,6.2 6.2,5.8"/></svg>
+              {% elif cell.status == "half_day" %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5" stroke-dasharray="3 2"/><polyline points="8,5 8,8 10.5,8"/></svg>
+              {% elif cell.status == "weekend" %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="12" height="10.5" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><circle cx="5.5" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="10" r="1" fill="currentColor" stroke="none"/></svg>
+              {% elif cell.status == "future" %}
+                <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg>
+              {% else %}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><path d="M6,6.5 a2,2 0 1,1 4,0 c0,1.2 -2,1.5 -2,2.8"/><circle cx="8" cy="12" r=".9" fill="currentColor" stroke="none"/></svg>
+              {% endif %}
+            </div>
+          </td>
+          {% endfor %}
+          <td class="ep-team-att-summary-col">
+            <div class="ep-team-att-summary">
+              <span class="ep-summ-badge present">{{ row.present }}P</span>
+              <span class="ep-summ-badge absent">{{ row.absent }}A</span>
+              <span class="ep-summ-badge leave">{{ row.leave }}L</span>
+              {% if row.wfh %}<span class="ep-summ-badge wfh">{{ row.wfh }}W</span>{% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="ep-card" style="text-align:center;padding:48px;color:var(--text-muted);">
+  No team members found reporting to you.
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,407 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} ty-form{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ════════════════════════════════════════════════════════
+   TAX YEAR CHANGE FORM  —  ss-* design language
+   ════════════════════════════════════════════════════════ */
+.ty-header {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  padding:20px 24px; display:flex; align-items:center; gap:18px;
+  margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.ty-icon {
+  width:60px; height:60px; border-radius:16px; flex-shrink:0;
+  background:linear-gradient(135deg,#2563EB,#1D4ED8);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 12px rgba(37,99,235,0.25);
+}
+.ty-icon svg { width:28px; height:28px; stroke:#fff; }
+.ty-title { font-size:18px; font-weight:800; color:#111827; line-height:1.2; }
+.ty-meta  { font-size:12.5px; color:#6B7280; display:flex; gap:14px; flex-wrap:wrap; margin-top:4px; }
+.ty-meta span { display:flex; align-items:center; gap:4px; }
+.ty-active-pill   { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#DCFCE7; color:#16A34A; border:1px solid #BBF7D0; }
+.ty-inactive-pill { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB; }
+
+/* KPI row */
+.ty-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+.ty-kpi {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  display:flex; flex-direction:column; gap:6px; position:relative; overflow:hidden;
+}
+.ty-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
+.ty-kpi-slabs::before  { background:#F58400; }
+.ty-kpi-min::before    { background:#16A34A; }
+.ty-kpi-max::before    { background:#DC2626; }
+.ty-kpi-period::before { background:#2563EB; }
+.ty-kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.ty-kpi-icon svg { width:16px; height:16px; }
+.ty-kpi-slabs  .ty-kpi-icon { background:#FFF8EE; color:#F58400; }
+.ty-kpi-min    .ty-kpi-icon { background:#DCFCE7; color:#16A34A; }
+.ty-kpi-max    .ty-kpi-icon { background:#FEE2E2; color:#DC2626; }
+.ty-kpi-period .ty-kpi-icon { background:#DBEAFE; color:#2563EB; }
+.ty-kpi-label { font-size:11.5px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
+.ty-kpi-value { font-size:22px; font-weight:800; color:#111827; line-height:1; letter-spacing:-0.02em; }
+.ty-kpi-sub   { font-size:11px; color:#9CA3AF; }
+
+/* Slab visualiser */
+.ty-slab-visual {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04); margin-bottom:18px;
+}
+.ty-slab-visual-head {
+  display:flex; align-items:center; gap:8px;
+  padding:13px 18px; border-bottom:1px solid #E5E7EB;
+  background:#F9FAFB; font-size:12px; font-weight:700; color:#374151;
+}
+.ty-slab-visual-body { padding:12px 18px; }
+.ty-slab-row {
+  display:flex; align-items:center; gap:12px;
+  padding:7px 0; border-bottom:1px solid #F9FAFB; font-size:13px;
+}
+.ty-slab-row:last-child { border-bottom:none; }
+.ty-slab-name  { color:#374151; font-weight:600; min-width:160px; }
+.ty-slab-range { color:#9CA3AF; font-size:11.5px; min-width:180px; }
+.ty-slab-bar-wrap { flex:1; height:7px; background:#F3F4F6; border-radius:999px; overflow:hidden; margin:0 8px; }
+.ty-slab-bar { height:100%; border-radius:999px; }
+.ty-slab-rate-val { font-size:13px; font-weight:800; min-width:45px; text-align:right; }
+
+/* Annual strip */
+.ty-annual-strip {
+  background:#111827; border-radius:12px; padding:16px 20px;
+  display:flex; gap:0; overflow:hidden; margin-bottom:18px;
+}
+.ty-annual-item { flex:1; text-align:center; border-right:1px solid rgba(255,255,255,0.1); padding:0 12px; }
+.ty-annual-item:last-child { border-right:none; }
+.ty-annual-label { font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; }
+.ty-annual-value { font-size:16px; font-weight:800; color:#fff; margin-top:5px; letter-spacing:-0.01em; }
+
+/* Tabs */
+.ty-tabs-wrapper {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.ty-tab-nav { display:flex; overflow-x:auto; border-bottom:1px solid #E5E7EB; background:#F9FAFB; scrollbar-width:none; }
+.ty-tab-nav::-webkit-scrollbar { display:none; }
+.ty-tab-btn {
+  display:flex; align-items:center; gap:7px;
+  padding:13px 18px; font-size:12.5px; font-weight:600; color:#6B7280;
+  background:none; border:none; border-bottom:2px solid transparent;
+  cursor:pointer; white-space:nowrap; transition:all 0.15s; font-family:inherit; flex-shrink:0;
+}
+.ty-tab-btn:hover { color:#F58400; background:rgba(245,132,0,0.04); }
+.ty-tab-btn.active { color:#F58400; border-bottom-color:#F58400; background:#fff; }
+.ty-tab-pane { display:none; }
+.ty-tab-pane.active { display:block; }
+
+/* Form rows */
+.ty-row { display:flex; gap:24px; padding:16px 20px; border-bottom:1px solid #F3F4F6; align-items:flex-start; }
+.ty-row:last-child { border-bottom:none; }
+.ty-col { flex:0 0 calc(50% - 12px); min-width:0; display:flex; flex-direction:column; gap:6px; }
+.ty-col-full { flex:0 0 100%; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.ty-label { font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; display:block; }
+.ty-col input, .ty-col select, .ty-col textarea,
+.ty-col-full input, .ty-col-full select, .ty-col-full textarea {
+  width:100% !important; box-sizing:border-box !important;
+  border:1px solid #E5E7EB !important; border-radius:8px !important;
+  padding:9px 13px !important; font-size:13.5px !important;
+  color:#111827 !important; background:#F9FAFB !important;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif !important;
+  outline:none !important; transition:border-color 0.15s,box-shadow 0.15s !important;
+  max-width:100% !important;
+}
+.ty-col input:focus, .ty-col select:focus,
+.ty-col-full input:focus, .ty-col-full select:focus {
+  border-color:#F58400 !important;
+  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  background:#fff !important;
+}
+.ty-help   { font-size:11.5px; color:#9CA3AF; line-height:1.5; }
+.ty-errors { background:#FFF1F2; border:1px solid #FECDD3; border-radius:8px; color:#BE123C; font-size:12.5px; padding:8px 12px; margin:0; list-style:none; }
+.ty-readonly { font-size:13.5px; color:#374151; padding:9px 0; }
+
+/* Inline slabs table override */
+.ty-tab-pane .inline-group { border:none !important; margin:0 !important; padding:16px 20px !important; }
+.ty-tab-pane .inline-group h2 { display:none !important; }
+.ty-tab-pane .tabular.inline-related { border-radius:10px; overflow:hidden; border:1px solid #E5E7EB; }
+.ty-tab-pane .tabular thead tr { background:#F9FAFB; }
+.ty-tab-pane .tabular thead th { font-size:10.5px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #E5E7EB; padding:10px 12px; }
+.ty-tab-pane .tabular tbody tr { border-bottom:1px solid #F3F4F6; }
+.ty-tab-pane .tabular tbody tr:last-child { border-bottom:none; }
+.ty-tab-pane .tabular td { padding:9px 12px; }
+.ty-tab-pane .tabular td input, .ty-tab-pane .tabular td select {
+  border:1px solid #E5E7EB !important; border-radius:6px !important;
+  padding:6px 10px !important; font-size:12.5px !important;
+  background:#F9FAFB !important; color:#111827 !important;
+}
+.ty-tab-pane .tabular td input:focus, .ty-tab-pane .tabular td select:focus {
+  border-color:#F58400 !important; box-shadow:0 0 0 2px rgba(245,132,0,0.10) !important; background:#fff !important;
+}
+.ty-tab-pane .add-row td a, .ty-tab-pane .add-row a {
+  color:#F58400; font-weight:600; font-size:12.5px;
+}
+
+/* Submit row */
+.ty-submit-row {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:14px 20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px;
+}
+.ty-btn-save { background:#F58400; color:#fff; border:none; border-radius:8px; padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; font-family:inherit; }
+.ty-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.ty-btn-ghost { background:#F3F4F6; color:#374151; border:1px solid #E5E7EB; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.15s; font-family:inherit; }
+.ty-btn-ghost:hover { background:#E5E7EB; }
+.ty-btn-delete { margin-left:auto; color:#DC2626; font-size:13px; font-weight:500; padding:9px 16px; border:1px solid #FECDD3; border-radius:8px; background:#FFF1F2; text-decoration:none; transition:background 0.15s; }
+.ty-btn-delete:hover { background:#FFE4E6; color:#DC2626; }
+</style>
+{% endblock %}
+
+{% block inline_field_sets %}{% endblock %}
+
+{% block field_sets %}
+{% with form=adminform.form %}
+
+{% if adminform.form.non_field_errors %}
+<ul class="ty-errors" style="margin-bottom:14px">
+  {% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<!-- Header -->
+<div class="ty-header">
+  <div class="ty-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+  </div>
+  <div style="flex:1;min-width:0;">
+    <div class="ty-title">
+      {% if original %}Tax Year — {{ original.fiscal_year }}{% else %}New Tax Year{% endif %}
+    </div>
+    <div class="ty-meta">
+      {% if original %}
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          From: {{ original.effective_from|date:"d M Y" }}
+        </span>
+        {% if original.effective_to %}
+        <span>To: {{ original.effective_to|date:"d M Y" }}</span>
+        {% else %}
+        <span style="color:#16A34A;font-weight:600;">Ongoing</span>
+        {% endif %}
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          {{ original.slabs.count }} Tax Slabs
+        </span>
+        {% if original.is_active %}
+          <span class="ty-active-pill">Active</span>
+        {% else %}
+          <span class="ty-inactive-pill">Inactive</span>
+        {% endif %}
+      {% else %}
+        <span>Configure a new FBR fiscal year and add progressive tax slabs.</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if original %}
+  <div style="text-align:right;flex-shrink:0;">
+    <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Fiscal Year</div>
+    <div style="font-size:20px;font-weight:800;color:#2563EB;">{{ original.fiscal_year }}</div>
+    <div style="font-size:11.5px;color:#9CA3AF;margin-top:2px;">{{ original.slabs.count }} slabs configured</div>
+  </div>
+  {% endif %}
+</div>
+
+
+
+<!-- Slab visualiser -->
+{% if original.slabs.count %}
+<div class="ty-slab-visual">
+  <div class="ty-slab-visual-head" style="color:#2563EB;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    Tax Slab Visualisation — {{ original.fiscal_year }}
+  </div>
+  <div class="ty-slab-visual-body">
+    {% for slab in original.slabs.all %}
+    {% with rate=slab.rate_percent|floatformat:0 %}
+    <div class="ty-slab-row">
+      <span class="ty-slab-name">{{ slab.name }}</span>
+      <span class="ty-slab-range">
+        PKR {{ slab.annual_min_income|floatformat:0 }}
+        {% if slab.annual_max_income %} – PKR {{ slab.annual_max_income|floatformat:0 }}{% else %}+{% endif %}
+      </span>
+      <div class="ty-slab-bar-wrap">
+        <div class="ty-slab-bar" style="width:{{ rate }}%;background:{% if rate == '0' %}#E5E7EB{% elif rate|add:0 < 15 %}#16A34A{% elif rate|add:0 < 25 %}#F59E0B{% else %}#DC2626{% endif %};"></div>
+      </div>
+      <span class="ty-slab-rate-val" style="color:{% if rate == '0' %}#9CA3AF{% elif rate|add:0 < 15 %}#16A34A{% elif rate|add:0 < 25 %}#F59E0B{% else %}#DC2626{% endif %};">{{ rate }}%</span>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+
+<!-- Tabs -->
+<div class="ty-tabs-wrapper">
+  <nav class="ty-tab-nav">
+    <button class="ty-tab-btn active" type="button" data-tab="details">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Tax Year
+    </button>
+    <button class="ty-tab-btn" type="button" data-tab="slabs">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Tax Slabs{% if original %} ({{ original.slabs.count }}){% endif %}
+    </button>
+    <button class="ty-tab-btn" type="button" data-tab="notes">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+      Notes &amp; Audit
+    </button>
+  </nav>
+
+  <!-- Tax Year Details -->
+  <div class="ty-tab-pane active" id="tytab-details">
+    <div class="ty-row">
+      <div class="ty-col">
+        <label class="ty-label" for="{{ form.fiscal_year.id_for_label }}">
+          Fiscal Year *
+        </label>
+        {{ form.fiscal_year }}
+        {% if form.fiscal_year.errors %}<ul class="ty-errors">{% for e in form.fiscal_year.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="ty-help">Format: 2025-2026 (start year – end year)</span>
+      </div>
+      <div class="ty-col">
+        <label class="ty-label" for="{{ form.is_active.id_for_label }}">Status</label>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;">
+          {{ form.is_active }}
+          <span style="font-size:13.5px;color:#374151;">Active tax year</span>
+        </div>
+        {% if form.is_active.errors %}<ul class="ty-errors">{% for e in form.is_active.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+    <div class="ty-row">
+      <div class="ty-col">
+        <label class="ty-label" for="{{ form.effective_from.id_for_label }}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:3px;vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Effective From *
+        </label>
+        {{ form.effective_from }}
+        {% if form.effective_from.errors %}<ul class="ty-errors">{% for e in form.effective_from.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ty-col">
+        <label class="ty-label" for="{{ form.effective_to.id_for_label }}">Effective To</label>
+        {{ form.effective_to }}
+        {% if form.effective_to.errors %}<ul class="ty-errors">{% for e in form.effective_to.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="ty-help">Leave blank if this tax year is currently active.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tax Slabs (inline) -->
+  <div class="ty-tab-pane" id="tytab-slabs">
+    <div style="padding:14px 20px 0;background:#FFFBF2;border-bottom:1px solid #FDE68A;">
+      <div style="font-size:12px;color:#C86A00;font-weight:600;padding-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Add progressive tax slabs below. Each slab defines income range and applicable rate. Slabs are applied annually.
+      </div>
+    </div>
+    {% for inline_admin_formset in inline_admin_formsets %}
+      <div class="inline-group">
+        <h2>Tax Slabs</h2>
+        {{ inline_admin_formset.formset.management_form }}
+        <table>
+          <thead>
+            <tr>
+              {% for field in inline_admin_formset.formset.form.base_fields.values %}
+                <th><label>{{ field.label }}</label></th>
+              {% endfor %}
+              <th>Delete?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in inline_admin_formset.formset %}
+              <tr>
+                {% for field in form %}
+                  {% if field.name != 'DELETE' %}
+                    <td>{{ field }}</td>
+                  {% endif %}
+                {% endfor %}
+                <td>{{ form.DELETE }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Notes & Audit -->
+  <div class="ty-tab-pane" id="tytab-notes">
+    <div class="ty-row">
+      <div class="ty-col-full">
+        <label class="ty-label" for="{{ form.notes.id_for_label }}">Notes</label>
+        {{ form.notes }}
+        {% if form.notes.errors %}<ul class="ty-errors">{% for e in form.notes.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+    <div class="ty-row">
+      <div class="ty-col">
+        <label class="ty-label">Created At</label>
+        <div class="ty-readonly">{% if original %}{{ original.created_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div>
+      </div>
+      <div class="ty-col">
+        <label class="ty-label">Last Updated</label>
+        <div class="ty-readonly">{% if original %}{{ original.updated_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div>
+      </div>
+    </div>
+  </div>
+
+</div>{# /tabs #}
+
+{% endwith %}
+{% endblock field_sets %}
+
+{% block submit_buttons_bottom %}
+<div class="ty-submit-row">
+  <button type="submit" name="_save" class="ty-btn-save">{% trans "Save" %} →</button>
+  <button type="submit" name="_continue" class="ty-btn-ghost">{% trans "Save and continue editing" %}</button>
+  <button type="submit" name="_addanother" class="ty-btn-ghost">{% trans "Save and add another" %}</button>
+  {% if original %}
+  <a href="{% url 'admin:salary_taxyear_delete' original.pk %}"
+     class="ty-btn-delete"
+     onclick="return confirm('Delete tax year {{ original.fiscal_year }}?')">{% trans "Delete" %}</a>
+  {% endif %}
+</div>
+{% endblock submit_buttons_bottom %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script>
+(function () {
+  document.querySelectorAll('.ty-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.ty-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.ty-tab-pane').forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      var pane = document.getElementById('tytab-' + btn.dataset.tab);
+      if (pane) pane.classList.add('active');
+      try { sessionStorage.setItem('ty_tab', btn.dataset.tab); } catch(e) {}
+    });
+  });
+  var errorTab = null;
+  document.querySelectorAll('.ty-tab-pane').forEach(function(p) {
+    if (p.querySelector('.errorlist, .ty-errors')) errorTab = p.id.replace('tytab-', '');
+  });
+  var saved = ''; try { saved = sessionStorage.getItem('ty_tab') || ''; } catch(e) {}
+  var active = errorTab || saved || 'details';
+  document.querySelectorAll('.ty-tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === active); });
+  document.querySelectorAll('.ty-tab-pane').forEach(function(p) { p.classList.toggle('active', p.id === 'tytab-' + active); });
+})();
+</script>
+{% endblock %}

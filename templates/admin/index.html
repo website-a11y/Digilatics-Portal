@@ -1,0 +1,833 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Dashboard — Digilatics HRIS{% endblock %}
+
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD  —  ss-* design language
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Welcome hero ── */
+.di-hero {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.di-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #F58400 0%, #FBBF24 50%, #F58400 100%);
+  border-radius: 20px 20px 0 0;
+}
+.di-hero::after {
+  content: '';
+  position: absolute;
+  top: -80px; right: -60px;
+  width: 260px; height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,132,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.di-hero-logo {
+  width: 64px; height: 64px; border-radius: 18px;
+  background: linear-gradient(135deg, #F58400, #C86A00);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 20px rgba(245,132,0,0.25);
+}
+.di-hero-logo svg { width: 34px; height: 34px; }
+.di-hero-text { flex: 1; min-width: 0; }
+.di-hero-greeting {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #9CA3AF; margin-bottom: 4px;
+}
+.di-hero-title {
+  font-size: 24px; font-weight: 800; color: #111827; line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.di-hero-title span { color: #F58400; }
+.di-hero-sub {
+  font-size: 13px; color: #6B7280; margin-top: 6px;
+}
+.di-hero-chips {
+  display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;
+}
+.di-hero-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+  border-radius: 10px; padding: 8px 14px;
+  font-size: 12px; font-weight: 600; color: #374151;
+  text-decoration: none; transition: all 0.15s;
+}
+.di-hero-chip:hover {
+  background: #FFF8EE; border-color: rgba(245,132,0,0.4); color: #F58400;
+}
+.di-hero-chip svg { width: 13px; height: 13px; }
+
+/* ── KPI grid ── */
+.di-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+@media(max-width:1200px){ .di-kpi-grid{ grid-template-columns:repeat(3,1fr); } }
+@media(max-width:700px)  { .di-kpi-grid{ grid-template-columns:repeat(2,1fr); } }
+
+.di-kpi {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; gap: 6px;
+  position: relative; overflow: hidden;
+  text-decoration: none; transition: box-shadow 0.15s, border-color 0.15s;
+}
+.di-kpi:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: #D1D5DB; }
+.di-kpi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.di-kpi-emp::before      { background: #3B82F6; }
+.di-kpi-attend::before   { background: #F58400; }
+.di-kpi-leave::before    { background: #16A34A; }
+.di-kpi-payroll::before  { background: #7C3AED; }
+.di-kpi-net::before      { background: #DC2626; }
+
+.di-kpi-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 2px;
+}
+.di-kpi-icon svg { width: 17px; height: 17px; }
+.di-kpi-emp     .di-kpi-icon { background: #EFF6FF; color: #3B82F6; }
+.di-kpi-attend  .di-kpi-icon { background: #FFF8EE; color: #F58400; }
+.di-kpi-leave   .di-kpi-icon { background: #DCFCE7; color: #16A34A; }
+.di-kpi-payroll .di-kpi-icon { background: #F3E8FF; color: #7C3AED; }
+.di-kpi-net     .di-kpi-icon { background: #FEE2E2; color: #DC2626; }
+
+.di-kpi-label {
+  font-size: 11px; font-weight: 700; color: #6B7280;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.di-kpi-value {
+  font-size: 26px; font-weight: 800; line-height: 1;
+  letter-spacing: -0.02em; color: #111827;
+}
+.di-kpi-sub { font-size: 11px; color: #9CA3AF; }
+.di-kpi-emp     .di-kpi-value { color: #2563EB; }
+.di-kpi-attend  .di-kpi-value { color: #C86A00; }
+.di-kpi-leave   .di-kpi-value { color: #16A34A; }
+.di-kpi-payroll .di-kpi-value { color: #7C3AED; }
+.di-kpi-net     .di-kpi-value { color: #DC2626; }
+
+/* ── App module grid ── */
+.di-modules-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media(max-width:1100px){ .di-modules-row{ grid-template-columns: repeat(2,1fr); } }
+@media(max-width:600px)  { .di-modules-row{ grid-template-columns: 1fr; } }
+
+.di-module {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.15s;
+}
+.di-module:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+.di-module-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 15px 18px; border-bottom: 1px solid #E5E7EB;
+}
+.di-module-head-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.di-module-head-icon svg { width: 18px; height: 18px; }
+.di-mod-hr     .di-module-head-icon { background: #EFF6FF; color: #3B82F6; }
+.di-mod-attend .di-module-head-icon { background: #FFF8EE; color: #F58400; }
+.di-mod-leave  .di-module-head-icon { background: #DCFCE7; color: #16A34A; }
+.di-mod-pay    .di-module-head-icon { background: #F3E8FF; color: #7C3AED; }
+.di-mod-teams  .di-module-head-icon { background: #DBEAFE; color: #2563EB; }
+.di-mod-auth   .di-module-head-icon { background: #FEE2E2; color: #DC2626; }
+
+.di-module-head-title {
+  font-size: 13px; font-weight: 800; color: #111827; letter-spacing: -0.01em;
+}
+.di-module-head-sub {
+  font-size: 11px; color: #9CA3AF; margin-top: 1px;
+}
+.di-module-head-add {
+  margin-left: auto; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;
+  padding: 5px 11px; font-size: 11.5px; font-weight: 600; color: #374151;
+  text-decoration: none; transition: all 0.15s;
+}
+.di-module-head-add:hover { background: #FFF8EE; border-color: #FDE68A; color: #C86A00; }
+.di-module-head-add svg { width: 12px; height: 12px; }
+
+.di-module-body { padding: 6px 0; }
+.di-module-row {
+  display: flex; align-items: center;
+  padding: 9px 18px; border-bottom: 1px solid #F9FAFB;
+  transition: background 0.1s;
+}
+.di-module-row:last-child { border-bottom: none; }
+.di-module-row:hover { background: #FAFAFA; }
+.di-module-row-name {
+  flex: 1; font-size: 13px; color: #374151; font-weight: 500;
+  text-decoration: none;
+}
+.di-module-row-name:hover { color: #F58400; }
+.di-module-row-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.di-module-row-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 600; text-decoration: none;
+  padding: 3px 10px; border-radius: 6px; transition: all 0.12s;
+  border: 1px solid transparent;
+}
+.di-row-add    { color: #16A34A; background: #F0FDF4; border-color: #BBF7D0; }
+.di-row-add:hover { background: #DCFCE7; color: #15803D; }
+.di-row-change { color: #C86A00; background: #FFF8EE; border-color: #FDE68A; }
+.di-row-change:hover { background: #FEF3C7; color: #92400E; }
+.di-row-change svg, .di-row-add svg { width: 11px; height: 11px; }
+
+/* ── Quick actions strip ── */
+.di-quick-strip {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 18px 20px; margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.di-quick-title {
+  font-size: 11px; font-weight: 700; color: #6B7280;
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.di-quick-title-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #F58400;
+}
+.di-quick-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.di-quick-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #F9FAFB; border: 1.5px solid #E5E7EB; border-radius: 10px;
+  padding: 10px 16px; font-size: 12.5px; font-weight: 600; color: #374151;
+  text-decoration: none; transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.di-quick-btn:hover { border-color: #F58400; color: #C86A00; background: #FFF8EE; box-shadow: 0 2px 8px rgba(245,132,0,0.12); }
+.di-quick-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.di-quick-btn-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* ── Dark annual strip ── */
+.di-annual-strip {
+  background: #111827; border-radius: 14px; padding: 18px 24px;
+  display: flex; gap: 0; overflow: hidden; margin-bottom: 20px;
+}
+.di-annual-item {
+  flex: 1; text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.08); padding: 0 14px;
+}
+.di-annual-item:last-child { border-right: none; }
+.di-annual-label {
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,.4); font-weight: 700;
+}
+.di-annual-value {
+  font-size: 17px; font-weight: 800; color: #fff;
+  margin-top: 6px; letter-spacing: -0.01em;
+}
+.di-annual-value.orange { color: #F58400; }
+.di-annual-value.green  { color: #4ADE80; }
+.di-annual-value.blue   { color: #60A5FA; }
+
+/* ── Recent activity section ── */
+.di-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media(max-width:900px){ .di-two-col{ grid-template-columns:1fr; } }
+
+.di-card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.di-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px; border-bottom: 1px solid #E5E7EB;
+  background: #F9FAFB;
+}
+.di-card-title {
+  font-size: 12px; font-weight: 700; color: #374151;
+  display: flex; align-items: center; gap: 7px;
+}
+.di-card-title svg { width: 13px; height: 13px; }
+.di-card-link {
+  font-size: 11.5px; font-weight: 600; color: #F58400;
+  text-decoration: none; transition: color 0.12s;
+}
+.di-card-link:hover { color: #C86A00; }
+.di-card-body { padding: 0; }
+.di-list-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 18px; border-bottom: 1px solid #F9FAFB;
+  transition: background 0.1s;
+}
+.di-list-row:last-child { border-bottom: none; }
+.di-list-row:hover { background: #FAFAFA; }
+.di-list-avatar {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg,#F58400,#C86A00);
+}
+.di-list-info { flex: 1; min-width: 0; }
+.di-list-name { font-size: 13px; font-weight: 600; color: #111827; }
+.di-list-meta { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+.di-list-badge {
+  font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  flex-shrink: 0;
+}
+.di-badge-green  { background:#DCFCE7; color:#16A34A; }
+.di-badge-orange { background:#FFF8EE; color:#F58400; }
+.di-badge-blue   { background:#DBEAFE; color:#2563EB; }
+.di-badge-red    { background:#FEE2E2; color:#DC2626; }
+.di-badge-gray   { background:#F3F4F6; color:#6B7280; }
+
+.di-card-empty {
+  padding: 32px 18px; text-align: center; color: #9CA3AF; font-size: 12.5px;
+}
+.di-card-empty svg { width: 32px; height: 32px; margin: 0 auto 8px; opacity: 0.3; display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Hero banner ── #}
+<div class="di-hero">
+  <div class="di-hero-logo">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="64" height="64" rx="16" fill="rgba(255,255,255,0.08)"/>
+      <circle cx="32" cy="32" r="18" fill="white" fill-opacity="0.9"/>
+      <path d="M27 22H35.5C40.7467 22 45 26.2533 45 31.5C45 36.7467 40.7467 41 35.5 41H27V22Z" fill="#F58400"/>
+      <path d="M27 27H34.5C36.9853 27 39 29.0147 39 31.5C39 33.9853 36.9853 36 34.5 36H27V27Z" fill="white"/>
+    </svg>
+  </div>
+  <div class="di-hero-text">
+    <div class="di-hero-greeting">Digilatics HRIS Platform</div>
+    <div class="di-hero-title">
+      Welcome back, <span>{{ user.get_full_name|default:user.get_username }}</span>
+    </div>
+    <div class="di-hero-sub">
+      {% now "l, d F Y" %} &nbsp;·&nbsp; Super Admin Dashboard
+    </div>
+  </div>
+  <div class="di-hero-chips">
+    <a href="/admin/salary/payrollrun/" class="di-hero-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Payroll
+    </a>
+    <a href="/admin/attendance/attendancerecord/" class="di-hero-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Attendance
+    </a>
+    <a href="/admin/leaves/leaverequest/" class="di-hero-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Leaves
+    </a>
+    <a href="/admin/accounts/employeeprofile/" class="di-hero-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Employees
+    </a>
+  </div>
+</div>
+
+{# ── KPI cards ── #}
+<div class="di-kpi-grid">
+  <a href="/admin/accounts/employeeprofile/" class="di-kpi di-kpi-emp">
+    <div class="di-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="di-kpi-label">Employees</div>
+    <div class="di-kpi-value">{{ employee_count|default:"—" }}</div>
+    <div class="di-kpi-sub">registered staff</div>
+  </a>
+  <a href="/admin/attendance/attendancerecord/" class="di-kpi di-kpi-attend">
+    <div class="di-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div class="di-kpi-label">Attendance</div>
+    <div class="di-kpi-value">{{ attendance_today|default:"—" }}</div>
+    <div class="di-kpi-sub">records today</div>
+  </a>
+  <a href="/admin/leaves/leaverequest/" class="di-kpi di-kpi-leave">
+    <div class="di-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div class="di-kpi-label">Leave Requests</div>
+    <div class="di-kpi-value">{{ leave_pending|default:"—" }}</div>
+    <div class="di-kpi-sub">pending approval</div>
+  </a>
+  <a href="/admin/salary/payrollrun/" class="di-kpi di-kpi-payroll">
+    <div class="di-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    </div>
+    <div class="di-kpi-label">Payroll Runs</div>
+    <div class="di-kpi-value">{{ payroll_runs|default:"—" }}</div>
+    <div class="di-kpi-sub">total processed</div>
+  </a>
+  <a href="/admin/salary/salarysetup/" class="di-kpi di-kpi-net">
+    <div class="di-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div class="di-kpi-label">Salary Setups</div>
+    <div class="di-kpi-value">{{ salary_setups|default:"—" }}</div>
+    <div class="di-kpi-sub">configured</div>
+  </a>
+</div>
+
+{# ── Annual overview strip ── #}
+<div class="di-annual-strip">
+  <div class="di-annual-item">
+    <div class="di-annual-label">Platform</div>
+    <div class="di-annual-value orange">Digilatics</div>
+  </div>
+  <div class="di-annual-item">
+    <div class="di-annual-label">Modules Active</div>
+    <div class="di-annual-value">6 Apps</div>
+  </div>
+  <div class="di-annual-item">
+    <div class="di-annual-label">HR Accounts</div>
+    <div class="di-annual-value green">{{ employee_count|default:"—" }}</div>
+  </div>
+  <div class="di-annual-item">
+    <div class="di-annual-label">Payroll Runs</div>
+    <div class="di-annual-value blue">{{ payroll_runs|default:"—" }}</div>
+  </div>
+  <div class="di-annual-item">
+    <div class="di-annual-label">Today's Date</div>
+    <div class="di-annual-value">{% now "d M Y" %}</div>
+  </div>
+</div>
+
+{# ── Quick actions ── #}
+<div class="di-quick-strip">
+  <div class="di-quick-title">
+    <span class="di-quick-title-dot"></span>
+    Quick Actions
+  </div>
+  <div class="di-quick-actions">
+    <a href="/admin/accounts/employeeprofile/add/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      <span class="di-quick-btn-dot" style="background:#3B82F6;"></span>
+      Add Employee
+    </a>
+    <a href="/admin/salary/payrollrun/add/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="9.5" y1="10.5" x2="14.5" y2="10.5"/></svg>
+      <span class="di-quick-btn-dot" style="background:#7C3AED;"></span>
+      New Payroll Run
+    </a>
+    <a href="/admin/salary/salarysetup/add/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span class="di-quick-btn-dot" style="background:#F58400;"></span>
+      Setup Salary
+    </a>
+    <a href="/admin/leaves/leaverequest/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="di-quick-btn-dot" style="background:#16A34A;"></span>
+      Review Leaves
+    </a>
+    <a href="/admin/attendance/attendancerecord/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="di-quick-btn-dot" style="background:#F58400;"></span>
+      Attendance Records
+    </a>
+    <a href="/admin/salary/taxyear/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <span class="di-quick-btn-dot" style="background:#2563EB;"></span>
+      Tax Years
+    </a>
+    <a href="/admin/salary/statutorydeductionpolicy/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span class="di-quick-btn-dot" style="background:#6366F1;"></span>
+      Deduction Policies
+    </a>
+    <a href="/admin/auth/user/add/" class="di-quick-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="di-quick-btn-dot" style="background:#DC2626;"></span>
+      Add User
+    </a>
+  </div>
+</div>
+
+{# ── App modules grid ── #}
+<div class="di-modules-row">
+
+  {# HR Accounts #}
+  <div class="di-module di-mod-hr">
+    <div class="di-module-head">
+      <div class="di-module-head-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div>
+        <div class="di-module-head-title">HR Accounts</div>
+        <div class="di-module-head-sub">Employee registry &amp; profiles</div>
+      </div>
+      <a href="/admin/accounts/employeeprofile/add/" class="di-module-head-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </a>
+    </div>
+    <div class="di-module-body">
+      <div class="di-module-row">
+        <a href="/admin/accounts/employeeprofile/" class="di-module-row-name">Employee Registrations</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/accounts/employeeprofile/add/" class="di-module-row-btn di-row-add">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
+          </a>
+          <a href="/admin/accounts/employeeprofile/" class="di-module-row-btn di-row-change">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Attendance #}
+  <div class="di-module di-mod-attend">
+    <div class="di-module-head">
+      <div class="di-module-head-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div>
+        <div class="di-module-head-title">Attendance</div>
+        <div class="di-module-head-sub">Shifts, records &amp; policies</div>
+      </div>
+    </div>
+    <div class="di-module-body">
+      {% for item in attendance_models %}
+      <div class="di-module-row">
+        <a href="{{ item.admin_url }}" class="di-module-row-name">{{ item.name }}</a>
+        <div class="di-module-row-actions">
+          {% if item.add_url %}
+          <a href="{{ item.add_url }}" class="di-module-row-btn di-row-add">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
+          </a>
+          {% endif %}
+          <a href="{{ item.admin_url }}" class="di-module-row-btn di-row-change">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="di-module-row">
+        <a href="/admin/attendance/attendancerecord/" class="di-module-row-name">Attendance Records</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/attendance/attendancerecord/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/attendance/attendancerecord/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/attendance/shift/" class="di-module-row-name">Shifts</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/attendance/shift/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/attendance/shift/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/attendance/attendancepolicy/" class="di-module-row-name">Attendance Policies</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/attendance/attendancepolicy/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/attendance/publicholiday/" class="di-module-row-name">Public Holidays</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/attendance/publicholiday/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/attendance/publicholiday/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/attendance/deviceemployee/" class="di-module-row-name">Device Employee Mappings</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/attendance/deviceemployee/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/attendance/deviceemployee/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/attendance/syncschedule/" class="di-module-row-name">Sync Schedule</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/attendance/syncschedule/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Leave Management #}
+  <div class="di-module di-mod-leave">
+    <div class="di-module-head">
+      <div class="di-module-head-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div>
+        <div class="di-module-head-title">Leave Management</div>
+        <div class="di-module-head-sub">Requests, allocations &amp; types</div>
+      </div>
+      <a href="/admin/leaves/leaverequest/add/" class="di-module-head-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </a>
+    </div>
+    <div class="di-module-body">
+      <div class="di-module-row">
+        <a href="/admin/leaves/leaverequest/" class="di-module-row-name">Leave Requests</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/leaves/leaverequest/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/leaves/leaverequest/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/leaves/leaveallocation/" class="di-module-row-name">Leave Allocations</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/leaves/leaveallocation/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/leaves/leaveallocation/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/leaves/leavetype/" class="di-module-row-name">Leave Types</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/leaves/leavetype/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/leaves/leavetype/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Payroll #}
+  <div class="di-module di-mod-pay">
+    <div class="di-module-head">
+      <div class="di-module-head-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <div class="di-module-head-title">Payroll</div>
+        <div class="di-module-head-sub">Runs, payslips &amp; salary config</div>
+      </div>
+      <a href="/admin/salary/payrollrun/add/" class="di-module-head-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </a>
+    </div>
+    <div class="di-module-body">
+      <div class="di-module-row">
+        <a href="/admin/salary/payrollrun/" class="di-module-row-name">Payroll Runs</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/salary/payrollrun/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/salary/payrollrun/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/salary/payslip/" class="di-module-row-name">Payslips</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/salary/payslip/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/salary/payslip/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/salary/salarysetup/" class="di-module-row-name">Salary Setups</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/salary/salarysetup/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/salary/salarysetup/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/salary/statutorydeductionpolicy/" class="di-module-row-name">Statutory Deductions</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/salary/statutorydeductionpolicy/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/salary/statutorydeductionpolicy/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/salary/taxyear/" class="di-module-row-name">Tax Years</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/salary/taxyear/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/salary/taxyear/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Teams #}
+  <div class="di-module di-mod-teams">
+    <div class="di-module-head">
+      <div class="di-module-head-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M2 20v-1a3 3 0 0 1 3-3h1M22 20v-1a3 3 0 0 0-3-3h-1"/></svg>
+      </div>
+      <div>
+        <div class="di-module-head-title">Teams</div>
+        <div class="di-module-head-sub">Team structures &amp; members</div>
+      </div>
+      <a href="/admin/teams/team/add/" class="di-module-head-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </a>
+    </div>
+    <div class="di-module-body">
+      <div class="di-module-row">
+        <a href="/admin/teams/team/" class="di-module-row-name">Teams</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/teams/team/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/teams/team/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/teams/teammember/" class="di-module-row-name">Team Members</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/teams/teammember/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/teams/teammember/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Authentication #}
+  <div class="di-module di-mod-auth">
+    <div class="di-module-head">
+      <div class="di-module-head-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <div class="di-module-head-title">Authentication</div>
+        <div class="di-module-head-sub">Users &amp; permission groups</div>
+      </div>
+      <a href="/admin/auth/user/add/" class="di-module-head-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </a>
+    </div>
+    <div class="di-module-body">
+      <div class="di-module-row">
+        <a href="/admin/auth/user/" class="di-module-row-name">Users</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/auth/user/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/auth/user/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+      <div class="di-module-row">
+        <a href="/admin/auth/group/" class="di-module-row-name">Groups</a>
+        <div class="di-module-row-actions">
+          <a href="/admin/auth/group/add/" class="di-module-row-btn di-row-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</a>
+          <a href="/admin/auth/group/" class="di-module-row-btn di-row-change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Recent activity cards ── #}
+<div class="di-two-col">
+
+  {# Recent actions #}
+  <div class="di-card">
+    <div class="di-card-head">
+      <div class="di-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Recent Actions
+      </div>
+    </div>
+    <div class="di-card-body">
+      {% load log %}
+      {% get_admin_log 10 as admin_log for_user user %}
+      {% if admin_log %}
+        {% for entry in admin_log %}
+        <div class="di-list-row">
+          <div class="di-list-avatar" style="background:{% if entry.is_addition %}linear-gradient(135deg,#16A34A,#15803D){% elif entry.is_change %}linear-gradient(135deg,#F58400,#C86A00){% else %}linear-gradient(135deg,#DC2626,#B91C1C){% endif %};">
+            {% if entry.is_addition %}+{% elif entry.is_change %}~{% else %}×{% endif %}
+          </div>
+          <div class="di-list-info">
+            <div class="di-list-name">
+              {% if entry.is_deletion or not entry.get_admin_url %}
+                {{ entry.object_repr }}
+              {% else %}
+                <a href="{{ entry.get_admin_url }}" style="color:#111827;text-decoration:none;">{{ entry.object_repr }}</a>
+              {% endif %}
+            </div>
+            <div class="di-list-meta">{{ entry.content_type.app_label|capfirst }} · {{ entry.action_time|timesince }} ago</div>
+          </div>
+          <span class="di-list-badge {% if entry.is_addition %}di-badge-green{% elif entry.is_change %}di-badge-orange{% else %}di-badge-red{% endif %}">
+            {% if entry.is_addition %}Added{% elif entry.is_change %}Changed{% else %}Deleted{% endif %}
+          </span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="di-card-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          No recent actions yet.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# App overview / navigation shortcuts ── #}
+  <div class="di-card">
+    <div class="di-card-head">
+      <div class="di-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        App Navigator
+      </div>
+    </div>
+    <div class="di-card-body">
+      {% for app in app_list %}
+        {% for model in app.models %}
+        <div class="di-list-row">
+          <div class="di-list-avatar" style="font-size:10px;font-weight:700;background:linear-gradient(135deg,#6366F1,#4F46E5);">
+            {{ model.name|first|upper }}
+          </div>
+          <div class="di-list-info">
+            <div class="di-list-name">{{ model.name }}</div>
+            <div class="di-list-meta">{{ app.name }}</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            {% if model.add_url %}
+            <a href="{{ model.add_url }}" class="di-module-row-btn di-row-add" style="font-size:10.5px;padding:2px 8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:10px;height:10px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
+            </a>
+            {% endif %}
+            {% if model.admin_url %}
+            <a href="{{ model.admin_url }}" class="di-module-row-btn di-row-change" style="font-size:10.5px;padding:2px 8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>View
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock content %}

@@ -1,0 +1,1136 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ═══════════════════════════════════════════════════════
+   EMPLOYEE MULTI-STEP WIZARD  —  msw-* classes
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Layout wrapper ───────────────────────────────────── */
+.msw-wrap { max-width: 100%; }
+
+/* ── Profile header ───────────────────────────────────── */
+.msw-profile-header {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  padding:20px 24px; display:flex; align-items:center; gap:16px;
+  margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.msw-avatar {
+  width:60px;height:60px;border-radius:14px;object-fit:cover;
+  border:3px solid rgba(245,132,0,.18);flex-shrink:0;
+}
+.msw-avatar-ph {
+  width:60px;height:60px;border-radius:14px;
+  background:linear-gradient(135deg,#F58400,#C86A00);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:800;flex-shrink:0;
+}
+.msw-header-name{font-size:18px;font-weight:800;color:#111827;margin:0 0 4px;}
+.msw-header-meta{font-size:12px;color:#6B7280;display:flex;gap:12px;flex-wrap:wrap;}
+.msw-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;
+  background:#FFF8EE;color:#F58400;border:1px solid rgba(245,132,0,.25);}
+
+/* ── Step indicator ───────────────────────────────────── */
+.msw-stepper {
+  display:flex;align-items:center;margin-bottom:24px;
+  background:#fff;border:1px solid #E5E7EB;border-radius:14px;
+  padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,.04);
+  overflow-x:auto;gap:0;
+}
+.msw-step {
+  display:flex;flex-direction:column;align-items:center;
+  gap:6px;min-width:80px;flex:1;position:relative;cursor:pointer;
+}
+.msw-step:not(:last-child)::after {
+  content:'';position:absolute;top:18px;left:calc(50% + 20px);
+  right:calc(-50% + 20px);height:2px;background:#E5E7EB;z-index:0;
+}
+.msw-step.done:not(:last-child)::after { background:#F58400; }
+.msw-step-circle {
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;position:relative;z-index:1;
+  border:2px solid #E5E7EB;background:#fff;color:#9CA3AF;
+  transition:all .2s;
+}
+.msw-step.active .msw-step-circle {
+  border-color:#F58400;background:#F58400;color:#fff;
+  box-shadow:0 0 0 4px rgba(245,132,0,.15);
+}
+.msw-step.done .msw-step-circle {
+  border-color:#F58400;background:#FFF8EE;color:#F58400;
+}
+.msw-step-label {
+  font-size:10.5px;font-weight:600;color:#9CA3AF;
+  text-align:center;white-space:nowrap;
+}
+.msw-step.active .msw-step-label { color:#F58400; }
+.msw-step.done .msw-step-label { color:#374151; }
+
+/* ── Card (one per step) ──────────────────────────────── */
+.msw-card {
+  background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+  overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.msw-card-head {
+  padding:18px 24px 14px;border-bottom:1px solid #F3F4F6;
+  display:flex;align-items:center;gap:10px;
+}
+.msw-card-head-icon {
+  width:34px;height:34px;border-radius:9px;
+  background:rgba(245,132,0,.1);color:#F58400;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.msw-card-title{font-size:15px;font-weight:700;color:#111827;margin:0;}
+.msw-card-sub{font-size:12.5px;color:#9CA3AF;margin:2px 0 0;}
+
+/* ── Panes ────────────────────────────────────────────── */
+.msw-pane{display:none;}
+.msw-pane.active{display:block;}
+
+/* ── Rows & columns ───────────────────────────────────── */
+.msw-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;padding:16px 24px;border-bottom:1px solid #F3F4F6;align-items:flex-start;}
+.msw-row:last-child{border-bottom:none;}
+.msw-col{min-width:0;display:flex;flex-direction:column;gap:5px;}
+.msw-col-third{min-width:0;display:flex;flex-direction:column;gap:5px;}
+.msw-col-full{grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+@media(max-width:540px){.msw-row{grid-template-columns:1fr;}}
+
+/* ── Labels ───────────────────────────────────────────── */
+.msw-label{font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;display:block;}
+.msw-star{color:#EF4444;margin-left:2px;}
+
+/* ── Inputs ───────────────────────────────────────────── */
+.msw-col input,.msw-col select,.msw-col textarea,
+.msw-col-third input,.msw-col-third select,.msw-col-third textarea,
+.msw-col-full input,.msw-col-full select,.msw-col-full textarea {
+  width:100% !important;box-sizing:border-box !important;
+  border:1px solid #E5E7EB !important;border-radius:8px !important;
+  padding:9px 12px !important;font-size:13.5px !important;color:#111827 !important;
+  background:#F9FAFB !important;font-family:inherit !important;
+  outline:none !important;transition:border-color .15s,box-shadow .15s !important;
+  max-width:100% !important;
+}
+.msw-col input:focus,.msw-col select:focus,.msw-col textarea:focus,
+.msw-col-third input:focus,.msw-col-third select:focus,
+.msw-col-full input:focus,.msw-col-full select:focus,.msw-col-full textarea:focus {
+  border-color:#F58400 !important;
+  box-shadow:0 0 0 3px rgba(245,132,0,.12) !important;
+  background:#fff !important;
+}
+/* select2 */
+.msw-col .related-widget-wrapper,.msw-col-third .related-widget-wrapper,.msw-col-full .related-widget-wrapper {
+  display:flex !important;width:100% !important;
+}
+.msw-col .related-widget-wrapper .select2-container,
+.msw-col-third .related-widget-wrapper .select2-container,
+.msw-col-full .related-widget-wrapper .select2-container{flex:1 1 0 !important;min-width:0 !important;width:0 !important;}
+.msw-col .related-widget-wrapper span.select2-container:not(:last-of-type),
+.msw-col-third .related-widget-wrapper span.select2-container:not(:last-of-type),
+.msw-col-full .related-widget-wrapper span.select2-container:not(:last-of-type){display:none !important;}
+.msw-col .related-widget-wrapper-link,
+.msw-col-third .related-widget-wrapper-link,
+.msw-col-full .related-widget-wrapper-link{display:none !important;}
+
+/* ── Help & errors ────────────────────────────────────── */
+.msw-help{font-size:11.5px;color:#9CA3AF;line-height:1.5;}
+.msw-errors{background:#FFF1F2;border:1px solid #FECDD3;border-radius:7px;
+  color:#BE123C;font-size:12px;padding:6px 10px;margin:0;list-style:none;}
+.msw-errors li{margin:0;}
+
+/* ── Salary calculator ────────────────────────────────── */
+.msw-gross-wrap{background:#FFF8EE;border:1px solid rgba(245,132,0,.2);
+  border-radius:14px;padding:22px 24px;margin-bottom:0;}
+.msw-gross-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:#9CA3AF;font-weight:700;margin-bottom:8px;display:block;}
+.msw-gross-input{
+  width:100% !important;background:#fff !important;
+  border:1.5px solid #E5E7EB !important;border-radius:10px !important;
+  padding:12px 16px !important;font-size:22px !important;font-weight:800 !important;
+  color:#111827 !important;letter-spacing:-.02em !important;
+}
+.msw-gross-input:focus{border-color:#F58400 !important;background:#fff !important;
+  box-shadow:0 0 0 3px rgba(245,132,0,.15) !important;}
+.msw-gross-sub{font-size:11px;color:#9CA3AF;margin-top:6px;}
+.msw-breakdown{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;}
+@media(max-width:900px){.msw-breakdown{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.msw-breakdown{grid-template-columns:1fr;}}
+.msw-breakdown-item{background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px;}
+.msw-breakdown-pct{font-size:10px;color:#F58400;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+.msw-breakdown-label{font-size:12px;color:#6B7280;margin:2px 0;}
+.msw-breakdown-val{font-size:16px;font-weight:700;color:#111827;}
+.msw-breakdown-input{
+  width:100% !important;background:#F9FAFB !important;
+  border:1px solid #E5E7EB !important;border-radius:7px !important;
+  padding:6px 10px !important;font-size:13px !important;color:#111827 !important;
+  font-weight:600 !important;margin-top:4px !important;
+}
+.msw-breakdown-input:focus{border-color:#F58400 !important;outline:none !important;background:#fff !important;}
+.msw-total-bar{display:flex;justify-content:space-between;align-items:center;
+  padding:14px 16px;background:#FFF8EE;border-radius:10px;
+  margin-top:12px;border:1px solid rgba(245,132,0,.25);}
+.msw-total-label{font-size:12px;font-weight:600;color:#6B7280;}
+.msw-total-val{font-size:18px;font-weight:800;color:#F58400;}
+
+/* ── Document card ────────────────────────────────────── */
+.msw-doc-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;
+  padding:12px 16px;display:flex;align-items:center;gap:12px;}
+.msw-doc-icon{width:34px;height:34px;border-radius:9px;background:rgba(245,132,0,.1);
+  color:#F58400;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.msw-doc-body{flex:1;min-width:0;}
+.msw-doc-name{font-size:13px;font-weight:600;color:#374151;margin-bottom:4px;}
+.msw-doc-status{font-size:11.5px;color:#9CA3AF;}
+.msw-doc-uploaded{font-size:11.5px;color:#16A34A;font-weight:600;}
+.msw-doc-view{font-size:12px;font-weight:600;color:#F58400;text-decoration:none;}
+.msw-doc-body input[type="file"]{
+  border:none !important;background:transparent !important;
+  padding:0 !important;font-size:12px !important;margin-top:4px !important;
+}
+
+/* ── Extra doc repeater ───────────────────────────────── */
+.msw-doc-extra{border:1.5px dashed #E5E7EB;border-radius:10px;padding:12px 16px;
+  display:flex;gap:10px;align-items:center;margin-top:10px;}
+.msw-doc-extra input[type="text"]{
+  flex:0 0 160px !important;border:1px solid #E5E7EB !important;border-radius:7px !important;
+  padding:8px 10px !important;font-size:12.5px !important;color:#374151 !important;
+  background:#F9FAFB !important;
+}
+.msw-doc-extra input[type="file"]{flex:1 !important;}
+.msw-add-doc-btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+  border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;
+  font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;
+  margin-top:12px;transition:border-color .15s;font-family:inherit;
+}
+.msw-add-doc-btn:hover{border-color:#F58400;color:#F58400;}
+
+/* ── Nav buttons ──────────────────────────────────────── */
+.msw-nav{display:flex;justify-content:space-between;align-items:center;
+  padding:16px 24px;border-top:1px solid #F3F4F6;background:#F9FAFB;}
+.msw-btn-back{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;
+  border:1.5px solid #E5E7EB;background:#fff;color:#374151;
+  cursor:pointer;font-family:inherit;transition:background .15s;
+}
+.msw-btn-back:hover{background:#F3F4F6;}
+.msw-btn-back:disabled{opacity:.35;cursor:not-allowed;}
+.msw-btn-next{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 24px;border-radius:8px;font-size:13.5px;font-weight:700;
+  border:none;background:#F58400;color:#fff;
+  cursor:pointer;font-family:inherit;transition:background .15s,box-shadow .15s;
+}
+.msw-btn-next:hover{background:#C86A00;box-shadow:0 4px 12px rgba(245,132,0,.3);}
+.msw-step-counter{font-size:12px;color:#9CA3AF;font-weight:600;}
+
+/* ── Submit row ───────────────────────────────────────── */
+.msw-submit-row{
+  background:#fff;border:1px solid #E5E7EB;border-radius:14px;
+  padding:14px 20px;display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;margin-top:16px;
+}
+.msw-btn-save{background:#F58400;color:#fff;border:none;border-radius:8px;
+  padding:9px 22px;font-size:13.5px;font-weight:700;cursor:pointer;
+  transition:background .15s,box-shadow .15s;font-family:inherit;}
+.msw-btn-save:hover{background:#C86A00;box-shadow:0 4px 12px rgba(245,132,0,.3);}
+.msw-btn-ghost{background:#F3F4F6;color:#374151;border:1px solid #E5E7EB;
+  border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:background .15s;font-family:inherit;}
+.msw-btn-ghost:hover{background:#E5E7EB;}
+.msw-btn-delete{margin-left:auto;color:#DC2626;font-size:13px;font-weight:500;
+  padding:9px 16px;border:1px solid #FECDD3;border-radius:8px;background:#FFF1F2;
+  text-decoration:none;transition:background .15s;}
+.msw-btn-delete:hover{background:#FFE4E6;color:#DC2626;}
+
+/* ── Readonly ─────────────────────────────────────────── */
+.msw-readonly{font-size:13.5px;color:#374151;padding:9px 0;line-height:1.5;}
+.msw-readonly-muted{color:#9CA3AF;font-size:12.5px;font-style:italic;}
+
+/* ── Error banner ─────────────────────────────────────── */
+.msw-error-banner{background:#FFF1F2;border:1px solid #FECDD3;border-radius:10px;
+  padding:12px 16px;margin-bottom:16px;font-size:13px;color:#BE123C;font-weight:600;}
+</style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'admin/js/employee_form.js' %}" defer></script>
+{% endblock %}
+
+{% block field_sets %}
+{% with form=adminform.form %}
+
+<div class="msw-wrap">
+
+{# ── Non-field errors ── #}
+{% if adminform.form.non_field_errors %}
+<div class="msw-error-banner">
+  {% for e in adminform.form.non_field_errors %}{{ e }}{% endfor %}
+</div>
+{% endif %}
+
+{# ── Profile header ── #}
+<div class="msw-profile-header">
+  {% if original and original.profile_photo %}
+    <img class="msw-avatar" src="{{ original.profile_photo.url }}" alt="{{ original.full_name }}">
+  {% else %}
+    <div class="msw-avatar-ph">
+      {% if original %}{{ original.full_name|first|upper }}{% else %}+{% endif %}
+    </div>
+  {% endif %}
+  <div>
+    <div class="msw-header-name">
+      {% if original %}{{ original.full_name }}{% else %}New Employee{% endif %}
+    </div>
+    <div class="msw-header-meta">
+      {% if original %}
+        <span>{{ original.employee_code }}</span>
+        <span>{{ original.department }}</span>
+        <span>Joined {{ original.joining_date|date:"d M Y" }}</span>
+        <span class="msw-badge">{{ original.employment_status }}</span>
+      {% else %}
+        <span>Complete all 5 steps to register a new employee.</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── Step indicator ── #}
+<div class="msw-stepper" id="mswStepper">
+  <div class="msw-step active" data-step="1" onclick="mswGoto(1)">
+    <div class="msw-step-circle">1</div>
+    <div class="msw-step-label">Personal</div>
+  </div>
+  <div class="msw-step" data-step="2" onclick="mswGoto(2)">
+    <div class="msw-step-circle">2</div>
+    <div class="msw-step-label">Official</div>
+  </div>
+  <div class="msw-step" data-step="3" onclick="mswGoto(3)">
+    <div class="msw-step-circle">3</div>
+    <div class="msw-step-label">Salary</div>
+  </div>
+  <div class="msw-step" data-step="4" onclick="mswGoto(4)">
+    <div class="msw-step-circle">4</div>
+    <div class="msw-step-label">Documents</div>
+  </div>
+  <div class="msw-step" data-step="5" onclick="mswGoto(5)">
+    <div class="msw-step-circle">5</div>
+    <div class="msw-step-label">Access</div>
+  </div>
+</div>
+
+
+<div class="msw-pane active" id="msw-pane-1">
+<div class="msw-card">
+  <div class="msw-card-head">
+    <div class="msw-card-head-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+    <div>
+      <div class="msw-card-title">Personal Information</div>
+      <div class="msw-card-sub">Basic identity and contact details</div>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.full_name.id_for_label }}">Full Name <span class="msw-star">*</span></label>
+      {{ form.full_name }}
+      {% if form.full_name.errors %}<ul class="msw-errors">{% for e in form.full_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.username.id_for_label }}">Username <span class="msw-star">*</span></label>
+      {{ form.username }}
+      {% if form.username.errors %}<ul class="msw-errors">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Used to log in to the portal.</span>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+      {{ form.first_name }}
+      {% if form.first_name.errors %}<ul class="msw-errors">{% for e in form.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+      {{ form.last_name }}
+      {% if form.last_name.errors %}<ul class="msw-errors">{% for e in form.last_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col-third">
+      <label class="msw-label" for="{{ form.gender.id_for_label }}">Gender</label>
+      {{ form.gender }}
+      {% if form.gender.errors %}<ul class="msw-errors">{% for e in form.gender.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col-third">
+      <label class="msw-label" for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
+      {{ form.date_of_birth }}
+      {% if form.date_of_birth.errors %}<ul class="msw-errors">{% for e in form.date_of_birth.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col-third">
+      <label class="msw-label" for="{{ form.marital_status.id_for_label }}">Marital Status</label>
+      {{ form.marital_status }}
+      {% if form.marital_status.errors %}<ul class="msw-errors">{% for e in form.marital_status.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.official_email.id_for_label }}">Official Email <span class="msw-star">*</span></label>
+      {{ form.official_email }}
+      {% if form.official_email.errors %}<ul class="msw-errors">{% for e in form.official_email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.personal_email.id_for_label }}">Personal Email</label>
+      {{ form.personal_email }}
+      {% if form.personal_email.errors %}<ul class="msw-errors">{% for e in form.personal_email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.personal_phone.id_for_label }}">Phone <span class="msw-star">*</span></label>
+      {{ form.personal_phone }}
+      {% if form.personal_phone.errors %}<ul class="msw-errors">{% for e in form.personal_phone.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.country.id_for_label }}">Country</label>
+      {{ form.country }}
+      {% if form.country.errors %}<ul class="msw-errors">{% for e in form.country.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.city.id_for_label }}">City</label>
+      {{ form.city }}
+      {% if form.city.errors %}<ul class="msw-errors">{% for e in form.city.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.emergency_contact_name.id_for_label }}">Emergency Contact Name</label>
+      {{ form.emergency_contact_name }}
+      {% if form.emergency_contact_name.errors %}<ul class="msw-errors">{% for e in form.emergency_contact_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.emergency_contact_number.id_for_label }}">Emergency Contact Number</label>
+      {{ form.emergency_contact_number }}
+      {% if form.emergency_contact_number.errors %}<ul class="msw-errors">{% for e in form.emergency_contact_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.profile_photo.id_for_label }}">Profile Photo</label>
+      {{ form.profile_photo }}
+      {% if form.profile_photo.errors %}<ul class="msw-errors">{% for e in form.profile_photo.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">JPEG or PNG, max 2 MB.</span>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col-full">
+      <label class="msw-label" for="{{ form.current_address.id_for_label }}">Current Address</label>
+      {{ form.current_address }}
+      {% if form.current_address.errors %}<ul class="msw-errors">{% for e in form.current_address.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-nav">
+    <button type="button" class="msw-btn-back" disabled>← Back</button>
+    <span class="msw-step-counter">Step 1 of 5</span>
+    <button type="button" class="msw-btn-next" onclick="mswNext(1)">Next: Official Info →</button>
+  </div>
+</div>
+</div>{# /pane-1 #}
+
+
+<div class="msw-pane" id="msw-pane-2">
+<div class="msw-card">
+  <div class="msw-card-head">
+    <div class="msw-card-head-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    </div>
+    <div>
+      <div class="msw-card-title">Official Information</div>
+      <div class="msw-card-sub">Employment details, dates, and team assignment</div>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.employee_code.id_for_label }}">Employee Code <span class="msw-star">*</span></label>
+      {{ form.employee_code }}
+      {% if form.employee_code.errors %}<ul class="msw-errors">{% for e in form.employee_code.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Must be unique — e.g. 10001</span>
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.department.id_for_label }}">Department <span class="msw-star">*</span></label>
+      {{ form.department }}
+      {% if form.department.errors %}<ul class="msw-errors">{% for e in form.department.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.designation.id_for_label }}">Designation <span class="msw-star">*</span></label>
+      {{ form.designation }}
+      {% if form.designation.errors %}<ul class="msw-errors">{% for e in form.designation.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.work_location.id_for_label }}">Work Location</label>
+      {{ form.work_location }}
+      <datalist id="workLocationList">
+        <option value="Lahore Office">
+        <option value="US Office">
+        <option value="Remote">
+      </datalist>
+      {% if form.work_location.errors %}<ul class="msw-errors">{% for e in form.work_location.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.employment_type.id_for_label }}">Employment Type <span class="msw-star">*</span></label>
+      {{ form.employment_type }}
+      {% if form.employment_type.errors %}<ul class="msw-errors">{% for e in form.employment_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.employment_status.id_for_label }}">Employment Status <span class="msw-star">*</span></label>
+      {{ form.employment_status }}
+      {% if form.employment_status.errors %}<ul class="msw-errors">{% for e in form.employment_status.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col-third">
+      <label class="msw-label" for="{{ form.joining_date.id_for_label }}">Joining Date <span class="msw-star">*</span></label>
+      {{ form.joining_date }}
+      {% if form.joining_date.errors %}<ul class="msw-errors">{% for e in form.joining_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col-third">
+      <label class="msw-label" for="{{ form.hire_date.id_for_label }}">Hire Date</label>
+      {{ form.hire_date }}
+      {% if form.hire_date.errors %}<ul class="msw-errors">{% for e in form.hire_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Defaults to joining date if blank.</span>
+    </div>
+    <div class="msw-col-third">
+      <label class="msw-label" for="{{ form.confirmation_date.id_for_label }}">Confirmation Date</label>
+      {{ form.confirmation_date }}
+      {% if form.confirmation_date.errors %}<ul class="msw-errors">{% for e in form.confirmation_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.reporting_manager.id_for_label }}">Line Manager</label>
+      {{ form.reporting_manager }}
+      {% if form.reporting_manager.errors %}<ul class="msw-errors">{% for e in form.reporting_manager.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.shift_master.id_for_label }}">Shift</label>
+      {{ form.shift_master }}
+      {% if form.shift_master.errors %}<ul class="msw-errors">{% for e in form.shift_master.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Auto-fills check-in/out times.</span>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.team.id_for_label }}">Team</label>
+      {{ form.team }}
+      {% if form.team.errors %}<ul class="msw-errors">{% for e in form.team.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label">Scheduled Check-in / Check-out</label>
+      <div class="msw-readonly">
+        {% if original and original.scheduled_checkin %}
+          {{ original.scheduled_checkin|time:"H:i" }} — {{ original.scheduled_checkout|time:"H:i" }}
+        {% else %}
+          <span class="msw-readonly-muted">Auto-filled from shift after save.</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="msw-nav">
+    <button type="button" class="msw-btn-back" onclick="mswGoto(1)">← Back</button>
+    <span class="msw-step-counter">Step 2 of 5</span>
+    <button type="button" class="msw-btn-next" onclick="mswNext(2)">Next: Salary →</button>
+  </div>
+</div>
+</div>{# /pane-2 #}
+
+
+<div class="msw-pane" id="msw-pane-3">
+<div class="msw-card">
+  <div class="msw-card-head">
+    <div class="msw-card-head-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div>
+      <div class="msw-card-title">Salary & Compensation</div>
+      <div class="msw-card-sub">Enter gross salary — components are calculated automatically</div>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col-full">
+      <div class="msw-gross-wrap">
+        <span class="msw-gross-label">Gross Monthly Salary (PKR)</span>
+        <input type="number" class="msw-gross-input" id="mswGrossInput"
+               placeholder="0" min="0" step="1">
+        <div class="msw-gross-sub">Enter total gross — components are suggested below. You can override each.</div>
+
+        <div class="msw-breakdown">
+          <div class="msw-breakdown-item">
+            <div class="msw-breakdown-pct">60%</div>
+            <div class="msw-breakdown-label">Basic Salary</div>
+            <input type="number" class="msw-breakdown-input" id="mswBasicDisp"
+                   placeholder="0" value="{{ form.basic_salary.value|default:'' }}">
+          </div>
+          <div class="msw-breakdown-item">
+            <div class="msw-breakdown-pct">20%</div>
+            <div class="msw-breakdown-label">House Rent Allowance</div>
+            <input type="number" class="msw-breakdown-input" id="mswHraDisp"
+                   placeholder="0" value="{{ form.house_rent_allowance.value|default:'' }}">
+          </div>
+          <div class="msw-breakdown-item">
+            <div class="msw-breakdown-pct">10%</div>
+            <div class="msw-breakdown-label">Conveyance Allowance</div>
+            <input type="number" class="msw-breakdown-input" id="mswConvDisp"
+                   placeholder="0" value="{{ form.conveyance_allowance.value|default:'' }}">
+          </div>
+          <div class="msw-breakdown-item">
+            <div class="msw-breakdown-pct">5%</div>
+            <div class="msw-breakdown-label">Medical Allowance</div>
+            <input type="number" class="msw-breakdown-input" id="mswMedDisp"
+                   placeholder="0" value="{{ form.medical_allowance.value|default:'' }}">
+          </div>
+          <div class="msw-breakdown-item">
+            <div class="msw-breakdown-pct">5%</div>
+            <div class="msw-breakdown-label">Other Allowance</div>
+            <input type="number" class="msw-breakdown-input" id="mswOtherDisp"
+                   placeholder="0" value="{{ form.other_allowance.value|default:'' }}">
+          </div>
+        </div>
+
+        <div class="msw-total-bar" style="margin-top:12px;">
+          <span class="msw-total-label">Gross Monthly</span>
+          <span class="msw-total-val" id="mswGrossVal">PKR 0</span>
+        </div>
+      </div>
+
+      <!-- Deductions card -->
+      <div style="background:#F9FAFB;border:1px solid #E5E7EB;
+                  border-radius:14px;padding:18px 20px;margin-top:12px;">
+        <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+                    color:#9CA3AF;font-weight:700;margin-bottom:12px;">
+          Tax Deductions
+          {% if tax_year_label %}
+            <span style="font-weight:400;margin-left:6px;color:#D1D5DB;">{{ tax_year_label }}</span>
+          {% endif %}
+        </div>
+
+        <div id="mswSlabBadge" style="display:none;margin-bottom:12px;
+             background:#FFF8EE;border:1px solid rgba(245,132,0,.25);
+             border-radius:8px;padding:8px 12px;font-size:12px;color:#374151;">
+          <span id="mswSlabName" style="font-weight:700;color:#F58400;"></span>
+          <span style="margin:0 6px;color:#D1D5DB;">·</span>
+          Annual taxable (90% of gross × 12): <span id="mswAnnualIncome" style="color:#111827;font-weight:600;"></span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="msw-breakdown-item">
+            <div class="msw-breakdown-pct">Annual</div>
+            <div class="msw-breakdown-label">Income Tax</div>
+            <div class="msw-breakdown-val" id="mswAnnualTaxVal">PKR 0</div>
+          </div>
+          <div class="msw-breakdown-item">
+            <div class="msw-breakdown-pct">Monthly</div>
+            <div class="msw-breakdown-label">Income Tax</div>
+            <div class="msw-breakdown-val" id="mswMonthlyTaxVal" style="color:#F58400;">PKR 0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Net salary bar -->
+      <div class="msw-total-bar" style="margin-top:12px;
+           background:#F0FDF4;border-color:#BBF7D0;">
+        <span class="msw-total-label" style="color:#374151;">Net Salary (after tax)</span>
+        <span style="font-size:20px;font-weight:800;color:#16A34A;" id="mswNetVal">PKR 0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+  {# Hidden actual form fields — kept in sync by JS #}
+  <div style="display:none">
+    {{ form.basic_salary }}
+    {{ form.house_rent_allowance }}
+    {{ form.conveyance_allowance }}
+    {{ form.medical_allowance }}
+    {{ form.other_allowance }}
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.payment_mode.id_for_label }}">Payment Mode</label>
+      {{ form.payment_mode }}
+      {% if form.payment_mode.errors %}<ul class="msw-errors">{% for e in form.payment_mode.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col"></div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.bank_name.id_for_label }}">Bank Name</label>
+      {{ form.bank_name }}
+      {% if form.bank_name.errors %}<ul class="msw-errors">{% for e in form.bank_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.account_title.id_for_label }}">Account Title</label>
+      {{ form.account_title }}
+      {% if form.account_title.errors %}<ul class="msw-errors">{% for e in form.account_title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.account_number.id_for_label }}">Account Number</label>
+      {{ form.account_number }}
+      {% if form.account_number.errors %}<ul class="msw-errors">{% for e in form.account_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.iban.id_for_label }}">IBAN</label>
+      {{ form.iban }}
+      {% if form.iban.errors %}<ul class="msw-errors">{% for e in form.iban.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-nav">
+    <button type="button" class="msw-btn-back" onclick="mswGoto(2)">← Back</button>
+    <span class="msw-step-counter">Step 3 of 5</span>
+    <button type="button" class="msw-btn-next" onclick="mswNext(3)">Next: Documents →</button>
+  </div>
+</div>
+</div>{# /pane-3 #}
+
+
+<div class="msw-pane" id="msw-pane-4">
+<div class="msw-card">
+  <div class="msw-card-head">
+    <div class="msw-card-head-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+    </div>
+    <div>
+      <div class="msw-card-title">Documents</div>
+      <div class="msw-card-sub">CNIC, identity numbers, and file uploads</div>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.cnic.id_for_label }}">CNIC / National ID <span class="msw-star">*</span></label>
+      {{ form.cnic }}
+      {% if form.cnic.errors %}<ul class="msw-errors">{% for e in form.cnic.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Format: 12345-6789012-3 (must be unique)</span>
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.passport_number.id_for_label }}">Passport Number</label>
+      {{ form.passport_number }}
+      {% if form.passport_number.errors %}<ul class="msw-errors">{% for e in form.passport_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col-full">
+      <label class="msw-label" style="margin-bottom:10px">Upload Documents</label>
+
+      <div class="msw-doc-card">
+        <div class="msw-doc-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+        <div class="msw-doc-body">
+          <div class="msw-doc-name">CNIC Copy</div>
+          {% if original and original.cnic_copy %}
+            <div class="msw-doc-uploaded">✓ Uploaded — <a class="msw-doc-view" href="{{ original.cnic_copy.url }}" target="_blank">View</a></div>
+          {% else %}
+            <div class="msw-doc-status">Not uploaded</div>
+          {% endif %}
+          {{ form.cnic_copy }}
+          {% if form.cnic_copy.errors %}<ul class="msw-errors">{% for e in form.cnic_copy.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      <div class="msw-doc-card" style="margin-top:10px">
+        <div class="msw-doc-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="msw-doc-body">
+          <div class="msw-doc-name">Resume / CV</div>
+          {% if original and original.resume %}
+            <div class="msw-doc-uploaded">✓ Uploaded — <a class="msw-doc-view" href="{{ original.resume.url }}" target="_blank">View</a></div>
+          {% else %}
+            <div class="msw-doc-status">Not uploaded</div>
+          {% endif %}
+          {{ form.resume }}
+          {% if form.resume.errors %}<ul class="msw-errors">{% for e in form.resume.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      <div class="msw-doc-card" style="margin-top:10px">
+        <div class="msw-doc-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><polyline points="9,15 11,17 15,13"/></svg>
+        </div>
+        <div class="msw-doc-body">
+          <div class="msw-doc-name">Offer Letter</div>
+          {% if original and original.offer_letter %}
+            <div class="msw-doc-uploaded">✓ Uploaded — <a class="msw-doc-view" href="{{ original.offer_letter.url }}" target="_blank">View</a></div>
+          {% else %}
+            <div class="msw-doc-status">Not uploaded</div>
+          {% endif %}
+          {{ form.offer_letter }}
+          {% if form.offer_letter.errors %}<ul class="msw-errors">{% for e in form.offer_letter.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      <div class="msw-doc-card" style="margin-top:10px">
+        <div class="msw-doc-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+        </div>
+        <div class="msw-doc-body">
+          <div class="msw-doc-name">Contract</div>
+          {% if original and original.contract %}
+            <div class="msw-doc-uploaded">✓ Uploaded — <a class="msw-doc-view" href="{{ original.contract.url }}" target="_blank">View</a></div>
+          {% else %}
+            <div class="msw-doc-status">Not uploaded</div>
+          {% endif %}
+          {{ form.contract }}
+          {% if form.contract.errors %}<ul class="msw-errors">{% for e in form.contract.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      {# Extra document repeater #}
+      <div id="mswExtraDocs"></div>
+      <button type="button" class="msw-add-doc-btn" onclick="mswAddDoc()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Document
+      </button>
+    </div>
+  </div>
+
+  <div class="msw-nav">
+    <button type="button" class="msw-btn-back" onclick="mswGoto(3)">← Back</button>
+    <span class="msw-step-counter">Step 4 of 5</span>
+    <button type="button" class="msw-btn-next" onclick="mswNext(4)">Next: Access →</button>
+  </div>
+</div>
+</div>{# /pane-4 #}
+
+
+<div class="msw-pane" id="msw-pane-5">
+<div class="msw-card">
+  <div class="msw-card-head">
+    <div class="msw-card-head-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div>
+      <div class="msw-card-title">System Access & Notes</div>
+      <div class="msw-card-sub">Portal role, login credentials, and internal notes</div>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.role.id_for_label }}">Role <span class="msw-star">*</span></label>
+      {{ form.role }}
+      {% if form.role.errors %}<ul class="msw-errors">{% for e in form.role.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Managers and Approvers receive staff portal access.</span>
+    </div>
+    <div class="msw-col">
+      <label class="msw-label" for="{{ form.password.id_for_label }}">Password</label>
+      {{ form.password }}
+      {% if form.password.errors %}<ul class="msw-errors">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Leave blank to keep current password unchanged.</span>
+    </div>
+  </div>
+
+  <div class="msw-row">
+    <div class="msw-col-full">
+      <label class="msw-label" for="{{ form.remarks.id_for_label }}">Internal Remarks</label>
+      {{ form.remarks }}
+      {% if form.remarks.errors %}<ul class="msw-errors">{% for e in form.remarks.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <span class="msw-help">Not visible to the employee — admin notes only.</span>
+    </div>
+  </div>
+
+  {% if original %}
+  <div class="msw-row">
+    <div class="msw-col">
+      <label class="msw-label">Created By</label>
+      <div class="msw-readonly">
+        {% if original.created_by %}{{ original.created_by.username }}{% else %}<span class="msw-readonly-muted">—</span>{% endif %}
+      </div>
+    </div>
+    <div class="msw-col">
+      <label class="msw-label">Created At</label>
+      <div class="msw-readonly">{{ original.created_at|date:"d M Y, H:i" }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="msw-nav">
+    <button type="button" class="msw-btn-back" onclick="mswGoto(4)">← Back</button>
+    <span class="msw-step-counter">Step 5 of 5</span>
+    <button type="submit" name="_save" class="msw-btn-next" id="mswSaveBtn">
+      Save Employee ✓
+    </button>
+  </div>
+</div>
+</div>{# /pane-5 #}
+
+</div>{# /msw-wrap #}
+{% endwith %}
+{% endblock field_sets %}
+
+
+{% block submit_buttons_bottom %}
+<div class="msw-submit-row">
+  <button type="submit" name="_save" class="msw-btn-save">Save →</button>
+  <button type="submit" name="_addanother" class="msw-btn-ghost">Save and add another</button>
+  {% if original %}
+  <a href="{% url 'admin:accounts_employeeprofile_delete' original.pk %}"
+     class="msw-btn-delete"
+     id="mswDeleteLink">
+    Delete
+  </a>
+  {% endif %}
+</div>
+{% endblock submit_buttons_bottom %}
+
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script id="mswTaxData" type="application/json">{{ tax_slabs_json|safe }}</script>
+<script>
+(function () {
+  var TOTAL = 5;
+  var current = 1;
+
+  /* ── Salary field IDs — Django admin renders id_<field_name> by default ── */
+  function syncSalaryField(fieldName, val) {
+    /* Target by name attribute — more reliable than id when prefix is unknown */
+    var el = document.querySelector('input[name="' + fieldName + '"], select[name="' + fieldName + '"]');
+    if (el) el.value = val;
+  }
+
+  /* ── Navigation ── */
+  window.mswGoto = function (n) {
+    document.querySelectorAll('.msw-pane').forEach(function (p) { p.classList.remove('active'); });
+    document.getElementById('msw-pane-' + n).classList.add('active');
+    current = n;
+
+    document.querySelectorAll('.msw-step').forEach(function (s) {
+      var sn = parseInt(s.dataset.step);
+      s.classList.toggle('active', sn === n);
+      s.classList.toggle('done',   sn < n);
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  window.mswNext = function (n) {
+    /* Basic client-side required check for current step */
+    var pane = document.getElementById('msw-pane-' + n);
+    var required = pane.querySelectorAll('input[required], select[required]');
+    var ok = true;
+    required.forEach(function (el) {
+      if (!el.value.trim()) { el.style.borderColor = '#EF4444'; ok = false; }
+      else { el.style.borderColor = ''; }
+    });
+    if (!ok) return;
+    if (n < TOTAL) mswGoto(n + 1);
+  };
+
+  /* ── Tax slabs from server ── */
+  var TAX_SLABS = (function () {
+    try { return JSON.parse(document.getElementById('mswTaxData').textContent || '[]'); }
+    catch (e) { return []; }
+  }());
+
+  function calcAnnualTax(annualIncome) {
+    for (var i = 0; i < TAX_SLABS.length; i++) {
+      var s = TAX_SLABS[i];
+      var inSlab = annualIncome >= s.annual_min &&
+                   (s.annual_max === null || annualIncome <= s.annual_max);
+      if (inSlab) {
+        return {
+          name: s.name,
+          tax: s.base_tax + Math.max(0, annualIncome - s.excess_over) * s.rate / 100
+        };
+      }
+    }
+    return { name: '—', tax: 0 };
+  }
+
+  /* ── Salary calculator ── */
+  var grossInput = document.getElementById('mswGrossInput');
+  if (grossInput) {
+    grossInput.addEventListener('input', function () {
+      mswCalcSalary(this.value);
+    });
+  }
+
+  function mswCalcSalary(gross) {
+    gross = parseFloat(gross) || 0;
+    var basic   = Math.round(gross * 0.60);
+    var hra     = Math.round(gross * 0.20);
+    var conv    = Math.round(gross * 0.10);
+    var medical = Math.round(gross * 0.05);
+    var other   = gross - basic - hra - conv - medical;
+
+    setDisp('mswBasicDisp',  basic);
+    setDisp('mswHraDisp',    hra);
+    setDisp('mswConvDisp',   conv);
+    setDisp('mswMedDisp',    medical);
+    setDisp('mswOtherDisp',  other);
+
+    syncSalaryField('basic_salary',          basic);
+    syncSalaryField('house_rent_allowance',  hra);
+    syncSalaryField('conveyance_allowance',  conv);
+    syncSalaryField('medical_allowance',     medical);
+    syncSalaryField('other_allowance',       other);
+
+    updateTotals(gross);
+  }
+
+  function mswSyncTotal() {
+    syncSalaryField('basic_salary',          getDisp('mswBasicDisp'));
+    syncSalaryField('house_rent_allowance',  getDisp('mswHraDisp'));
+    syncSalaryField('conveyance_allowance',  getDisp('mswConvDisp'));
+    syncSalaryField('medical_allowance',     getDisp('mswMedDisp'));
+    syncSalaryField('other_allowance',       getDisp('mswOtherDisp'));
+    var gross = ['mswBasicDisp','mswHraDisp','mswConvDisp','mswMedDisp','mswOtherDisp']
+      .reduce(function (s, id) { return s + (getDisp(id) || 0); }, 0);
+    updateTotals(gross);
+  }
+
+  ['mswBasicDisp','mswHraDisp','mswConvDisp','mswMedDisp','mswOtherDisp'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', mswSyncTotal);
+  });
+
+  function updateTotals(gross) {
+    gross = gross || 0;
+    /* Mirror services.py: monthly taxable = gross * 0.90, then annualise */
+    var monthlyTaxable = gross * 0.90;
+    var annualTaxable  = monthlyTaxable * 12;
+    var result     = calcAnnualTax(annualTaxable);
+    var annualTax  = Math.round(result.tax);
+    var monthlyTax = Math.round(annualTax / 12);
+    var net        = Math.round(gross - monthlyTax);
+
+    setText('mswGrossVal',      'PKR ' + fmt(gross));
+    setText('mswAnnualTaxVal',  'PKR ' + fmt(annualTax));
+    setText('mswMonthlyTaxVal', 'PKR ' + fmt(monthlyTax));
+    setText('mswNetVal',        'PKR ' + fmt(net));
+    setText('mswAnnualIncome',  'PKR ' + fmt(annualTaxable));
+
+    var badge = document.getElementById('mswSlabBadge');
+    var slabName = document.getElementById('mswSlabName');
+    if (badge && slabName) {
+      badge.style.display = gross > 0 ? 'block' : 'none';
+      slabName.textContent = result.name;
+    }
+  }
+
+  function fmt(n) { return Math.round(n).toLocaleString(); }
+  function setText(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+
+  function setDisp (id, val) {
+    var el = document.getElementById(id);
+    if (el) el.value = val;
+  }
+  function getDisp (id) {
+    var el = document.getElementById(id);
+    return el ? (parseFloat(el.value) || 0) : 0;
+  }
+  /* Populate gross input and totals from display inputs (values already set via HTML) */
+  function prefillSalary () {
+    var basic   = getDisp('mswBasicDisp');
+    var hra     = getDisp('mswHraDisp');
+    var conv    = getDisp('mswConvDisp');
+    var medical = getDisp('mswMedDisp');
+    var other   = getDisp('mswOtherDisp');
+    var gross   = basic + hra + conv + medical + other;
+    var gi = document.getElementById('mswGrossInput');
+
+    /* Bad-state detection: if only basic is non-zero, the gross was previously saved
+       as basic_salary with all allowances at 0. Redistribute automatically. */
+    if (basic > 0 && hra === 0 && conv === 0 && medical === 0 && other === 0) {
+      if (gi) gi.value = basic;
+      mswCalcSalary(basic);
+      return;
+    }
+
+    if (gi) gi.value = gross > 0 ? gross : '';
+    syncSalaryField('basic_salary',         basic);
+    syncSalaryField('house_rent_allowance', hra);
+    syncSalaryField('conveyance_allowance', conv);
+    syncSalaryField('medical_allowance',    medical);
+    syncSalaryField('other_allowance',      other);
+    updateTotals(gross);
+  }
+
+  /* ── Extra document repeater ── */
+  var docCount = 0;
+  window.mswAddDoc = function () {
+    docCount++;
+    var wrap = document.getElementById('mswExtraDocs');
+    var row = document.createElement('div');
+    row.className = 'msw-doc-extra';
+    row.innerHTML =
+      '<input type="text" placeholder="Document name" name="extra_doc_label_' + docCount + '">' +
+      '<input type="file" name="extra_doc_file_' + docCount + '">' +
+      '<button type="button" onclick="this.parentNode.remove()" style="background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:18px;line-height:1;padding:0 4px;" title="Remove">×</button>';
+    wrap.appendChild(row);
+  };
+
+  /* ── Restore step on error ── */
+  var errorStep = null;
+  [1,2,3,4,5].forEach(function (n) {
+    var pane = document.getElementById('msw-pane-' + n);
+    if (pane && pane.querySelector('.msw-errors') && !errorStep) errorStep = n;
+  });
+
+  var saved = 1;
+  try { saved = parseInt(sessionStorage.getItem('mswStep') || '1') || 1; } catch(e){}
+  mswGoto(errorStep || saved);
+  prefillSalary();
+
+  /* Sync salary display → hidden form fields, then save step, on every submit */
+  var mainForm = document.querySelector('form');
+  if (mainForm) {
+    mainForm.addEventListener('submit', function () {
+      mswSyncTotal();
+      try { sessionStorage.setItem('mswStep', current); } catch(e) {}
+    });
+  }
+
+  /* Delete confirmation */
+  var delLink = document.getElementById('mswDeleteLink');
+  if (delLink) {
+    delLink.addEventListener('click', function (e) {
+      if (!confirm('Are you sure you want to delete this employee?')) e.preventDefault();
+    });
+  }
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Statutory Deductions — Digilatics HR{% endblock %}
+{% block page_title %}Statutory Deductions{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+  <a href="{% url 'portal:hr_statutory_deduction_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 16px;">+ Add Policy</a>
+</div>
+
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="hr-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Effective From</th>
+          <th>Effective To</th>
+          <th>EOBI (Fixed)</th>
+          <th>PF Employee %</th>
+          <th>PF Employer %</th>
+          <th>Social Security</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td style="font-weight:700;">{{ item.name }}</td>
+          <td>{{ item.effective_from }}</td>
+          <td>{{ item.effective_to|default:"—" }}</td>
+          <td>{{ item.eobi_employee_fixed|floatformat:2 }}</td>
+          <td>{{ item.provident_fund_employee_percent|floatformat:2 }}%</td>
+          <td>{{ item.provident_fund_employer_percent|floatformat:2 }}%</td>
+          <td>{{ item.social_security_fixed|floatformat:2 }}</td>
+          <td>{% if item.is_active %}<span class="ep-badge active">Active</span>{% else %}<span class="ep-badge draft">Inactive</span>{% endif %}</td>
+          <td style="white-space:nowrap;">
+            <a href="{% url 'portal:hr_statutory_deduction_edit' item.pk %}" class="ep-btn-sm" style="text-decoration:none;">Edit</a>
+            <a href="{% url 'portal:hr_statutory_deduction_delete' item.pk %}" class="ep-btn-sm" style="text-decoration:none;background:#fef2f2;color:#dc2626;margin-left:4px;">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9"><div class="hr-empty">No statutory deduction policies found.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

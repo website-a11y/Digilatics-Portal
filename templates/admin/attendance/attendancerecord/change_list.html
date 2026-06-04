@@ -1,0 +1,364 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'attendance/css/attendance.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">Attendance</a>
+  &rsaquo; Attendance Records
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="att-page">
+
+  <!-- ── Top bar ── -->
+  <div class="att-topbar">
+    <div class="att-topbar-left">
+      <h1 class="att-page-title">Attendance</h1>
+      <span class="att-page-sub">Monthly view</span>
+    </div>
+    <div class="att-topbar-right">
+      {% if has_add_permission %}
+      <a href="{% url 'admin:attendance_attendancerecord_add' %}" class="att-btn att-btn-primary">
+        + Add Record
+      </a>
+      {% endif %}
+      <a href="{% url 'admin:attendance_manual_punch' %}" class="att-btn att-btn-primary">⏱ Manual Punch</a>
+      <a href="{% url 'admin:attendance_summary' %}?period=daily" class="att-btn att-btn-outline">Daily Summary</a>
+      <a href="{% url 'admin:attendance_summary' %}?period=weekly" class="att-btn att-btn-outline">Weekly Summary</a>
+      <a href="{% url 'admin:attendance_summary' %}?period=monthly" class="att-btn att-btn-outline">Monthly Summary</a>
+      <form method="post" action="{% url 'admin:attendance_resync_leaves' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="att-btn att-btn-sync"
+                onclick="return confirm('Re-sync all approved leave requests into attendance records?')">
+          ↻ Sync Leaves
+        </button>
+      </form>
+      <a href="{% url 'admin:attendance_device_status' %}" class="att-btn att-btn-sync">
+        ⟳ Device Status
+      </a>
+    </div>
+  </div>
+
+  
+
+  <!-- ── Month Navigator ── -->
+  <div class="att-nav-bar">
+    <div class="att-nav-controls">
+      <a href="?year={{ prev_year }}&month={{ prev_month }}{% if dept_filter %}&dept={{ dept_filter }}{% endif %}" class="att-nav-arrow" title="Previous month">&#8249;</a>
+      <span class="att-nav-label">{{ month_label }}</span>
+      <a href="?year={{ next_year }}&month={{ next_month }}{% if dept_filter %}&dept={{ dept_filter }}{% endif %}" class="att-nav-arrow" title="Next month">&#8250;</a>
+    </div>
+
+   <!-- ── Stats strip ── -->
+  <div class="att-stats-strip">
+    <div class="att-stat-chip att-stat-present">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 6,11 12,3" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <strong>{{ summary_counts.present|default:0 }}</strong> Present
+    </div>
+    <div class="att-stat-chip att-stat-absent">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="3" y1="3" x2="11" y2="11" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><line x1="11" y1="3" x2="3" y2="11" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <strong>{{ summary_counts.absent|default:0 }}</strong> Absent
+    </div>
+    <div class="att-stat-chip att-stat-wfh">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <strong>{{ summary_counts.work_from_home|default:0 }}</strong> WFH
+    </div>
+    <div class="att-stat-chip att-stat-leave">
+      <strong>{% with lp=summary_counts.on_leave_paid|default:0 lu=summary_counts.on_leave_unpaid|default:0 %}{{ lp|add:lu }}{% endwith %}</strong> On Leave
+    </div>
+    <div class="att-stat-chip att-stat-holiday">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="none" style="margin-right:6px;">
+        <circle cx="10" cy="10" r="8.5" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/>
+        <text x="10" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#6366F1">H</text>
+      </svg>
+      <strong>{{ summary_counts.public_holiday|default:0 }}</strong> Holidays
+    </div>
+    <div class="att-stat-chip att-stat-notrecorded">
+      <strong>{{ summary_counts.not_recorded|default:0 }}</strong> Not Recorded
+    </div>
+  </div>
+  </div>
+
+  <!-- ── Department filter tabs ── -->
+  {% if departments %}
+  <div class="att-dept-tabs">
+    <a href="?year={{ year }}&month={{ month }}"
+       class="att-dept-tab {% if not dept_filter %}att-dept-tab--active{% endif %}">
+      All Departments
+    </a>
+    {% for dept in departments %}
+    <a href="?year={{ year }}&month={{ month }}&dept={{ dept }}"
+       class="att-dept-tab {% if dept_filter == dept %}att-dept-tab--active{% endif %}">
+      {{ dept }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Department breakdown cards ── -->
+  <!-- ── Employee Attendance Grid ── -->
+  <div class="att-grid-section">
+    <div class="att-grid-header-row">
+      <span class="att-grid-section-title">Employee Attendance</span>
+      <span class="att-grid-section-sub">{{ month_label }}</span>
+    </div>
+    <div class="att-grid-wrapper">
+      <table class="att-grid">
+        <thead>
+          <tr>
+            <th class="att-col-name">Employee Name</th>
+            {% for day in days %}
+            <th class="att-col-day {% if day.weekday >= 5 %}att-weekend-header{% endif %} {% if day == today %}att-today-header{% endif %}">
+              <span class="att-day-num">{{ day.day }}</span>
+              <span class="att-day-letter">{{ day|date:"D"|slice:":1" }}</span>
+            </th>
+            {% endfor %}
+            <th class="att-col-leave">Leave</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in grid %}
+          {% with leave_count=0 %}
+          <tr class="att-emp-row">
+            <td class="att-col-name">
+              <a href="{% url 'admin:attendance_employee_summary' row.employee.pk %}?year={{ year }}&month={{ month }}"
+                 class="att-emp-info att-emp-link" title="View {{ row.employee.full_name }}'s summary">
+                {% if row.employee.profile_photo %}
+                <img src="{{ row.employee.profile_photo.url }}" alt="{{ row.employee.full_name }}" class="att-emp-avatar">
+                {% else %}
+                <div class="att-emp-avatar att-emp-avatar-placeholder">{{ row.employee.full_name|first }}</div>
+                {% endif %}
+                <div>
+                  <div class="att-emp-name">{{ row.employee.full_name }}</div>
+                  
+                  {% if not dept_filter %}<div class="att-emp-dept">{{ row.employee.department }}</div>{% endif %}
+                </div>
+              </a>
+            </td>
+            {% for cell in row.cells %}
+            <td class="att-cell {% if cell.is_weekend %}att-cell-weekend{% endif %} {% if cell.is_today %}att-cell-today{% endif %} {% if cell.is_leave_synced %}att-cell-leave-synced{% endif %}"
+                title="{{ cell.tooltip }}">
+              {% if cell.is_weekend %}
+                <span class="att-icon att-icon-weekend">—</span>
+              {% elif cell.status_key == "public_holiday" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                  <img src="/media/employee_profiles/photos/3199857.png" alt="Public Holiday" />
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                  <img src="/media/employee_profiles/photos/3199857.png" alt="Public Holiday" />
+                </span>
+                {% endif %}
+              {% elif cell.is_future %}
+                <span class="att-icon att-icon-future">·</span>
+              {% elif cell.status_key == "not_recorded" %}
+                <span class="att-icon att-icon-nr" title="Missing punch">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/><path d="M10 7.25v4" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="13.8" r="0.9" fill="#2563eb"/></svg>
+                </span>
+              {% elif cell.status_key == "present" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-present" title="{{ cell.tooltip }}">
+                  {% if cell.record.is_late %}
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/><circle cx="10" cy="10" r="3.7" stroke="#dc2626" stroke-width="1.2"/><path d="M10 6.5v3.5l2.5 2.5" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {% else %}
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/><polyline points="5.5,10 8.5,13 14.5,7" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {% endif %}
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-present">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/><polyline points="5.5,10 8.5,13 14.5,7" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                {% endif %}
+              {% elif cell.status_key == "absent" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-absent" title="{{ cell.tooltip }}">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/><line x1="6.5" y1="6.5" x2="13.5" y2="13.5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/><line x1="13.5" y1="6.5" x2="6.5" y2="13.5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg>
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-absent">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/><line x1="6.5" y1="6.5" x2="13.5" y2="13.5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/><line x1="13.5" y1="6.5" x2="6.5" y2="13.5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg>
+                </span>
+                {% endif %}
+              {% elif cell.status_key == "work_from_home" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-wfh" title="{{ cell.tooltip }}">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/><path d="M5.5 10.8L10 7.2l4.5 3.6V15a.5.5 0 0 1-.5.5h-2.75V12.5h-2.5V15H6A.5.5 0 0 1 5.5 15v-4.2z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="1.4"/><path d="M8.2 12.7l1.1 1.1 3.4-3.4" stroke="#4c1d95" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-wfh">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/><path d="M5.5 10.8L10 7.2l4.5 3.6V15a.5.5 0 0 1-.5.5h-2.75V12.5h-2.5V15H6A.5.5 0 0 1 5.5 15v-4.2z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="1.4"/><path d="M8.2 12.7l1.1 1.1 3.4-3.4" stroke="#4c1d95" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                {% endif %}
+              {% elif cell.status_key == "half_day" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-halfday" title="{{ cell.tooltip }}">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/><text x="10" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#a16207">½</text></svg>
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-halfday">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/><text x="10" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#a16207">½</text></svg>
+                </span>
+                {% endif %}
+              {% elif cell.status_key == "on_leave_paid" or cell.status_key == "on_leave_unpaid" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-leave" title="{{ cell.tooltip }}">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/><path d="M10 6.5v7m-2-2h4" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-leave">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/><path d="M10 6.5v7m-2-2h4" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                {% endif %}
+              {% elif cell.status_key == "on_hourly_leave" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-hourly" title="{{ cell.tooltip }}">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="#1e293b" stroke-width="1"/><line x1="10" y1="7" x2="10" y2="5.5" stroke="#1e293b" stroke-width="1"/><line x1="13.5" y1="10" x2="15" y2="10" stroke="#1e293b" stroke-width="1"/></svg>
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-hourly">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="#1e293b" stroke-width="1"/><line x1="10" y1="7" x2="10" y2="5.5" stroke="#1e293b" stroke-width="1"/><line x1="13.5" y1="10" x2="15" y2="10" stroke="#1e293b" stroke-width="1"/></svg>
+                </span>
+                {% endif %}
+              {% elif cell.status_key == "public_holiday" %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/><text x="10" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#6366F1">H</text></svg>
+                  H
+                </a>
+                {% else %}
+                <span class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/><text x="10" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#6366F1">H</text></svg>
+                  H
+                </span>
+                {% endif %}
+              {% else %}
+                {% if cell.record %}
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}"
+                   class="att-badge att-badge-{{ cell.status_key }}" title="{{ cell.tooltip }}">
+                  {{ cell.meta.symbol }}
+                </a>
+                {% else %}
+                <span class="att-badge att-badge-{{ cell.status_key }}">{{ cell.meta.symbol }}</span>
+                {% endif %}
+              {% endif %}
+            </td>
+            {% endfor %}
+            <!-- Leave count column -->
+            <td class="att-col-leave-count">
+              <span class="att-leave-count" id="lc-{{ row.employee.pk }}">
+                {# Count leave days - will be calculated via CSS or JS if needed #}
+              </span>
+            </td>
+          </tr>
+          {% endwith %}
+          {% empty %}
+          <tr>
+            <td colspan="{{ days|length|add:2 }}" style="text-align:center;padding:40px;color:#94a3b8;">
+              {% if dept_filter %}
+                No active employees in <strong>{{ dept_filter }}</strong>.
+                <a href="?year={{ year }}&month={{ month }}">View all departments →</a>
+              {% else %}
+                No active employees found.
+                <a href="{% url 'admin:accounts_employeeprofile_changelist' %}">Manage employees →</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /att-page -->
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  var annData = {{ annual_chart_json|safe }};
+  var empData = {{ emp_type_chart_json|safe }};
+
+  /* ── Attendance Rate bar chart ── */
+  var ctx1 = document.getElementById('attRateChart');
+  if (ctx1) {
+    new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: annData.labels,
+        datasets: [
+          { label: 'On Time',  data: annData.present, backgroundColor: '#22c55e', borderRadius: 3, stack: 'a' },
+          { label: 'Late',     data: annData.late,    backgroundColor: '#F58400', borderRadius: 3, stack: 'a' },
+          { label: 'Absent',   data: annData.absent,  backgroundColor: '#e5e7eb', borderRadius: 3, stack: 'a' },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index' } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#6b7280' } },
+          y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 }, color: '#6b7280' }, beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  /* ── Employee Type donut ── */
+  var ctx2 = document.getElementById('empTypeChart');
+  var DONUT_COLORS = ['#3b82f6', '#F58400', '#22c55e', '#8b5cf6', '#ec4899', '#14b8a6'];
+  if (ctx2 && empData.data.length > 0) {
+    var total = empData.data.reduce(function(a, b) { return a + b; }, 0);
+    var tc = document.getElementById('empTypeTotal');
+    if (tc) tc.innerHTML = '<span class="att-donut-num">' + total + '</span><span class="att-donut-lbl">Employees</span>';
+
+    new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: empData.labels,
+        datasets: [{
+          data: empData.data,
+          backgroundColor: DONUT_COLORS.slice(0, empData.data.length),
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverBorderWidth: 3,
+        }],
+      },
+      options: {
+        responsive: true,
+        cutout: '68%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: {
+          label: function(ctx) { return ctx.label + ': ' + ctx.raw + ' (' + Math.round(ctx.raw / total * 100) + '%)'; }
+        }}},
+      },
+    });
+
+    /* Build custom legend */
+    var leg = document.getElementById('empTypeLegend');
+    if (leg) {
+      leg.innerHTML = empData.labels.map(function(lbl, i) {
+        return '<span class="att-donut-li"><span class="att-donut-dot" style="background:' + DONUT_COLORS[i] + '"></span>' +
+               '<span class="att-donut-li-cnt">' + empData.data[i] + '</span> ' + lbl + '</span>';
+      }).join('');
+    }
+  }
+
+  /* ── Fix leave count display (template hack) ── */
+  document.querySelectorAll('.att-leave-count').forEach(function(el) {
+    var raw = el.textContent.replace(/\s+/g, '');
+    var total = (raw.match(/\d+/g) || []).length;
+    el.textContent = total > 0 ? total + ' Day' + (total > 1 ? 's' : '') : '—';
+    if (total > 0) el.classList.add('att-leave-count-has');
+  });
+})();
+</script>
+{% endblock %}

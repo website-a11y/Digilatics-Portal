@@ -1,0 +1,301 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' 'attendance' %}">Attendance</a>
+  &rsaquo; <a href="{% url 'admin:attendance_attendancerecord_changelist' %}">Attendance Records</a>
+  &rsaquo; Device Status
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+*,body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;box-sizing:border-box;}
+.ds-wrap{max-width:960px;margin:0 auto;padding:24px 0;}
+.ds-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#6B7280;text-decoration:none;margin-bottom:20px;transition:color .12s;}
+.ds-back:hover{color:#F58400;}
+.ds-back svg{width:14px;height:14px;}
+
+/* Hero */
+.ds-hero{
+  border-radius:16px;padding:28px 32px;margin-bottom:20px;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+}
+.ds-hero-left{display:flex;align-items:center;gap:16px;}
+.ds-hero-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#F58400,#C86A00);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(245,132,0,.4);}
+.ds-hero-icon svg{width:26px;height:26px;color:#fff;}
+.ds-hero-title{font-size:22px;font-weight:900;color:#fff;margin:0 0 3px;letter-spacing:-.02em;}
+.ds-hero-sub{font-size:13px;color:rgba(255,255,255,.5);margin:0;}
+.ds-mode-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:700;}
+.ds-mode-push{background:rgba(34,197,94,.15);border:1.5px solid rgba(34,197,94,.4);color:#22c55e;}
+.ds-mode-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.25);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.25);}50%{box-shadow:0 0 0 6px rgba(34,197,94,.08);}}
+
+/* Cards grid */
+.ds-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+@media(max-width:720px){.ds-grid{grid-template-columns:1fr;}}
+.ds-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:20px 22px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.ds-card-title{font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.ds-card-title svg{width:13px;height:13px;}
+
+/* Stat row */
+.ds-stat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F3F4F6;}
+.ds-stat-row:last-child{border-bottom:none;}
+.ds-stat-label{font-size:13px;color:#6B7280;font-weight:500;}
+.ds-stat-val{font-size:13px;font-weight:700;color:#111827;}
+.ds-stat-val.ok{color:#059669;}
+.ds-stat-val.warn{color:#D97706;}
+.ds-stat-val.bad{color:#DC2626;}
+
+/* Config box */
+.ds-config-wrap{background:#F8F9FA;border:1.5px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:20px;}
+.ds-config-title{font-size:13px;font-weight:700;color:#374151;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.ds-config-title svg{width:15px;height:15px;color:#F58400;}
+.ds-config-table{width:100%;border-collapse:collapse;font-size:13px;}
+.ds-config-table td{padding:8px 12px;border-bottom:1px solid #E5E7EB;}
+.ds-config-table tr:last-child td{border-bottom:none;}
+.ds-config-table td:first-child{color:#6B7280;font-weight:600;width:220px;}
+.ds-config-table td:last-child{font-weight:700;color:#111827;}
+.ds-config-table .ds-copy{
+  background:#fff;border:1.5px solid #E5E7EB;border-radius:6px;
+  padding:4px 12px;font-size:12px;font-weight:700;color:#374151;cursor:pointer;
+  font-family:'Courier New',monospace;letter-spacing:.02em;transition:all .12s;
+}
+.ds-config-table .ds-copy:hover{border-color:#F58400;color:#F58400;}
+
+/* Steps */
+.ds-steps{counter-reset:step;display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+.ds-step{display:flex;gap:12px;align-items:flex-start;}
+.ds-step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#F58400,#C86A00);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.ds-step-body{flex:1;}
+.ds-step-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:3px;}
+.ds-step-desc{font-size:12.5px;color:#6B7280;line-height:1.5;}
+
+/* Recent log */
+.ds-log-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.ds-log-header{padding:14px 20px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;}
+.ds-log-title{font-size:13px;font-weight:700;color:#374151;}
+.ds-log-count{font-size:12px;font-weight:600;color:#9CA3AF;}
+.ds-log-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.ds-log-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;background:#F8F9FA;border-bottom:1px solid #E5E7EB;}
+.ds-log-table td{padding:11px 16px;border-bottom:1px solid #F3F4F6;color:#374151;}
+.ds-log-table tr:last-child td{border-bottom:none;}
+.ds-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;}
+.ds-badge-in{background:#ECFDF5;color:#059669;}
+.ds-badge-out{background:#FFF1F2;color:#DC2626;}
+.ds-empty{text-align:center;padding:40px;color:#9CA3AF;font-size:13px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ds-wrap">
+
+  <a href="{% url 'admin:attendance_attendancerecord_changelist' %}" class="ds-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Attendance
+  </a>
+
+  <!-- Hero -->
+  <div class="ds-hero">
+    <div class="ds-hero-left">
+      <div class="ds-hero-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="ds-hero-title">ZKTeco Device Status</h1>
+        <p class="ds-hero-sub">{{ host }} &nbsp;·&nbsp; ADMS Push Mode</p>
+      </div>
+    </div>
+    <span class="ds-mode-badge ds-mode-push">
+      <span class="ds-mode-dot"></span>
+      PUSH / ADMS Active
+    </span>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="ds-grid">
+    <div class="ds-card">
+      <div class="ds-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Today's Sync Status
+      </div>
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">Mode</span>
+        <span class="ds-stat-val ok">ADMS Push (Real-time)</span>
+      </div>
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">Records today from device</span>
+        <span class="ds-stat-val {% if today_adms_count > 0 %}ok{% else %}warn{% endif %}">{{ today_adms_count }}</span>
+      </div>
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">Last punch received</span>
+        <span class="ds-stat-val {% if last_push %}ok{% else %}warn{% endif %}">
+          {% if last_push %}{{ last_push.updated_at|date:"d M Y H:i" }}{% else %}No records yet{% endif %}
+        </span>
+      </div>
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">TCP pull (port {{ port }})</span>
+        <span class="ds-stat-val {% if tcp_reachable %}ok{% else %}warn{% endif %}">
+          {% if tcp_reachable %}Reachable{% else %}Not reachable (normal for push-only devices){% endif %}
+        </span>
+      </div>
+    </div>
+
+    <div class="ds-card">
+      <div class="ds-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><polyline points="22 2 22 8 16 8"/><path d="M22 2 12 12"/></svg>
+        Mapped Employees
+      </div>
+      {% with total=today_adms_count %}
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">Device mappings</span>
+        <span class="ds-stat-val">{{ device_mapping_count }}</span>
+      </div>
+      {% endwith %}
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">Webhook endpoint</span>
+        <span class="ds-stat-val ok">Active</span>
+      </div>
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">Date</span>
+        <span class="ds-stat-val">{{ today|date:"d M Y" }}</span>
+      </div>
+      <div class="ds-stat-row">
+        <span class="ds-stat-label">Punch endpoint</span>
+        <span class="ds-stat-val" style="font-family:monospace;font-size:11px;">/iclock/cdata</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Device config guide -->
+  <div class="ds-config-wrap">
+    <div class="ds-config-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+      </svg>
+      Configure your ZKTeco device with these settings
+    </div>
+    <table class="ds-config-table">
+      <tr>
+        <td>Menu path</td>
+        <td><strong>Menu → Communication → ADMS</strong> <em style="color:#9CA3AF;font-weight:500;">(or "Cloud Server" on some models)</em></td>
+      </tr>
+      <tr>
+        <td>Server Address</td>
+        <td>
+          <button class="ds-copy" onclick="navigator.clipboard.writeText('{{ server_ip }}');this.textContent='Copied!';setTimeout(()=>this.textContent='{{ server_ip }}',1500)">{{ server_ip }}</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Server Port</td>
+        <td>
+          <button class="ds-copy" onclick="navigator.clipboard.writeText('{{ server_port }}');this.textContent='Copied!';setTimeout(()=>this.textContent='{{ server_port }}',1500)">{{ server_port }}</button>
+        </td>
+      </tr>
+      <tr>
+        <td>HTTPS / SSL</td>
+        <td>Disabled</td>
+      </tr>
+      <tr>
+        <td>Push interval</td>
+        <td>1 second (real-time)</td>
+      </tr>
+      <tr>
+        <td>Domain / Path</td>
+        <td>Leave blank</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Setup steps -->
+  <div class="ds-steps">
+    <div class="ds-step">
+      <div class="ds-step-num">1</div>
+      <div class="ds-step-body">
+        <div class="ds-step-title">Set the server address on the device</div>
+        <div class="ds-step-desc">Go to Menu → Communication → ADMS on the ZKTeco device. Enter the <strong>Server Address</strong> and <strong>Port</strong> above. Disable HTTPS.</div>
+      </div>
+    </div>
+    <div class="ds-step">
+      <div class="ds-step-num">2</div>
+      <div class="ds-step-body">
+        <div class="ds-step-title">Make sure both are on the same network</div>
+        <div class="ds-step-desc">The device and this server must be on the <strong>same LAN</strong> (or the server must be publicly reachable). If you're behind a router, forward port {{ server_port }} to this machine.</div>
+      </div>
+    </div>
+    <div class="ds-step">
+      <div class="ds-step-num">3</div>
+      <div class="ds-step-body">
+        <div class="ds-step-title">Punch a finger / face on the device</div>
+        <div class="ds-step-desc">The device will push the punch to this portal in real time. Refresh this page and you should see <strong>Records today from device</strong> go up.</div>
+      </div>
+    </div>
+    <div class="ds-step">
+      <div class="ds-step-num">4</div>
+      <div class="ds-step-body">
+        <div class="ds-step-title">Check Device Employee Mappings</div>
+        <div class="ds-step-desc">The numeric user IDs enrolled on the ZKTeco device must match the <strong>Device User ID</strong> values in <a href="{% url 'admin:attendance_deviceemployee_changelist' %}" style="color:#F58400;font-weight:600;">Device Employee Mappings</a>. All 75 employees have already been auto-mapped from their employee codes.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent ADMS records -->
+  <div class="ds-log-card">
+    <div class="ds-log-header">
+      <span class="ds-log-title">Recent punches received from device</span>
+      <span class="ds-log-count">Last 20 records</span>
+    </div>
+    {% if recent_records %}
+    <table class="ds-log-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Date</th>
+          <th>Check In</th>
+          <th>Check Out</th>
+          <th>Status</th>
+          <th>Received</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in recent_records %}
+        <tr>
+          <td style="font-weight:600;color:#111827;">{{ rec.employee.full_name }}</td>
+          <td>{{ rec.date|date:"d M Y" }}</td>
+          <td>
+            {% if rec.check_in %}
+              <span class="ds-badge ds-badge-in">↑ {{ rec.check_in|time:"H:i" }}</span>
+              {% if rec.is_late %}<span style="font-size:10px;color:#D97706;font-weight:700;margin-left:4px;">LATE</span>{% endif %}
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if rec.check_out %}
+              <span class="ds-badge ds-badge-out">↓ {{ rec.check_out|time:"H:i" }}</span>
+            {% else %}<span style="color:#D1D5DB;">—</span>{% endif %}
+          </td>
+          <td>
+            {% if rec.status == 'present' %}<span class="ds-badge ds-badge-in">Present</span>
+            {% else %}<span style="color:#6B7280;font-size:12px;">{{ rec.get_status_display }}</span>{% endif %}
+          </td>
+          <td style="color:#9CA3AF;font-size:12px;">{{ rec.updated_at|date:"d M H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="ds-empty">
+      No device punches received yet.<br>
+      <span style="font-size:12px;">Configure the device with the settings above, then punch a finger/face to test.</span>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

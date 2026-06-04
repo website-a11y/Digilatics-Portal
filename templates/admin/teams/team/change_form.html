@@ -1,0 +1,346 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block title %}{% if original %}{{ original }}{% else %}Add Team{% endif %} — Digilatics HRIS{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<script src="{% url 'admin:jsi18n' %}"></script>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.tmf-wrap * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+/* ── Header ── */
+.tmf-header {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 20px;
+  padding: 24px 28px; display: flex; align-items: center; gap: 20px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.tmf-header::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #F58400, #FBBF24); border-radius: 20px 20px 0 0;
+}
+.tmf-header-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: linear-gradient(135deg, #F58400, #C86A00);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+}
+.tmf-header-icon svg { width: 28px; height: 28px; }
+.tmf-header-text { flex: 1; }
+.tmf-header-title { font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+.tmf-header-sub   { font-size: 13px; color: #6B7280; margin-top: 3px; }
+.tmf-header-meta  { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; align-items: center; }
+.tmf-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.tmf-badge-active   { background: #DCFCE7; color: #15803D; }
+.tmf-badge-inactive { background: #F3F4F6; color: #6B7280; }
+.tmf-badge-new      { background: #FFF8EE; color: #C86A00; }
+
+/* ── KPI grid ── */
+.tmf-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+@media(max-width:900px){ .tmf-kpi-grid{ grid-template-columns:repeat(2,1fr); } }
+
+.tmf-kpi {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden;
+}
+.tmf-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+.tmf-kpi-members::before { background: #F58400; }
+.tmf-kpi-dept::before    { background: #2563EB; }
+.tmf-kpi-created::before { background: #16A34A; }
+
+.tmf-kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+.tmf-kpi-icon svg { width: 17px; height: 17px; }
+.tmf-kpi-members .tmf-kpi-icon { background: #FFF8EE; color: #F58400; }
+.tmf-kpi-dept    .tmf-kpi-icon { background: #EFF6FF; color: #2563EB; }
+.tmf-kpi-created .tmf-kpi-icon { background: #DCFCE7; color: #16A34A; }
+
+.tmf-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+.tmf-kpi-value { font-size: 22px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; color: #111827; }
+.tmf-kpi-sub   { font-size: 11px; color: #9CA3AF; }
+.tmf-kpi-members .tmf-kpi-value { color: #C86A00; }
+.tmf-kpi-dept    .tmf-kpi-value { color: #2563EB; }
+.tmf-kpi-created .tmf-kpi-value { color: #16A34A; }
+
+/* ── Tabs ── */
+.tmf-tabs-nav {
+  display: flex; gap: 2px; border-bottom: 2px solid #E5E7EB; margin-bottom: 20px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tmf-tabs-nav::-webkit-scrollbar { display: none; }
+.tmf-tab-btn {
+  padding: 11px 20px; font-size: 13px; font-weight: 700;
+  color: #6B7280; background: transparent; border: none;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit;
+}
+.tmf-tab-btn:hover { color: #374151; }
+.tmf-tab-btn.active { color: #F58400; border-bottom-color: #F58400; }
+.tmf-tab-pane { display: none; }
+.tmf-tab-pane.active { display: block; }
+
+/* ── Form card ── */
+.tmf-form-card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 16px;
+}
+.tmf-form-card-head {
+  padding: 14px 20px; border-bottom: 1px solid #E5E7EB; background: #F9FAFB;
+  font-size: 13px; font-weight: 800; color: #374151; letter-spacing: -0.01em;
+}
+.tmf-form-body { padding: 20px; }
+
+/* ── Form rows ── */
+.tmf-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.tmf-form-row.single { grid-template-columns: 1fr; }
+@media(max-width:700px){ .tmf-form-row{ grid-template-columns:1fr; } }
+
+.tmf-field { display: flex; flex-direction: column; gap: 6px; }
+.tmf-field label { font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.04em; }
+.tmf-field input,
+.tmf-field select,
+.tmf-field textarea {
+  padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 10px;
+  font-size: 13px; color: #374151; background: #fff;
+  font-family: inherit; outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
+}
+.tmf-field input:focus,
+.tmf-field select:focus,
+.tmf-field textarea:focus { border-color: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+.tmf-field input[readonly] { background: #F9FAFB; color: #6B7280; cursor: default; }
+.tmf-field .help  { font-size: 11px; color: #9CA3AF; margin-top: 3px; }
+.tmf-field .errorlist { list-style: none; padding: 0; margin: 3px 0 0; }
+.tmf-field .errorlist li { font-size: 12px; color: #DC2626; font-weight: 600; }
+
+.tmf-checkbox-row {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px;
+}
+.tmf-checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: #F58400; flex-shrink: 0; }
+.tmf-cb-label { font-size: 13px; font-weight: 600; color: #374151; }
+.tmf-cb-sub   { font-size: 12px; color: #9CA3AF; margin-top: 1px; }
+
+/* ── Inline members wrapper ── */
+.tmf-inline-wrap { padding: 0 !important; }
+
+/* ── Submit row ── */
+.tmf-submit-row {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-top: 20px;
+}
+.tmf-submit-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.tmf-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; border: none; font-family: inherit; text-decoration: none;
+}
+.tmf-btn-primary   { background: linear-gradient(135deg, #F58400, #C86A00); color: #fff; }
+.tmf-btn-primary:hover { opacity: 0.9; color: #fff; }
+.tmf-btn-secondary { background: #F9FAFB; color: #374151; border: 1px solid #E5E7EB; }
+.tmf-btn-secondary:hover { background: #F3F4F6; }
+.tmf-btn-danger    { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+.tmf-btn-danger:hover { background: #FEE2E2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tmf-wrap">
+
+  <!-- Header -->
+  <div class="tmf-header">
+    <div class="tmf-header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <div class="tmf-header-text">
+      {% if original %}
+        <div class="tmf-header-title">{{ original.name }}</div>
+        <div class="tmf-header-sub">Code: {{ original.code }}{% if original.department %} &nbsp;·&nbsp; {{ original.department }}{% endif %}</div>
+      {% else %}
+        <div class="tmf-header-title">New Team</div>
+        <div class="tmf-header-sub">Create a new organisational team</div>
+      {% endif %}
+    </div>
+    <div class="tmf-header-meta">
+      {% if original %}
+        {% if original.is_active %}<span class="tmf-badge tmf-badge-active">Active</span>
+        {% else %}<span class="tmf-badge tmf-badge-inactive">Inactive</span>{% endif %}
+      {% else %}<span class="tmf-badge tmf-badge-new">New Team</span>{% endif %}
+    </div>
+  </div>
+
+  <!-- KPI Cards (existing records only) -->
+  {% if original %}
+  <div class="tmf-kpi-grid">
+    <div class="tmf-kpi tmf-kpi-members">
+      <div class="tmf-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div class="tmf-kpi-label">Members</div>
+      <div class="tmf-kpi-value">{{ original.member_count }}</div>
+      <div class="tmf-kpi-sub">Team members</div>
+    </div>
+    <div class="tmf-kpi tmf-kpi-dept">
+      <div class="tmf-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+      <div class="tmf-kpi-label">Department</div>
+      <div class="tmf-kpi-value" style="font-size:15px;">{{ original.department|default:"—" }}</div>
+      <div class="tmf-kpi-sub">Organisational unit</div>
+    </div>
+    <div class="tmf-kpi tmf-kpi-created">
+      <div class="tmf-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="tmf-kpi-label">Created</div>
+      <div class="tmf-kpi-value" style="font-size:15px;">{{ original.created_at|date:"M d, Y" }}</div>
+      <div class="tmf-kpi-sub">By {{ original.created_by|default:"system" }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tabs -->
+  <div class="tmf-tabs-nav" id="tmfTabsNav">
+    <button class="tmf-tab-btn active" data-tab="tmf-details">Team Details</button>
+    {% if original %}<button class="tmf-tab-btn" data-tab="tmf-members">Members ({{ original.member_count }})</button>{% endif %}
+    {% if original %}<button class="tmf-tab-btn" data-tab="tmf-audit">Audit</button>{% endif %}
+  </div>
+
+  <form method="post" novalidate id="tmfForm">
+    {% csrf_token %}
+
+    <!-- Errors summary -->
+    {% if adminform.form.non_field_errors %}
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:#DC2626;">
+      {{ adminform.form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <!-- TAB: Team Details -->
+    <div class="tmf-tab-pane active" id="tmf-details">
+      <div class="tmf-form-card">
+        <div class="tmf-form-card-head">Team Information</div>
+        <div class="tmf-form-body">
+          {% for fieldset in adminform %}
+            {% if fieldset.name == "Team Details" %}
+              {% for line in fieldset %}
+                <div class="tmf-form-row {% if line|length == 1 %}single{% endif %}">
+                  {% for field in line %}
+                    {% if field.field.name != "member_count_display" %}
+                    <div class="tmf-field">
+                      <label for="{{ field.field.id_for_label }}">{{ field.field.label }}</label>
+                      {% if field.field.name == "is_active" %}
+                        <div class="tmf-checkbox-row">
+                          {{ field.field }}
+                          <div>
+                            <div class="tmf-cb-label">Active Team</div>
+                            <div class="tmf-cb-sub">Uncheck to deactivate this team</div>
+                          </div>
+                        </div>
+                      {% else %}
+                        {{ field.field }}
+                      {% endif %}
+                      {% if field.field.help_text %}<div class="help">{{ field.field.help_text }}</div>{% endif %}
+                      {{ field.field.errors }}
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Members (inline) -->
+    {% if original %}
+    <div class="tmf-tab-pane" id="tmf-members">
+      <div class="tmf-form-card">
+        <div class="tmf-form-card-head">Team Members</div>
+        <div class="tmf-form-body tmf-inline-wrap">
+          {% for inline_admin_formset in inline_admin_formsets %}
+            {% include inline_admin_formset.opts.template %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB: Audit -->
+    {% if original %}
+    <div class="tmf-tab-pane" id="tmf-audit">
+      <div class="tmf-form-card">
+        <div class="tmf-form-card-head">Audit Information</div>
+        <div class="tmf-form-body">
+          <div class="tmf-form-row">
+            <div class="tmf-field">
+              <label>Created By</label>
+              <input type="text" value="{{ original.created_by|default:'—' }}" readonly>
+            </div>
+            <div class="tmf-field">
+              <label>Created At</label>
+              <input type="text" value="{{ original.created_at|date:'M d, Y H:i' }}" readonly>
+            </div>
+          </div>
+          <div class="tmf-form-row single">
+            <div class="tmf-field">
+              <label>Last Updated</label>
+              <input type="text" value="{{ original.updated_at|date:'M d, Y H:i' }}" readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Submit row -->
+    <div class="tmf-submit-row">
+      <div class="tmf-submit-group">
+        <button type="submit" name="_save" class="tmf-btn tmf-btn-primary">Save Team</button>
+        <button type="submit" name="_continue" class="tmf-btn tmf-btn-secondary">Save and continue editing</button>
+        {% if not original %}<button type="submit" name="_addanother" class="tmf-btn tmf-btn-secondary">Save and add another</button>{% endif %}
+      </div>
+      {% if original %}
+      <div>
+        {% url 'admin:teams_team_delete' original.pk as delete_url %}
+        {% if delete_url %}<a href="{{ delete_url }}" class="tmf-btn tmf-btn-danger">Delete Team</a>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+(function(){
+  var SK = 'tmf_team_tab';
+  var nav = document.getElementById('tmfTabsNav');
+  if(!nav) return;
+  function activate(id){
+    nav.querySelectorAll('.tmf-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.tmf-tab-pane').forEach(function(p){ p.classList.remove('active'); });
+    var btn = nav.querySelector('[data-tab="'+id+'"]');
+    var pane = document.getElementById(id);
+    if(btn && pane){ btn.classList.add('active'); pane.classList.add('active'); }
+    sessionStorage.setItem(SK, id);
+  }
+  nav.addEventListener('click', function(e){
+    var btn = e.target.closest('.tmf-tab-btn');
+    if(btn) activate(btn.dataset.tab);
+  });
+  var saved = sessionStorage.getItem(SK);
+  if(saved && document.getElementById(saved)) activate(saved);
+  var errors = document.querySelectorAll('.errorlist li');
+  if(errors.length){
+    var pane = errors[0].closest('.tmf-tab-pane');
+    if(pane) activate(pane.id);
+  }
+})();
+</script>
+{% endblock %}

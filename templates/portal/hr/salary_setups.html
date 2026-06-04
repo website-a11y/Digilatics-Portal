@@ -1,0 +1,59 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Salary Setups — Digilatics HR{% endblock %}
+{% block page_title %}Salary Setups{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+  <form method="get" class="hr-filter-row" style="flex:1;">
+    <div class="hr-search-wrap" style="max-width:360px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" name="q" value="{{ q }}" placeholder="Search employee…" class="hr-search-input">
+    </div>
+    <button type="submit" class="hr-filter-btn">Search</button>
+    {% if q %}<a href="?" class="hr-clear-btn">Clear</a>{% endif %}
+  </form>
+  <a href="{% url 'portal:hr_salary_forecast' %}" class="ep-btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 14px;background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;">📊 Forecast</a>
+  <a href="{% url 'portal:hr_salary_setup_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 16px;">+ Add Setup</a>
+</div>
+
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="hr-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Gross Input</th>
+          <th>Basic</th>
+          <th>HRA</th>
+          <th>Payment Mode</th>
+          <th>Bank</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in setups %}
+        <tr>
+          <td>
+            <div style="font-weight:700;font-size:13px;">{{ s.employee.full_name }}</div>
+            <div style="font-size:11px;color:var(--text-2);">{{ s.employee.employee_code }} · {{ s.employee.department }}</div>
+          </td>
+          <td style="font-weight:600;">{{ s.gross_salary_input|floatformat:0 }}</td>
+          <td>{{ s.basic_salary|floatformat:0 }}</td>
+          <td>{{ s.house_rent_allowance|floatformat:0 }}</td>
+          <td>{{ s.payment_mode }}</td>
+          <td style="font-size:12px;color:var(--text-2);">{{ s.bank_name|default:"—" }}</td>
+          <td>{% if s.is_active %}<span class="ep-badge active">Active</span>{% else %}<span class="ep-badge draft">Inactive</span>{% endif %}</td>
+          <td style="white-space:nowrap;">
+            <a href="{% url 'portal:hr_salary_setup_edit' s.pk %}" class="ep-btn-sm" style="text-decoration:none;">Edit</a>
+            <a href="{% url 'portal:hr_salary_setup_delete' s.pk %}" class="ep-btn-sm" style="text-decoration:none;background:#fef2f2;color:#dc2626;margin-left:4px;">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8"><div class="hr-empty">No salary setups found.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

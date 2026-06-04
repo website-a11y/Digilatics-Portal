@@ -1,0 +1,12 @@
+{% load i18n %}
+{% if original %}
+<div class="ef-meta-row" style="margin-bottom:16px;">
+  <span class="ef-meta-item">Employee code: <strong>{{ original.employee_code }}</strong></span>
+  <span class="ef-meta-sep">·</span>
+  <span class="ef-meta-item">Department: <strong>{{ original.department }}</strong></span>
+  {% if original.joining_date %}
+  <span class="ef-meta-sep">·</span>
+  <span class="ef-meta-item">Joined: <strong>{{ original.joining_date|date:"d/m/Y" }}</strong></span>
+  {% endif %}
+</div>
+{% endif %}

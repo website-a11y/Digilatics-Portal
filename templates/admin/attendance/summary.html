@@ -1,0 +1,211 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'attendance/css/attendance.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">Attendance</a>
+  &rsaquo; <a href="{% url 'admin:attendance_attendancerecord_changelist' %}">Records</a>
+  &rsaquo; Summary
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="att-page">
+
+  <!-- ── Top bar ── -->
+  <div class="att-topbar">
+    <div class="att-topbar-left">
+      <h1 class="att-page-title">Attendance Summary</h1>
+      <span class="att-page-sub">{{ title }}</span>
+    </div>
+    <div class="att-topbar-right">
+      <a href="{% url 'admin:attendance_attendancerecord_changelist' %}" class="att-btn att-btn-outline">
+        ← Monthly View
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Period tabs ── -->
+  <div class="att-period-tabs">
+    <a href="?period=daily"   class="att-period-tab {% if period == 'daily' %}active{% endif %}">Daily</a>
+    <a href="?period=weekly"  class="att-period-tab {% if period == 'weekly' %}active{% endif %}">Weekly</a>
+    <a href="?period=monthly" class="att-period-tab {% if period == 'monthly' %}active{% endif %}">Monthly</a>
+  </div>
+
+  <!-- ── KPI cards ── -->
+  <div class="att-kpi-grid">
+    <div class="att-kpi-card att-kpi-total">
+      <div class="att-kpi-value">{{ total_employees }}</div>
+      <div class="att-kpi-label">Total Employees</div>
+    </div>
+    <div class="att-kpi-card att-kpi-working">
+      <div class="att-kpi-value">{{ working_days }}</div>
+      <div class="att-kpi-label">Working Days</div>
+    </div>
+    <div class="att-kpi-card att-kpi-present">
+      <div class="att-kpi-value">{{ present_count }}</div>
+      <div class="att-kpi-label">Present</div>
+    </div>
+    <div class="att-kpi-card att-kpi-absent">
+      <div class="att-kpi-value">{{ absent_count }}</div>
+      <div class="att-kpi-label">Absent</div>
+    </div>
+    <div class="att-kpi-card att-kpi-leave">
+      <div class="att-kpi-value">{{ leave_paid_count|add:leave_unpaid_count }}</div>
+      <div class="att-kpi-label">On Leave</div>
+    </div>
+    <div class="att-kpi-card att-kpi-hourly">
+      <div class="att-kpi-value">{{ hourly_leave_count }}</div>
+      <div class="att-kpi-label">Hourly Leave</div>
+    </div>
+    <div class="att-kpi-card att-kpi-halfday">
+      <div class="att-kpi-value">{{ half_day_count }}</div>
+      <div class="att-kpi-label">Half Day</div>
+    </div>
+    <div class="att-kpi-card att-kpi-holiday">
+      <div class="att-kpi-value">{{ public_holiday_count }}</div>
+      <div class="att-kpi-label">Public Holidays</div>
+    </div>
+  </div>
+
+  <!-- ── Status breakdown bar ── -->
+  {% with total=present_count|add:absent_count|add:leave_paid_count|add:leave_unpaid_count|add:hourly_leave_count|add:half_day_count %}
+  {% if total > 0 %}
+  <div class="att-breakdown-section">
+    <h2 class="att-section-title">Status Breakdown</h2>
+    <div class="att-breakdown-bar">
+      {% if present_count %}
+      <div class="att-bar-seg att-bar-present" style="flex:{{ present_count }}" title="Present: {{ present_count }}"></div>
+      {% endif %}
+      {% if absent_count %}
+      <div class="att-bar-seg att-bar-absent" style="flex:{{ absent_count }}" title="Absent: {{ absent_count }}"></div>
+      {% endif %}
+      {% if leave_paid_count %}
+      <div class="att-bar-seg att-bar-leave-paid" style="flex:{{ leave_paid_count }}" title="Leave (Paid): {{ leave_paid_count }}"></div>
+      {% endif %}
+      {% if leave_unpaid_count %}
+      <div class="att-bar-seg att-bar-leave-unpaid" style="flex:{{ leave_unpaid_count }}" title="Leave (Unpaid): {{ leave_unpaid_count }}"></div>
+      {% endif %}
+      {% if hourly_leave_count %}
+      <div class="att-bar-seg att-bar-hourly" style="flex:{{ hourly_leave_count }}" title="Hourly: {{ hourly_leave_count }}"></div>
+      {% endif %}
+      {% if half_day_count %}
+      <div class="att-bar-seg att-bar-halfday" style="flex:{{ half_day_count }}" title="Half Day: {{ half_day_count }}"></div>
+      {% endif %}
+    </div>
+    <div class="att-breakdown-labels">
+      {% if present_count %}<span class="att-bl att-bl-present">Present {{ present_count }}</span>{% endif %}
+      {% if absent_count %}<span class="att-bl att-bl-absent">Absent {{ absent_count }}</span>{% endif %}
+      {% if leave_paid_count %}<span class="att-bl att-bl-leave-paid">Leave (Paid) {{ leave_paid_count }}</span>{% endif %}
+      {% if leave_unpaid_count %}<span class="att-bl att-bl-leave-unpaid">Leave (Unpaid) {{ leave_unpaid_count }}</span>{% endif %}
+      {% if hourly_leave_count %}<span class="att-bl att-bl-hourly">Hourly {{ hourly_leave_count }}</span>{% endif %}
+      {% if half_day_count %}<span class="att-bl att-bl-halfday">Half Day {{ half_day_count }}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- ── Department breakdown ── -->
+  {% if dept_summary_rows %}
+  <div class="att-table-section">
+    <h2 class="att-section-title">Department Breakdown</h2>
+    <div class="att-dept-summary-grid">
+      {% for d in dept_summary_rows %}
+      <div class="att-dept-sum-card">
+        <div class="att-dept-sum-header">
+          <span class="att-dept-sum-name">{{ d.name }}</span>
+          <span class="att-dept-sum-count">{{ d.total_emp }} staff</span>
+          <span class="att-dept-sum-pct
+            {% if d.pct >= 80 %}att-pct-green{% elif d.pct >= 60 %}att-pct-amber{% else %}att-pct-red{% endif %}">
+            {{ d.pct }}%
+          </span>
+        </div>
+        <div class="att-dept-sum-bar-track">
+          <div class="att-dept-sum-bar-fill
+            {% if d.pct >= 80 %}att-dept-bar-green{% elif d.pct >= 60 %}att-dept-bar-amber{% else %}att-dept-bar-red{% endif %}"
+            style="width:{{ d.pct }}%"></div>
+        </div>
+        <div class="att-dept-sum-stats">
+          <span class="att-ds-present">✓ {{ d.present }} Present</span>
+          <span class="att-ds-absent">✗ {{ d.absent }} Absent</span>
+          <span class="att-ds-leave">◷ {{ d.leave }} Leave</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Per-employee table ── -->
+  <div class="att-table-section">
+    <h2 class="att-section-title">Employee Breakdown</h2>
+    <div class="att-table-wrapper">
+      <table class="att-summary-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th class="num">Present</th>
+            <th class="num">Absent</th>
+            <th class="num">Leave (Paid)</th>
+            <th class="num">Leave (Unpaid)</th>
+            <th class="num">Hourly</th>
+            <th class="num">Half Day</th>
+            <th class="num">Holiday</th>
+            <th class="num">Total</th>
+            <th class="num">Att. %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in employee_rows %}
+          <tr>
+            <td>
+              <a href="{% url 'admin:attendance_employee_summary' row.employee.pk %}"
+                 class="att-emp-info att-emp-link" title="View summary">
+                {% if row.employee.profile_photo %}
+                <img src="{{ row.employee.profile_photo.url }}" alt="{{ row.employee.full_name }}" class="att-emp-avatar">
+                {% else %}
+                <div class="att-emp-avatar att-emp-avatar-placeholder">{{ row.employee.full_name|first }}</div>
+                {% endif %}
+                <div>
+                  <div class="att-emp-name">{{ row.employee.full_name }}</div>
+                  <div class="att-emp-code">{{ row.employee.employee_code }}</div>
+                </div>
+              </a>
+            </td>
+            <td class="num"><span class="att-num-present">{{ row.present }}</span></td>
+            <td class="num"><span class="att-num-absent">{{ row.absent }}</span></td>
+            <td class="num"><span class="att-num-leave">{{ row.leave_paid }}</span></td>
+            <td class="num"><span class="att-num-leave">{{ row.leave_unpaid }}</span></td>
+            <td class="num">{{ row.hourly_leave }}</td>
+            <td class="num">{{ row.half_day }}</td>
+            <td class="num">{{ row.public_holiday }}</td>
+            <td class="num"><strong>{{ row.total }}</strong></td>
+            <td class="num">
+              <div class="att-pct-bar">
+                <div class="att-pct-fill" style="width:{{ row.attendance_pct }}%"></div>
+              </div>
+              <span class="att-pct-label">{{ row.attendance_pct }}%</span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" style="text-align:center;padding:40px;color:#94a3b8;">
+              No active employees found.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /att-page -->
+{% endblock %}

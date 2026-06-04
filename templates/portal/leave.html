@@ -1,0 +1,291 @@
+{% extends "portal/base.html" %}
+{% block title %}Leave — Portal{% endblock %}
+{% block page_title %}Leave{% endblock %}
+
+{% block content %}
+
+<!-- Leave Balances -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px;">
+  {% for alloc in allocations %}
+  <div class="ep-balance-card">
+    <div class="ep-balance-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+    </div>
+    <div class="ep-balance-name">{{ alloc.leave_type.name }}</div>
+    <div class="ep-balance-row">
+      <span class="ep-balance-val">{{ alloc.remaining_days|floatformat:"-2" }}</span>
+      <span class="ep-balance-of">/ {{ alloc.total_available_days|floatformat:"-2" }} days</span>
+    </div>
+    <div class="ep-progress" style="margin:8px 0 6px;">
+      <div class="ep-progress-bar green" style="width:{% widthratio alloc.remaining_days alloc.total_available_days 100 %}%;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted-2);">
+      <span>Used {{ alloc.booked_days|floatformat:"-2" }}</span>
+      <span>CF {{ alloc.carry_forward_days|floatformat:"-2" }}</span>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1;" class="ep-empty"><p>No leave allocations for this year. Contact HR.</p></div>
+  {% endfor %}
+
+  <!-- WFH Balance card -->
+  {% if wfh_balance %}
+  <div class="ep-balance-card" style="border-color:rgba(245,132,0,.25);background:linear-gradient(135deg,#fff7ed,#fff);">
+    <div class="ep-balance-icon" style="background:rgba(245,132,0,.12);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    </div>
+    <div class="ep-balance-name" style="color:#c2410c;">Work From Home</div>
+    <div class="ep-balance-row">
+      <span class="ep-balance-val" style="color:var(--brand);">{{ wfh_balance.available_days|floatformat:"-2" }}</span>
+      <span class="ep-balance-of">/ 5 days</span>
+    </div>
+    <div class="ep-progress" style="margin:8px 0 6px;">
+      <div class="ep-progress-bar" style="background:var(--brand);width:{% widthratio wfh_balance.available_days 5 100 %}%;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted-2);">
+      <span>Balance {{ wfh_balance.balance|floatformat:"-2" }}</span>
+      <span>Pending {{ wfh_balance.pending_days|floatformat:"-2" }}</span>
+    </div>
+    <div style="font-size:10px;color:var(--muted-2);margin-top:4px;line-height:1.4;">
+      +{{ wfh_policy.monthly_accrual_days|floatformat:"-2"|default:"2" }} days/month
+      &bull; {% if wfh_policy.rollover_enabled %}rolls over{% else %}resets monthly{% endif %}
+      &bull; max {{ wfh_policy.max_balance|floatformat:"-2"|default:"5" }}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Company WFH Days notice -->
+{% if company_wfh_days %}
+<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:flex-start;gap:12px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2" width="18" height="18" style="flex-shrink:0;margin-top:1px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+  <div>
+    <div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:4px;">Upcoming Company WFH Days</div>
+    {% for d in company_wfh_days %}
+    <div style="font-size:12px;color:#92400e;margin-top:2px;">
+      <strong>{{ d.display_date }}</strong> — {{ d.title }}
+      {% if d.duration_days > 1 %}<span style="color:var(--muted);"> ({{ d.duration_days }} days)</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;">These are company-wide. No personal WFH balance is used unless you're on leave that day.</div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Apply for Leave -->
+<div class="ep-card" style="margin-bottom:28px;">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">Apply for Leave</div>
+      <div class="ep-card-sub">Submit a new leave request</div>
+    </div>
+  </div>
+  <div class="ep-card-body">
+    <form method="post" enctype="multipart/form-data" id="leave-form">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+        <div class="ep-form-group">
+          <label>Leave Type <span style="color:#ef4444;">*</span></label>
+          <select name="leave_type" class="ep-select" required id="lt-select">
+            <option value="">— Select leave type —</option>
+            {% for lt in leave_types %}
+            <option value="{{ lt.pk }}" data-paid="{{ lt.is_paid }}">{{ lt.name }}{% if not lt.is_paid %} (Unpaid){% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Day count pill — shown after dates are picked -->
+        <div style="display:flex;align-items:flex-end;padding-bottom:2px;">
+          <div id="day-count-pill" style="display:none;" class="ep-day-pill">
+            <span id="day-count-num">0</span>
+            <span id="day-count-lbl">working days</span>
+          </div>
+        </div>
+
+        <div class="ep-form-group">
+          <label>From Date <span style="color:#ef4444;">*</span></label>
+          <input type="date" name="from_date" id="from-date" class="ep-input" min="{{ today_str }}" required>
+        </div>
+
+        <div class="ep-form-group">
+          <label>To Date <span style="color:#ef4444;">*</span></label>
+          <input type="date" name="to_date" id="to-date" class="ep-input" min="{{ today_str }}" required>
+        </div>
+
+        <div class="ep-form-group" style="grid-column:1/-1;">
+          <label>Reason</label>
+          <textarea name="reason" class="ep-textarea" placeholder="Brief reason for your leave request..."></textarea>
+        </div>
+
+        <div class="ep-form-group" style="grid-column:1/-1;">
+          <label>Attachment <span style="font-size:11px;color:var(--muted);" id="attach-note">(required for some leave types)</span></label>
+          <input type="file" name="attachment" class="ep-input" style="padding:7px 10px;">
+        </div>
+
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:12px;">
+        <button type="submit" class="ep-btn ep-btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Submit Leave Request
+        </button>
+        <span id="submit-info" style="font-size:12px;color:var(--muted);"></span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Short Leave card -->
+{% if sl_policy.is_enabled %}
+<div class="ep-card" style="margin-bottom:28px;">
+  <div class="ep-card-header" style="border-bottom:1px solid var(--border);">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+      <div>
+        <div class="ep-card-title">Short Leave</div>
+        <div class="ep-card-sub">Half-day — late start (morning) or early leaving (afternoon)</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="text-align:right;">
+          <div style="font-size:22px;font-weight:800;color:{% if sl_remaining > 0 %}var(--brand){% else %}#dc2626{% endif %};">{{ sl_remaining }}</div>
+          <div style="font-size:11px;color:var(--muted);">of {{ sl_policy.max_per_month }} left this month</div>
+        </div>
+        {% if sl_remaining > 0 %}
+        <a href="{% url 'portal:short_leave_apply' %}" class="ep-btn ep-btn-primary" style="text-decoration:none;white-space:nowrap;">
+          Apply Short Leave
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% if sl_recent %}
+  <div class="ep-card-body" style="padding:0;">
+    <table class="ep-table">
+      <thead>
+        <tr><th>Date</th><th>Period</th><th>Time</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for sl in sl_recent %}
+        <tr>
+          <td>{{ sl.date|date:"d M Y" }}</td>
+          <td>
+            <span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;
+              {% if sl.period == 'Morning' %}background:#fef9c3;color:#854d0e;{% else %}background:#fce7f3;color:#9d174d;{% endif %}">
+              {{ sl.period }}
+            </span>
+          </td>
+          <td style="font-size:12px;font-family:monospace;color:var(--muted);">{{ sl.from_time|time:"H:i" }} – {{ sl.to_time|time:"H:i" }}</td>
+          <td>
+            {% if sl.status == "Approved" %}<span class="ep-badge active">Approved</span>
+            {% elif sl.status == "Pending" %}<span class="ep-badge draft">Pending</span>
+            {% elif sl.status == "Manager Approved" %}<span class="ep-badge" style="background:#dbeafe;color:#1e40af;">Mgr Approved</span>
+            {% elif sl.status == "Rejected" %}<span class="ep-badge" style="background:#fee2e2;color:#7f1d1d;">Rejected</span>
+            {% else %}<span class="ep-badge draft">{{ sl.status }}</span>{% endif %}
+          </td>
+          <td>
+            {% if sl.status == "Pending" or sl.status == "Manager Approved" %}
+            <form method="post" action="{% url 'portal:short_leave_cancel' sl.pk %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="ep-btn-sm" style="background:#fef2f2;color:#dc2626;border:none;cursor:pointer;"
+                      onclick="return confirm('Cancel this short leave request?')">Cancel</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Leave History -->
+<div class="ep-card">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">Leave History</div>
+      <div class="ep-card-sub">Your last 30 requests</div>
+    </div>
+  </div>
+  <div class="ep-card-body" style="padding:0;">
+    {% if leave_requests %}
+    <div class="ep-table-wrap">
+      <table class="ep-table">
+        <thead>
+          <tr>
+            <th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lr in leave_requests %}
+          <tr>
+            <td><strong>{{ lr.leave_type.name }}</strong></td>
+            <td>{{ lr.from_date|date:"M j, Y" }}</td>
+            <td>{{ lr.to_date|date:"M j, Y" }}</td>
+            <td>{{ lr.number_of_days|floatformat:"-2" }}</td>
+            <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);">{{ lr.reason|default:"—" }}</td>
+            <td><span class="ep-badge {{ lr.status|slugify }}">{{ lr.status }}</span></td>
+            <td style="font-size:12px;color:var(--muted);">{{ lr.remarks|default:"—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="ep-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <p>No leave requests yet</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var fromEl = document.getElementById('from-date');
+  var toEl   = document.getElementById('to-date');
+  var pill   = document.getElementById('day-count-pill');
+  var numEl  = document.getElementById('day-count-num');
+  var lblEl  = document.getElementById('day-count-lbl');
+  var info   = document.getElementById('submit-info');
+
+  function countWorkingDays(from, to) {
+    var count = 0;
+    var cur = new Date(from);
+    cur.setHours(0,0,0,0);
+    var end = new Date(to);
+    end.setHours(0,0,0,0);
+    while (cur <= end) {
+      var d = cur.getDay();
+      if (d !== 0 && d !== 6) count++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+  }
+
+  function update() {
+    var f = fromEl.value, t = toEl.value;
+    if (!f || !t) { pill.style.display = 'none'; info.textContent = ''; return; }
+    if (t < f)    { pill.style.display = 'none'; info.textContent = 'End date must be after start date.'; info.style.color = '#ef4444'; return; }
+
+    var days = countWorkingDays(f, t);
+    numEl.textContent = days;
+    lblEl.textContent = days === 1 ? 'working day' : 'working days';
+    pill.style.display = 'flex';
+    info.textContent = '';
+
+    // Keep to_date min in sync
+    toEl.min = f;
+  }
+
+  fromEl.addEventListener('change', function () {
+    if (toEl.value && toEl.value < fromEl.value) toEl.value = fromEl.value;
+    update();
+  });
+  toEl.addEventListener('change', update);
+})();
+</script>
+{% endblock %}

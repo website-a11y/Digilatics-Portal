@@ -1,0 +1,589 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'leaves/css/leaves.css' %}">
+<style>
+/* ════════════════════════════════════════════════════════════
+   LEAVE REQUEST CHANGE FORM  —  lf-* classes
+   Edit the HTML below to change layout, add/remove fields.
+   Each section is a card. Each row uses .lf-row with two
+   .lf-col divs (50/50) or one .lf-col-full div (100%).
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Card shell ───────────────────────────────────── */
+.lf-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.lf-card-header {
+  background: #F9FAFB;
+  padding: 12px 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #F58400;
+  border-bottom: 1px solid #E5E7EB;
+}
+.lf-card-body { padding: 0; }
+
+/* ── Row / columns ────────────────────────────────── */
+.lf-row {
+  display: flex;
+  gap: 28px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #F3F4F6;
+  align-items: flex-start;
+}
+.lf-row:last-child { border-bottom: none; }
+
+/* 50% column */
+.lf-col {
+  flex: 0 0 calc(50% - 14px);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* Full-width column */
+.lf-col-full {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Label ────────────────────────────────────────── */
+.lf-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+}
+.lf-label .lf-star {
+  color: #EF4444;
+  margin-left: 2px;
+}
+
+/* ── Inputs / selects / textareas ─────────────────── */
+.lf-col input[type="text"],
+.lf-col input[type="email"],
+.lf-col input[type="number"],
+.lf-col input[type="date"],
+.lf-col input[type="file"],
+.lf-col select,
+.lf-col textarea,
+.lf-col-full input[type="text"],
+.lf-col-full input[type="email"],
+.lf-col-full input[type="number"],
+.lf-col-full input[type="date"],
+.lf-col-full input[type="file"],
+.lf-col-full select,
+.lf-col-full textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px !important;
+  padding: 9px 13px !important;
+  font-size: 13.5px !important;
+  color: #111827 !important;
+  background: #F9FAFB !important;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+  outline: none !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
+  max-width: 100% !important;
+}
+
+/* ── Layout wrapper for request form + summary panel ── */
+.lf-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.lf-summary-card {
+  position: sticky;
+  top: 20px;
+}
+
+.lf-summary-body {
+  padding: 18px 20px;
+}
+
+.lf-summary-meta {
+  font-size: 11px;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lf-summary-list {
+  display: grid;
+  gap: 14px;
+}
+
+.lf-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+}
+
+.lf-summary-item .key {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.lf-summary-item .val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+@media (max-width: 1100px) {
+  .lf-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lf-col input:focus,
+.lf-col select:focus,
+.lf-col textarea:focus,
+.lf-col-full input:focus,
+.lf-col-full select:focus,
+.lf-col-full textarea:focus {
+  border-color: #F58400 !important;
+  box-shadow: 0 0 0 3px rgba(245,132,0,0.12) !important;
+  background: #fff !important;
+}
+
+/* ── Related widget wrapper (FK + action icons) ───── */
+.lf-col .related-widget-wrapper,
+.lf-col-full .related-widget-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+/* Select2 fills the wrapper */
+.lf-col .related-widget-wrapper .select2-container,
+.lf-col-full .related-widget-wrapper .select2-container {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: 0 !important;
+}
+.lf-col .related-widget-wrapper .select2-selection,
+.lf-col-full .related-widget-wrapper .select2-selection {
+  width: 100% !important;
+}
+
+/* Select2 creates 2 <span> containers per field — hide the first (non-interactive) duplicate */
+.lf-col .related-widget-wrapper span.select2-container:not(:last-of-type),
+.lf-col-full .related-widget-wrapper span.select2-container:not(:last-of-type) {
+  display: none !important;
+}
+
+/* Hide FK action icons (edit pencil, add +, delete ×, view eye) */
+.lf-col .related-widget-wrapper-link,
+.lf-col-full .related-widget-wrapper-link {
+  display: none !important;
+}
+
+/* ── Readonly field value ──────────────────────────── */
+.lf-readonly {
+  font-size: 13.5px;
+  color: #374151;
+  padding: 9px 0;
+  line-height: 1.5;
+}
+.lf-readonly strong { color: #111827; font-weight: 700; }
+
+/* ── Balance chips ────────────────────────────────── */
+.lf-balance {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 8px 0;
+}
+.lf-balance-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 10px 18px;
+  min-width: 80px;
+  gap: 3px;
+}
+.lf-balance-chip .val {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  color: #111827;
+}
+.lf-balance-chip .key {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.lf-balance-chip.avail .val { color: #2563EB; }
+.lf-balance-chip.used  .val { color: #F58400; }
+.lf-balance-chip.left  .val { color: #16A34A; }
+
+/* ── Errors ───────────────────────────────────────── */
+.lf-errors {
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  border-radius: 8px;
+  color: #BE123C;
+  font-size: 13px;
+  padding: 8px 12px;
+  margin: 0;
+  list-style: none;
+}
+.lf-errors li { margin: 0; }
+
+/* ── Help text ────────────────────────────────────── */
+.lf-help {
+  font-size: 11.5px;
+  color: #9CA3AF;
+  line-height: 1.5;
+}
+
+/* ── Submit row ───────────────────────────────────── */
+.lf-submit-row {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.lf-btn-save {
+  background: #F58400;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 22px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.lf-btn-save:hover {
+  background: #C86A00;
+  box-shadow: 0 4px 12px rgba(245,132,0,0.30);
+}
+.lf-btn-ghost {
+  background: #F3F4F6;
+  color: #374151;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.lf-btn-ghost:hover { background: #E5E7EB; }
+.lf-btn-delete {
+  margin-left: auto;
+  color: #DC2626;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 16px;
+  border: 1px solid #FECDD3;
+  border-radius: 8px;
+  background: #FFF1F2;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.lf-btn-delete:hover { background: #FFE4E6; color: #DC2626; }
+</style>
+{% endblock %}
+
+
+{# ══════════════════════════════════════════════════════════════
+   FORM FIELDS
+   Override Django's auto-generated fieldsets with clean,
+   explicit HTML. To edit the form:
+     • Add a field  → copy a .lf-col block and change the field name
+     • Remove field → delete the .lf-col block
+     • Full width   → change .lf-col to .lf-col-full
+     • New section  → copy a .lf-card block
+   ══════════════════════════════════════════════════════════════ #}
+{% block field_sets %}
+{% with form=adminform.form %}
+
+{# ── Non-field errors (e.g. date range conflicts) ── #}
+{% if adminform.form.non_field_errors %}
+<ul class="lf-errors" style="margin-bottom:14px">
+  {% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+
+
+<div class="lf-form-grid">
+  <div>
+    <div class="lf-card">
+      <div class="lf-card-header">Leave Request Details</div>
+      <div class="lf-card-body">
+
+        {# ── Row: Employee | Leave Type ── #}
+        <div class="lf-row">
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.employee.id_for_label }}">
+          Employee <span class="lf-star">*</span>
+        </label>
+        {{ form.employee }}
+        {% if form.employee.errors %}<ul class="lf-errors">{% for e in form.employee.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.leave_type.id_for_label }}">
+          Leave Type <span class="lf-star">*</span>
+        </label>
+        {{ form.leave_type }}
+        {% if form.leave_type.errors %}<ul class="lf-errors">{% for e in form.leave_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+    </div>{# /row #}
+
+    {# ── Row: From Date | To Date ── #}
+    <div class="lf-row">
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.from_date.id_for_label }}">
+          From Date <span class="lf-star">*</span>
+        </label>
+        {{ form.from_date }}
+        {% if form.from_date.errors %}<ul class="lf-errors">{% for e in form.from_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.to_date.id_for_label }}">
+          To Date <span class="lf-star">*</span>
+        </label>
+        {{ form.to_date }}
+        {% if form.to_date.errors %}<ul class="lf-errors">{% for e in form.to_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+    </div>{# /row #}
+
+    {# ── Row: Number of Days | Status ── #}
+    <div class="lf-row">
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.number_of_days.id_for_label }}">
+          Number of Days <span class="lf-star">*</span>
+        </label>
+        {{ form.number_of_days }}
+        {% if form.number_of_days.errors %}<ul class="lf-errors">{% for e in form.number_of_days.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="lf-help">Auto-calculated from dates if left 0.</span>
+      </div>
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.status.id_for_label }}">
+          Status <span class="lf-star">*</span>
+        </label>
+        {{ form.status }}
+        {% if form.status.errors %}<ul class="lf-errors">{% for e in form.status.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+    </div>{# /row #}
+
+    {# ── Row: Attachment (full width) ── #}
+    <div class="lf-row">
+      <div class="lf-col-full">
+        <label class="lf-label" for="{{ form.attachment.id_for_label }}">Attachment</label>
+        {{ form.attachment }}
+        {% if form.attachment.errors %}<ul class="lf-errors">{% for e in form.attachment.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="lf-help">Optional. Upload supporting document (PDF, JPG, PNG).</span>
+      </div>
+    </div>{# /row #}
+
+    {# ── Row: Reason (full width) ── #}
+    <div class="lf-row">
+      <div class="lf-col-full">
+        <label class="lf-label" for="{{ form.reason.id_for_label }}">Reason</label>
+        {{ form.reason }}
+        {% if form.reason.errors %}<ul class="lf-errors">{% for e in form.reason.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>{# /row #}
+
+    {# ── Row: Remarks (full width) ── #}
+    <div class="lf-row">
+      <div class="lf-col-full">
+        <label class="lf-label" for="{{ form.remarks.id_for_label }}">Remarks</label>
+        {{ form.remarks }}
+        {% if form.remarks.errors %}<ul class="lf-errors">{% for e in form.remarks.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="lf-help">Internal note from approver.</span>
+      </div>
+    </div>{# /row #}
+
+    {# ── Row: Leave Balance (readonly, full width) ── #}
+    {% if original %}
+    <div class="lf-row">
+      <div class="lf-col-full">
+        <label class="lf-label">Leave Balance</label>
+        {% if original.allocation %}
+        <div class="lf-balance">
+          <div class="lf-balance-chip avail">
+            <span class="val">{{ original.allocation.total_available_days|floatformat:"-2" }}</span>
+            <span class="key">Available</span>
+          </div>
+          <div class="lf-balance-chip used">
+            <span class="val">{{ original.allocation.booked_days|floatformat:"-2" }}</span>
+            <span class="key">Booked</span>
+          </div>
+          <div class="lf-balance-chip left">
+            <span class="val">{{ original.allocation.remaining_days|floatformat:"-2" }}</span>
+            <span class="key">Remaining</span>
+          </div>
+        </div>
+        {% else %}
+        <div class="lf-readonly">No allocation linked to this request.</div>
+        {% endif %}
+      </div>
+    </div>{# /row #}
+    {% endif %}
+
+  </div>{# /card-body #}
+</div>{# /card #}
+  </div>
+
+  <aside class="lf-summary-card">
+    <div class="lf-card">
+      <div class="lf-card-header">As of</div>
+      <div class="lf-summary-body">
+        <div class="lf-summary-meta">
+          <span></span>
+          <span>Hour(s)</span>
+        </div>
+        <div class="lf-summary-list">
+          <div class="lf-summary-item">
+            <span class="key">Available balance</span>
+            <span class="val">{% if original and original.allocation %}{{ original.allocation.total_available_days|floatformat:"-2" }}{% else %}0{% endif %}</span>
+          </div>
+          <div class="lf-summary-item">
+            <span class="key">Currently booked</span>
+            <span class="val">{% if original and original.allocation %}{{ original.allocation.booked_days|floatformat:"-2" }}{% else %}0{% endif %}</span>
+          </div>
+          <div class="lf-summary-item">
+            <span class="key">Balance after booked leave</span>
+            <span class="val">{% if original and original.allocation %}{{ original.allocation.remaining_days|floatformat:"-2" }}{% else %}0{% endif %}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+
+
+<div class="lf-card">
+  <div class="lf-card-header">Audit</div>
+  <div class="lf-card-body">
+
+    {# ── Row: Allocation | Created By ── #}
+    <div class="lf-row">
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.allocation.id_for_label }}">Allocation</label>
+        {{ form.allocation }}
+        {% if form.allocation.errors %}<ul class="lf-errors">{% for e in form.allocation.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="lf-help">Leave allocation record this request draws from.</span>
+      </div>
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.created_by.id_for_label }}">Created By</label>
+        {{ form.created_by }}
+        {% if form.created_by.errors %}<ul class="lf-errors">{% for e in form.created_by.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+    </div>{# /row #}
+
+    {# ── Row: Approved By | Created At ── #}
+    <div class="lf-row">
+
+      <div class="lf-col">
+        <label class="lf-label" for="{{ form.approved_by.id_for_label }}">Approved By</label>
+        {{ form.approved_by }}
+        {% if form.approved_by.errors %}<ul class="lf-errors">{% for e in form.approved_by.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="lf-col">
+        <label class="lf-label">Created At</label>
+        <div class="lf-readonly">
+          {% if original %}{{ original.created_at|date:"d M Y, H:i" }}{% else %}—{% endif %}
+        </div>
+      </div>
+
+    </div>{# /row #}
+
+    {# ── Row: Updated At (full width) ── #}
+    <div class="lf-row">
+      <div class="lf-col-full">
+        <label class="lf-label">Updated At</label>
+        <div class="lf-readonly">
+          {% if original %}{{ original.updated_at|date:"d M Y, H:i" }}{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>{# /row #}
+
+  </div>{# /card-body #}
+</div>{# /card #}
+
+{% endwith %}
+{% endblock field_sets %}
+
+
+{% block submit_buttons_bottom %}
+<div class="lf-submit-row">
+  <button type="submit" name="_save" class="lf-btn-save">
+    {% trans "Save" %} →
+  </button>
+  <button type="submit" name="_continue" class="lf-btn-ghost">
+    {% trans "Save and continue editing" %}
+  </button>
+  <button type="submit" name="_addanother" class="lf-btn-ghost">
+    {% trans "Save and add another" %}
+  </button>
+  {% if original %}
+  <a href="{% url 'admin:leaves_leaverequest_delete' original.pk %}"
+     class="lf-btn-delete"
+     onclick="return confirm('{% trans "Are you sure you want to delete this leave request?" %}')">
+    {% trans "Delete" %}
+  </a>
+  {% endif %}
+</div>
+{% endblock submit_buttons_bottom %}

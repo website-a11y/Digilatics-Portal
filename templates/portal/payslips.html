@@ -1,0 +1,180 @@
+{% extends "portal/base.html" %}
+{% block title %}Salary & Payslips — Portal{% endblock %}
+{% block page_title %}Salary & Payslips{% endblock %}
+
+{% block content %}
+
+<div class="ep-card">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">My Payslips</div>
+      <div class="ep-card-sub">{{ payslip_rows|length }} payslip{{ payslip_rows|length|pluralize }} on record</div>
+    </div>
+  </div>
+  <div class="ep-card-body ep-table-card">
+    {% if payslip_rows %}
+    <div class="ep-table-responsive">
+      <table class="ep-table ep-table-hover ep-payslip-table">
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Pay Date</th>
+            <th>Basic Salary</th>
+            <th>Allowances</th>
+            <th>Gross</th>
+            <th>Deductions</th>
+            <th>Tax</th>
+            <th style="color:var(--brand);">Net Salary</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in payslip_rows %}
+          <tr class="ps-row-link" data-pk="{{ row.pk }}" style="cursor:pointer;">
+            <td style="font-weight:600;">{{ row.period }}</td>
+            <td style="color:var(--muted);">{% if row.pay_date %}{{ row.pay_date|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>PKR {{ row.base_salary|floatformat:0 }}</td>
+            <td>PKR {{ row.allowance|floatformat:0 }}</td>
+            <td style="font-weight:600;">PKR {{ row.gross_salary|floatformat:0 }}</td>
+            <td>PKR {{ row.deduction|floatformat:0 }}</td>
+            <td>PKR {{ row.tax|floatformat:0 }}</td>
+            <td style="font-weight:800;color:var(--brand);font-size:14px;">PKR {{ row.net_salary|floatformat:0 }}</td>
+            <td>
+              <button type="button" class="ep-btn ep-btn-sm ep-btn-primary ps-view-btn">View</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="ep-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <p>No payslips generated yet. Contact HR for more information.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Payslip Modal ── -->
+<div id="ps-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(17,24,39,.5);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:880px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(17,24,39,.2);overflow:hidden;">
+
+    <!-- Modal toolbar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #e5e7eb;flex-shrink:0;">
+      <div style="font-size:14px;font-weight:700;color:#111827;">Payslip</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button id="ps-print-btn" onclick="printPayslip()"
+                style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--brand);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Export PDF
+        </button>
+        <button onclick="closePayslip()"
+                style="width:32px;height:32px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6b7280;">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div id="ps-modal-body" style="overflow-y:auto;flex:1;font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;">
+      <div id="ps-loading" style="padding:60px;text-align:center;color:#9ca3af;font-family:inherit;">Loading payslip…</div>
+      <div id="ps-content" style="display:none;"></div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.ep-table-card { overflow-x: auto; }
+.ep-table-responsive { width: 100%; overflow-x: auto; }
+.ep-payslip-table { width: 100%; border-collapse: collapse; }
+.ep-payslip-table th,
+.ep-payslip-table td { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 13px; }
+.ep-payslip-table th { background: #f9fafb; font-weight: 700; color: #374151; }
+.ep-payslip-table tr:hover td { background: #fffbf5; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var _currentPk = null;
+
+function openPayslip(pk) {
+  _currentPk = pk;
+  var overlay = document.getElementById('ps-overlay');
+  var loading = document.getElementById('ps-loading');
+  var content = document.getElementById('ps-content');
+
+  content.style.display = 'none';
+  content.innerHTML = '';
+  loading.style.display = 'block';
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  fetch('/portal/payslips/' + pk + '/?modal=1')
+    .then(function(r) { return r.text(); })
+    .then(function(html) {
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(html, 'text/html');
+
+      // Inject the payslip CSS into this page (once)
+      var old = document.getElementById('ps-injected-css');
+      if (old) old.remove();
+      var styleEl = document.createElement('style');
+      styleEl.id = 'ps-injected-css';
+      var styles = doc.querySelectorAll('style');
+      styles.forEach(function(s) { styleEl.textContent += s.textContent; });
+      document.head.appendChild(styleEl);
+
+      // Inject the payslip HTML
+      var ps = doc.querySelector('.ps');
+      content.innerHTML = ps ? ps.outerHTML : doc.body.innerHTML;
+      loading.style.display = 'none';
+      content.style.display = 'block';
+    })
+    .catch(function() {
+      loading.textContent = 'Failed to load. Please try again.';
+    });
+}
+
+function closePayslip() {
+  document.getElementById('ps-overlay').style.display = 'none';
+  document.getElementById('ps-content').innerHTML = '';
+  document.body.style.overflow = '';
+  _currentPk = null;
+}
+
+function printPayslip() {
+  if (!_currentPk) return;
+  var win = window.open('/portal/payslips/' + _currentPk + '/', '_blank');
+  if (win) win.addEventListener('load', function() { win.print(); });
+}
+
+// Row and button click handlers
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.ps-row-link').forEach(function (row) {
+    row.addEventListener('click', function () { openPayslip(this.dataset.pk); });
+  });
+  document.querySelectorAll('.ps-view-btn').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openPayslip(this.closest('tr').dataset.pk);
+    });
+  });
+});
+
+// Close on overlay click
+document.getElementById('ps-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePayslip();
+});
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePayslip();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,365 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block title %}Sync Schedule — Digilatics HRIS{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+.ssf-wrap * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+/* ── Header ── */
+.ssf-header {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 20px;
+  padding: 24px 28px; display: flex; align-items: center; gap: 20px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.ssf-header::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #F58400, #FBBF24); border-radius: 20px 20px 0 0;
+}
+.ssf-header-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: linear-gradient(135deg, #F58400, #C86A00);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+}
+.ssf-header-icon svg { width: 28px; height: 28px; }
+.ssf-header-text { flex: 1; }
+.ssf-header-title { font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+.ssf-header-sub   { font-size: 13px; color: #6B7280; margin-top: 3px; }
+.ssf-header-meta  { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.ssf-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.ssf-badge-active   { background: #DCFCE7; color: #15803D; }
+.ssf-badge-inactive { background: #F3F4F6; color: #6B7280; }
+.ssf-badge-new      { background: #FFF8EE; color: #C86A00; }
+
+/* ── KPI grid ── */
+.ssf-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+@media(max-width:800px){ .ssf-kpi-grid{ grid-template-columns:repeat(2,1fr); } }
+
+.ssf-kpi {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden;
+}
+.ssf-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+.ssf-kpi-1::before { background: #F58400; }
+.ssf-kpi-2::before { background: #2563EB; }
+.ssf-kpi-s::before { background: #16A34A; }
+.ssf-kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+.ssf-kpi-icon svg { width: 17px; height: 17px; }
+.ssf-kpi-1 .ssf-kpi-icon { background: #FFF8EE; color: #F58400; }
+.ssf-kpi-2 .ssf-kpi-icon { background: #EFF6FF; color: #2563EB; }
+.ssf-kpi-s .ssf-kpi-icon { background: #DCFCE7; color: #16A34A; }
+.ssf-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+.ssf-kpi-value { font-size: 22px; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; }
+.ssf-kpi-sub   { font-size: 11px; color: #9CA3AF; }
+.ssf-kpi-1 .ssf-kpi-value { color: #C86A00; }
+.ssf-kpi-2 .ssf-kpi-value { color: #2563EB; }
+.ssf-kpi-s .ssf-kpi-value { color: #16A34A; font-size: 16px; }
+
+/* ── Tabs ── */
+.ssf-tabs-nav {
+  display: flex; border-bottom: 2px solid #E5E7EB; margin-bottom: 20px;
+}
+.ssf-tab-btn {
+  padding: 11px 22px; font-size: 13px; font-weight: 700;
+  color: #6B7280; background: transparent; border: none;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit;
+}
+.ssf-tab-btn:hover { color: #374151; }
+.ssf-tab-btn.active { color: #F58400; border-bottom-color: #F58400; }
+.ssf-tab-pane { display: none; }
+.ssf-tab-pane.active { display: block; }
+
+/* ── Form card ── */
+.ssf-card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 16px;
+}
+.ssf-card-head {
+  padding: 14px 20px; border-bottom: 1px solid #E5E7EB; background: #F9FAFB;
+  font-size: 13px; font-weight: 800; color: #374151;
+}
+.ssf-card-body { padding: 24px; }
+
+/* ── Time picker cards ── */
+.ssf-time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+@media(max-width:600px){ .ssf-time-grid{ grid-template-columns:1fr; } }
+
+.ssf-time-card {
+  border: 2px solid #E5E7EB; border-radius: 14px; padding: 20px;
+  transition: border-color 0.15s, box-shadow 0.15s; position: relative; overflow: hidden;
+}
+.ssf-time-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.ssf-time-card-1::before { background: #F58400; }
+.ssf-time-card-2::before { background: #2563EB; }
+.ssf-time-card:focus-within { box-shadow: 0 0 0 3px rgba(245,132,0,0.1); border-color: #F58400; }
+.ssf-time-card-2:focus-within { box-shadow: 0 0 0 3px rgba(37,99,235,0.1); border-color: #2563EB; }
+
+.ssf-time-card-label {
+  font-size: 11px; font-weight: 700; color: #6B7280;
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.ssf-time-card-1 .ssf-time-card-label { color: #C86A00; }
+.ssf-time-card-2 .ssf-time-card-label { color: #2563EB; }
+.ssf-time-card-label svg { width: 13px; height: 13px; }
+
+.ssf-time-card input[type=time],
+.ssf-time-card input[type=text] {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid #E5E7EB; border-radius: 10px;
+  font-size: 22px; font-weight: 800; color: #111827;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 0.04em; outline: none;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s;
+}
+.ssf-time-card-1 input:focus { border-color: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.1); }
+.ssf-time-card-2 input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.ssf-time-card-hint { font-size: 11px; color: #9CA3AF; margin-top: 8px; }
+
+/* ── Checkbox row ── */
+.ssf-checkbox-row {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px;
+}
+.ssf-checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: #F58400; flex-shrink: 0; cursor: pointer; }
+.ssf-cb-text { flex: 1; }
+.ssf-cb-label { font-size: 13px; font-weight: 700; color: #374151; }
+.ssf-cb-sub   { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
+
+/* ── Audit rows ── */
+.ssf-audit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.ssf-audit-field label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: block; }
+.ssf-audit-field input {
+  width: 100%; padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 10px;
+  font-size: 13px; color: #6B7280; background: #F9FAFB; font-family: inherit; outline: none; cursor: default;
+}
+
+/* ── Submit row ── */
+.ssf-submit-row {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 16px 20px; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; margin-top: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.ssf-btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 22px; background: linear-gradient(135deg, #F58400, #C86A00);
+  color: #fff; border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+}
+.ssf-btn-primary:hover { opacity: 0.9; }
+.ssf-btn-secondary {
+  padding: 10px 18px; background: #F9FAFB; color: #374151;
+  border: 1px solid #E5E7EB; border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s;
+}
+.ssf-btn-secondary:hover { background: #F3F4F6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ssf-wrap">
+
+  <!-- Header -->
+  <div class="ssf-header">
+    <div class="ssf-header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+      </svg>
+    </div>
+    <div class="ssf-header-text">
+      {% if original %}
+        <div class="ssf-header-title">Sync Schedule</div>
+        <div class="ssf-header-sub">{{ original.sync_time_1|time:"H:i" }} &nbsp;&amp;&nbsp; {{ original.sync_time_2|time:"H:i" }} daily</div>
+      {% else %}
+        <div class="ssf-header-title">New Sync Schedule</div>
+        <div class="ssf-header-sub">Configure automated attendance sync times</div>
+      {% endif %}
+    </div>
+    <div class="ssf-header-meta">
+      {% if original %}
+        {% if original.is_active %}
+          <span class="ssf-badge ssf-badge-active">Active</span>
+        {% else %}
+          <span class="ssf-badge ssf-badge-inactive">Inactive</span>
+        {% endif %}
+      {% else %}
+        <span class="ssf-badge ssf-badge-new">New</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- KPI Cards (existing only) -->
+  {% if original %}
+  <div class="ssf-kpi-grid">
+    <div class="ssf-kpi ssf-kpi-1">
+      <div class="ssf-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="ssf-kpi-label">First Sync</div>
+      <div class="ssf-kpi-value">{{ original.sync_time_1|time:"H:i" }}</div>
+      <div class="ssf-kpi-sub">{{ original.sync_time_1|time:"g:i A" }}</div>
+    </div>
+    <div class="ssf-kpi ssf-kpi-2">
+      <div class="ssf-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="ssf-kpi-label">Second Sync</div>
+      <div class="ssf-kpi-value">{{ original.sync_time_2|time:"H:i" }}</div>
+      <div class="ssf-kpi-sub">{{ original.sync_time_2|time:"g:i A" }}</div>
+    </div>
+    <div class="ssf-kpi ssf-kpi-s">
+      <div class="ssf-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></div>
+      <div class="ssf-kpi-label">Status</div>
+      <div class="ssf-kpi-value">{% if original.is_active %}Active{% else %}Inactive{% endif %}</div>
+      <div class="ssf-kpi-sub">Last updated {{ original.updated_at|date:"d M Y" }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tabs -->
+  <div class="ssf-tabs-nav" id="ssfTabsNav">
+    <button class="ssf-tab-btn active" data-tab="ssf-settings">Sync Settings</button>
+    {% if original %}<button class="ssf-tab-btn" data-tab="ssf-audit">Audit</button>{% endif %}
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if adminform.form.non_field_errors %}
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:#DC2626; font-weight:600;">
+      {{ adminform.form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <!-- TAB: Settings -->
+    <div class="ssf-tab-pane active" id="ssf-settings">
+
+      <div class="ssf-card">
+        <div class="ssf-card-head">Sync Times</div>
+        <div class="ssf-card-body">
+          <div class="ssf-time-grid">
+            <!-- Sync Time 1 -->
+            <div class="ssf-time-card ssf-time-card-1">
+              <div class="ssf-time-card-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                First Sync Time
+              </div>
+              {% for fieldset in adminform %}
+                {% for line in fieldset %}
+                  {% for field in line %}
+                    {% if field.field.name == "sync_time_1" %}
+                      {{ field.field }}
+                      {% if field.field.errors %}
+                        <div style="color:#DC2626; font-size:12px; font-weight:600; margin-top:6px;">{{ field.field.errors|join:", " }}</div>
+                      {% endif %}
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
+              {% endfor %}
+              <div class="ssf-time-card-hint">Primary daily pull — typically after office hours (e.g. 18:30)</div>
+            </div>
+
+            <!-- Sync Time 2 -->
+            <div class="ssf-time-card ssf-time-card-2">
+              <div class="ssf-time-card-label" style="color:#2563EB;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Second Sync Time
+              </div>
+              {% for fieldset in adminform %}
+                {% for line in fieldset %}
+                  {% for field in line %}
+                    {% if field.field.name == "sync_time_2" %}
+                      {{ field.field }}
+                      {% if field.field.errors %}
+                        <div style="color:#DC2626; font-size:12px; font-weight:600; margin-top:6px;">{{ field.field.errors|join:", " }}</div>
+                      {% endif %}
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
+              {% endfor %}
+              <div class="ssf-time-card-hint" style="color:#93C5FD;">Overnight sync — typically early morning (e.g. 02:30)</div>
+            </div>
+          </div>
+
+          <!-- Active toggle -->
+          <div class="ssf-checkbox-row">
+            {% for fieldset in adminform %}
+              {% for line in fieldset %}
+                {% for field in line %}
+                  {% if field.field.name == "is_active" %}{{ field.field }}{% endif %}
+                {% endfor %}
+              {% endfor %}
+            {% endfor %}
+            <div class="ssf-cb-text">
+              <div class="ssf-cb-label">Schedule Active</div>
+              <div class="ssf-cb-sub">When enabled, the system automatically syncs attendance at the configured times</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB: Audit -->
+    {% if original %}
+    <div class="ssf-tab-pane" id="ssf-audit">
+      <div class="ssf-card">
+        <div class="ssf-card-head">Audit Information</div>
+        <div class="ssf-card-body">
+          <div class="ssf-audit-row">
+            <div class="ssf-audit-field">
+              <label>Created At</label>
+              <input type="text" value="{{ original.created_at|date:'d M Y, H:i' }}" readonly>
+            </div>
+            <div class="ssf-audit-field">
+              <label>Last Updated</label>
+              <input type="text" value="{{ original.updated_at|date:'d M Y, H:i' }}" readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Submit -->
+    <div class="ssf-submit-row">
+      <button type="submit" name="_save" class="ssf-btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Schedule
+      </button>
+      <button type="submit" name="_continue" class="ssf-btn-secondary">Save and continue editing</button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+(function(){
+  var SK = 'ssf_tab';
+  var nav = document.getElementById('ssfTabsNav');
+  if(!nav) return;
+  function activate(id){
+    nav.querySelectorAll('.ssf-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.ssf-tab-pane').forEach(function(p){ p.classList.remove('active'); });
+    var btn = nav.querySelector('[data-tab="'+id+'"]');
+    var pane = document.getElementById(id);
+    if(btn && pane){ btn.classList.add('active'); pane.classList.add('active'); }
+    sessionStorage.setItem(SK, id);
+  }
+  nav.addEventListener('click', function(e){
+    var btn = e.target.closest('.ssf-tab-btn');
+    if(btn) activate(btn.dataset.tab);
+  });
+  var saved = sessionStorage.getItem(SK);
+  if(saved && document.getElementById(saved)) activate(saved);
+})();
+</script>
+{% endblock %}

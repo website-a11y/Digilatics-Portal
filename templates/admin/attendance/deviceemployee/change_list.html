@@ -1,0 +1,19 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+  {% if request.user.is_superuser and auto_map_url %}
+  <li>
+    <a href="{{ auto_map_url }}"
+       class="addlink"
+       style="background:linear-gradient(135deg,#059669,#047857);padding:8px 16px;border-radius:8px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
+       onclick="return confirm('Auto-map all employees using their employee code as the device ID?\n\nThis will create or update a mapping for every employee whose code is a number.')">
+      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10"/><polyline points="22 2 22 8 16 8"/><path d="M22 2 12 12"/>
+      </svg>
+      Auto-Map from Employee Code
+    </a>
+  </li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

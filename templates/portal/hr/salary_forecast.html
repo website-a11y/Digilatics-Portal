@@ -1,0 +1,255 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Salary Forecast — Digilatics HR{% endblock %}
+{% block page_title %}Salary Forecast & Assessment{% endblock %}
+
+{% block content %}
+<style>
+.sf-grid { display:grid; gap:16px; }
+.sf-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+.sf-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:20px; }
+.sf-card-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-2); margin-bottom:6px; }
+.sf-card-value { font-size:22px; font-weight:800; font-family:monospace; }
+.sf-card-sub { font-size:11px; color:var(--text-2); margin-top:4px; }
+.sf-card.blue .sf-card-value { color:#1d4ed8; }
+.sf-card.green .sf-card-value { color:#15803d; }
+.sf-card.red .sf-card-value { color:#dc2626; }
+.sf-card.orange .sf-card-value { color:#ea580c; }
+.sf-section-title { font-size:13px; font-weight:700; color:var(--text-1); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.sf-tab-bar { display:flex; gap:0; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:24px; width:fit-content; }
+.sf-tab { padding:8px 20px; font-size:13px; font-weight:600; cursor:pointer; border:none; background:#fff; color:var(--text-2); transition:background .15s,color .15s; }
+.sf-tab.active { background:#1d4ed8; color:#fff; }
+.sf-pane { display:none; }
+.sf-pane.active { display:block; }
+.sf-month-table { width:100%; border-collapse:collapse; font-size:13px; }
+.sf-month-table th { text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-2); padding:8px 12px; background:#f9fafb; border-bottom:1px solid var(--border); }
+.sf-month-table td { padding:10px 12px; border-bottom:1px solid var(--border); }
+.sf-month-table tr:last-child td { border-bottom:none; }
+.sf-month-table tr:hover td { background:#f9fafb; }
+.sf-emp-table { width:100%; border-collapse:collapse; font-size:13px; }
+.sf-emp-table th { text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-2); padding:8px 12px; background:#f9fafb; border-bottom:1px solid var(--border); }
+.sf-emp-table td { padding:10px 12px; border-bottom:1px solid var(--border); }
+.sf-emp-table tr:last-child td { border-bottom:none; }
+.sf-emp-table tr:hover td { background:#f9fafb; }
+.sf-num { font-family:monospace; font-weight:600; }
+.sf-num.green { color:#15803d; }
+.sf-num.red { color:#dc2626; }
+.sf-num.blue { color:#1d4ed8; }
+.sf-badge-dept { font-size:11px; color:var(--text-2); }
+.sf-total-row td { font-weight:700; background:#f0f9ff; border-top:2px solid #1d4ed8; }
+.sf-highlight-row td { background:#fefce8; }
+</style>
+
+<!-- Summary Cards: This Month -->
+<div class="sf-cards">
+  <div class="sf-card blue">
+    <div class="sf-card-label">This Month — Gross Payroll</div>
+    <div class="sf-card-value">{{ total_gross|floatformat:0 }}</div>
+    <div class="sf-card-sub">{{ employee_count }} active employees · {{ current_month_name }} {{ current_year }}</div>
+  </div>
+  <div class="sf-card green">
+    <div class="sf-card-label">This Month — Est. Net Payout</div>
+    <div class="sf-card-value">{{ total_net|floatformat:0 }}</div>
+    <div class="sf-card-sub">After income tax deduction</div>
+  </div>
+  <div class="sf-card red">
+    <div class="sf-card-label">This Month — Income Tax</div>
+    <div class="sf-card-value">{{ total_tax|floatformat:0 }}</div>
+    <div class="sf-card-sub">Estimated total tax liability</div>
+  </div>
+</div>
+
+<!-- Year Overview Cards -->
+<div class="sf-cards">
+  <div class="sf-card orange">
+    <div class="sf-card-label">{{ current_year }} — Full Year Gross</div>
+    <div class="sf-card-value">{{ this_year_total_gross|floatformat:0 }}</div>
+    <div class="sf-card-sub">12 months at current salary levels</div>
+  </div>
+  <div class="sf-card" style="">
+    <div class="sf-card-label">{{ current_year }} — Paid So Far</div>
+    <div class="sf-card-value" style="color:#6b7280;">{{ this_year_paid_gross|floatformat:0 }}</div>
+    <div class="sf-card-sub">{{ spent_months }} month{{ spent_months|pluralize }} already processed</div>
+  </div>
+  <div class="sf-card blue">
+    <div class="sf-card-label">{{ current_year }} — Remaining</div>
+    <div class="sf-card-value">{{ this_year_remaining_gross|floatformat:0 }}</div>
+    <div class="sf-card-sub">{{ remaining_months }} month{{ remaining_months|pluralize }} left this year</div>
+  </div>
+</div>
+
+<!-- Next Year Cards -->
+<div class="sf-cards">
+  <div class="sf-card orange">
+    <div class="sf-card-label">{{ next_year }} — Projected Gross</div>
+    <div class="sf-card-value">{{ next_year_total_gross|floatformat:0 }}</div>
+    <div class="sf-card-sub">Based on current salary setups</div>
+  </div>
+  <div class="sf-card green">
+    <div class="sf-card-label">{{ next_year }} — Projected Net</div>
+    <div class="sf-card-value">{{ next_year_total_net|floatformat:0 }}</div>
+    <div class="sf-card-sub">After estimated tax</div>
+  </div>
+  <div class="sf-card red">
+    <div class="sf-card-label">{{ next_year }} — Projected Tax</div>
+    <div class="sf-card-value">{{ next_year_total_tax|floatformat:0 }}</div>
+    <div class="sf-card-sub">Annual tax liability (est.)</div>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="sf-tab-bar">
+  <button class="sf-tab active" onclick="showTab('this-year')">{{ current_year }} Month-by-Month</button>
+  <button class="sf-tab" onclick="showTab('next-year')">{{ next_year }} Projection</button>
+  <button class="sf-tab" onclick="showTab('employees')">Per Employee</button>
+</div>
+
+<!-- This Year Month Projections -->
+<div id="tab-this-year" class="sf-pane active">
+  <div class="ep-card" style="padding:0;overflow:hidden;">
+    <div class="sf-section-title" style="padding:16px 16px 0;">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      {{ current_year }} — Remaining Months Payroll Forecast
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="sf-month-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Gross Payroll (PKR)</th>
+            <th>Est. Income Tax</th>
+            <th>Est. Net Payout</th>
+            <th>Employees</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mp in month_projections %}
+          <tr {% if forloop.first %}class="sf-highlight-row"{% endif %}>
+            <td style="font-weight:{% if forloop.first %}700{% else %}500{% endif %};">
+              {{ mp.month }} {{ current_year }}
+              {% if forloop.first %}<span style="font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:1px 6px;margin-left:6px;">Current</span>{% endif %}
+            </td>
+            <td class="sf-num blue">{{ mp.gross|floatformat:0 }}</td>
+            <td class="sf-num red">{{ mp.tax|floatformat:0 }}</td>
+            <td class="sf-num green">{{ mp.net|floatformat:0 }}</td>
+            <td style="color:var(--text-2);">{{ employee_count }}</td>
+          </tr>
+          {% endfor %}
+          <tr class="sf-total-row">
+            <td>Total ({{ remaining_months }} months)</td>
+            <td class="sf-num blue">{{ this_year_remaining_gross|floatformat:0 }}</td>
+            <td class="sf-num red">{% widthratio total_tax 1 remaining_months %}</td>
+            <td class="sf-num green">{% widthratio total_net 1 remaining_months %}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Next Year Projections -->
+<div id="tab-next-year" class="sf-pane">
+  <div class="ep-card" style="padding:0;overflow:hidden;">
+    <div class="sf-section-title" style="padding:16px 16px 0;">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      {{ next_year }} — Full Year Payroll Projection (12 Months)
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="sf-month-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Gross Payroll (PKR)</th>
+            <th>Est. Income Tax</th>
+            <th>Est. Net Payout</th>
+            <th>Employees</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mp in next_year_months %}
+          <tr>
+            <td>{{ mp.month }} {{ next_year }}</td>
+            <td class="sf-num blue">{{ mp.gross|floatformat:0 }}</td>
+            <td class="sf-num red">{{ mp.tax|floatformat:0 }}</td>
+            <td class="sf-num green">{{ mp.net|floatformat:0 }}</td>
+            <td style="color:var(--text-2);">{{ employee_count }}</td>
+          </tr>
+          {% endfor %}
+          <tr class="sf-total-row">
+            <td>Total {{ next_year }}</td>
+            <td class="sf-num blue">{{ next_year_total_gross|floatformat:0 }}</td>
+            <td class="sf-num red">{{ next_year_total_tax|floatformat:0 }}</td>
+            <td class="sf-num green">{{ next_year_total_net|floatformat:0 }}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:12px 16px;font-size:11px;color:var(--text-2);border-top:1px solid var(--border);">
+      * Projection based on current active salary setups. Does not account for planned increments, new hires, or departures.
+    </div>
+  </div>
+</div>
+
+<!-- Per Employee Breakdown -->
+<div id="tab-employees" class="sf-pane">
+  <div class="ep-card" style="padding:0;overflow:hidden;">
+    <div class="sf-section-title" style="padding:16px 16px 0;">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Per-Employee Monthly Salary Breakdown
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="sf-emp-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Gross / Month</th>
+            <th>Income Tax / Month</th>
+            <th>Net / Month</th>
+            <th>Annual Gross</th>
+            <th>Annual Net</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in employees_data %}
+          <tr>
+            <td style="color:var(--text-2);font-size:12px;">{{ forloop.counter }}</td>
+            <td>
+              <div style="font-weight:600;font-size:13px;">{{ emp.name }}</div>
+              <div class="sf-badge-dept">{{ emp.dept }}</div>
+            </td>
+            <td class="sf-num blue">{{ emp.gross|floatformat:0 }}</td>
+            <td class="sf-num red">{{ emp.tax|floatformat:0 }}</td>
+            <td class="sf-num green">{{ emp.net|floatformat:0 }}</td>
+            <td class="sf-num" style="color:#6b7280;">{% widthratio emp.gross 1 12 %}</td>
+            <td class="sf-num" style="color:#6b7280;">{% widthratio emp.net 1 12 %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7"><div class="hr-empty">No active salary setups found.</div></td></tr>
+          {% endfor %}
+          {% if employees_data %}
+          <tr class="sf-total-row">
+            <td colspan="2">Total ({{ employee_count }} employees)</td>
+            <td class="sf-num blue">{{ total_gross|floatformat:0 }}</td>
+            <td class="sf-num red">{{ total_tax|floatformat:0 }}</td>
+            <td class="sf-num green">{{ total_net|floatformat:0 }}</td>
+            <td class="sf-num" style="color:#6b7280;">{{ next_year_total_gross|floatformat:0 }}</td>
+            <td class="sf-num" style="color:#6b7280;">{{ next_year_total_net|floatformat:0 }}</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.sf-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sf-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+{% endblock %}

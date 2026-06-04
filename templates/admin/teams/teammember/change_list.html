@@ -1,0 +1,291 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Team Members — Digilatics HRIS{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.tmm-wrap * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+/* ── Header ── */
+.tmm-header {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  padding: 24px 28px;
+  display: flex; align-items: center; gap: 20px;
+  margin-bottom: 20px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.tmm-header::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #F58400, #FBBF24);
+  border-radius: 20px 20px 0 0;
+}
+.tmm-header-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: linear-gradient(135deg, #F58400, #C86A00);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+}
+.tmm-header-icon svg { width: 28px; height: 28px; }
+.tmm-header-text { flex: 1; }
+.tmm-header-title { font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+.tmm-header-sub { font-size: 13px; color: #6B7280; margin-top: 3px; }
+.tmm-header-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.tmm-btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, #F58400, #C86A00);
+  color: #fff; border: none; border-radius: 10px;
+  padding: 10px 18px; font-size: 13px; font-weight: 700;
+  text-decoration: none; cursor: pointer; transition: opacity 0.15s;
+}
+.tmm-btn-primary:hover { opacity: 0.9; color: #fff; }
+.tmm-btn-primary svg { width: 14px; height: 14px; }
+
+/* ── KPI ── */
+.tmm-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px; margin-bottom: 20px;
+}
+@media(max-width:1000px){ .tmm-kpi-grid{ grid-template-columns:repeat(2,1fr); } }
+
+.tmm-kpi {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; gap: 6px;
+  position: relative; overflow: hidden;
+}
+.tmm-kpi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.tmm-kpi-total::before   { background: #F58400; }
+.tmm-kpi-lead::before    { background: #2563EB; }
+.tmm-kpi-coord::before   { background: #7C3AED; }
+.tmm-kpi-primary::before { background: #16A34A; }
+
+.tmm-kpi-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 2px;
+}
+.tmm-kpi-icon svg { width: 17px; height: 17px; }
+.tmm-kpi-total  .tmm-kpi-icon { background: #FFF8EE; color: #F58400; }
+.tmm-kpi-lead   .tmm-kpi-icon { background: #EFF6FF; color: #2563EB; }
+.tmm-kpi-coord  .tmm-kpi-icon { background: #F3E8FF; color: #7C3AED; }
+.tmm-kpi-primary .tmm-kpi-icon { background: #DCFCE7; color: #16A34A; }
+
+.tmm-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+.tmm-kpi-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+.tmm-kpi-sub   { font-size: 11px; color: #9CA3AF; }
+.tmm-kpi-total   .tmm-kpi-value { color: #C86A00; }
+.tmm-kpi-lead    .tmm-kpi-value { color: #2563EB; }
+.tmm-kpi-coord   .tmm-kpi-value { color: #7C3AED; }
+.tmm-kpi-primary .tmm-kpi-value { color: #16A34A; }
+
+/* ── Toolbar ── */
+.tmm-toolbar {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 14px;
+  padding: 14px 18px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.tmm-search-wrap { position: relative; flex: 1; min-width: 220px; }
+.tmm-search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: #9CA3AF; }
+.tmm-search-wrap input {
+  width: 100%; padding: 9px 12px 9px 36px;
+  border: 1px solid #E5E7EB; border-radius: 10px;
+  font-size: 13px; color: #374151; background: #F9FAFB;
+  font-family: inherit; outline: none;
+}
+.tmm-search-wrap input:focus { border-color: #F58400; background: #fff; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+
+/* ── Table ── */
+.tmm-table-card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 20px;
+}
+.tmm-table-card table { width: 100%; border-collapse: collapse; }
+.tmm-table-card thead th {
+  padding: 13px 16px; font-size: 11px; font-weight: 700;
+  color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em;
+  background: #F9FAFB; border-bottom: 1px solid #E5E7EB;
+  text-align: left; white-space: nowrap;
+}
+.tmm-table-card thead th a { color: #6B7280; text-decoration: none; }
+.tmm-table-card thead th a:hover { color: #111827; }
+.tmm-table-card tbody tr { border-bottom: 1px solid #F3F4F6; transition: background 0.1s; }
+.tmm-table-card tbody tr:last-child { border-bottom: none; }
+.tmm-table-card tbody tr:hover { background: #FFFBF5; }
+.tmm-table-card tbody td { padding: 14px 16px; font-size: 13px; color: #374151; }
+.tmm-table-card tbody td a { color: #C86A00; text-decoration: none; font-weight: 600; }
+.tmm-table-card tbody td a:hover { color: #F58400; }
+
+.tmm-role-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+}
+.tmm-role-member      { background: #F3F4F6; color: #374151; }
+.tmm-role-lead        { background: #EFF6FF; color: #2563EB; }
+.tmm-role-coordinator { background: #F3E8FF; color: #7C3AED; }
+
+.tmm-primary-badge { background: #DCFCE7; color: #15803D; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+
+.tmm-action-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
+  text-decoration: none; background: #FFF8EE; color: #C86A00;
+  border: 1px solid #FED7AA; transition: all 0.15s;
+}
+.tmm-action-btn:hover { background: #FFEDD5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tmm-wrap">
+
+  <!-- Header -->
+  <div class="tmm-header">
+    <div class="tmm-header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+    <div class="tmm-header-text">
+      <div class="tmm-header-title">Team Members</div>
+      <div class="tmm-header-sub">Employees assigned to organisational teams</div>
+    </div>
+    <div class="tmm-header-actions">
+      {% if has_add_permission %}
+      <a href="{% url 'admin:teams_teammember_add' %}" class="tmm-btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Member
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="tmm-kpi-grid">
+    <div class="tmm-kpi tmm-kpi-total">
+      <div class="tmm-kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="tmm-kpi-label">Total Members</div>
+      <div class="tmm-kpi-value">{{ tmm_total }}</div>
+      <div class="tmm-kpi-sub">All assignments</div>
+    </div>
+    <div class="tmm-kpi tmm-kpi-lead">
+      <div class="tmm-kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="tmm-kpi-label">Team Leads</div>
+      <div class="tmm-kpi-value">{{ tmm_leads }}</div>
+      <div class="tmm-kpi-sub">Lead role</div>
+    </div>
+    <div class="tmm-kpi tmm-kpi-coord">
+      <div class="tmm-kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+        </svg>
+      </div>
+      <div class="tmm-kpi-label">Coordinators</div>
+      <div class="tmm-kpi-value">{{ tmm_coordinators }}</div>
+      <div class="tmm-kpi-sub">Coordinator role</div>
+    </div>
+    <div class="tmm-kpi tmm-kpi-primary">
+      <div class="tmm-kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="tmm-kpi-label">Primary Teams</div>
+      <div class="tmm-kpi-value">{{ tmm_primary }}</div>
+      <div class="tmm-kpi-sub">Primary assignments</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="tmm-toolbar">
+    {% if cl.search_fields %}
+    <form method="get" class="tmm-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="{{ search_var }}" value="{{ cl.query }}" placeholder="Search members…">
+    </form>
+    {% endif %}
+    {% block search %}{% endblock %}
+    <div style="margin-left:auto; font-size:12px; color:#6B7280;">
+      {% if cl.result_count %}{{ cl.result_count }} member{{ cl.result_count|pluralize }}{% endif %}
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="tmm-table-card">
+    {% if cl.result_list %}
+    <table>
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Team</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th>Primary</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in cl.result_list %}
+        <tr>
+          <td><a href="{{ result.pk }}/change/">{{ result.employee }}</a></td>
+          <td>{{ result.team }}</td>
+          <td>
+            {% if result.role_in_team == "Lead" %}
+              <span class="tmm-role-badge tmm-role-lead">Lead</span>
+            {% elif result.role_in_team == "Coordinator" %}
+              <span class="tmm-role-badge tmm-role-coordinator">Coordinator</span>
+            {% else %}
+              <span class="tmm-role-badge tmm-role-member">Member</span>
+            {% endif %}
+          </td>
+          <td>{{ result.joined_at|date:"M d, Y" }}</td>
+          <td>
+            {% if result.is_primary %}
+              <span class="tmm-primary-badge">Primary</span>
+            {% else %}
+              <span style="color:#9CA3AF; font-size:12px;">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ result.pk }}/change/" class="tmm-action-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:48px; text-align:center; color:#9CA3AF;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" style="margin:0 auto 12px; display:block; color:#D1D5DB;">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <div style="font-weight:600; font-size:14px; color:#374151; margin-bottom:4px;">No team members found</div>
+      <div style="font-size:13px;">Try adjusting your search or filters.</div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

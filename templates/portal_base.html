@@ -1,0 +1,439 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Digilatics HRIS{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'accounts/css/portal_base.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="portal-layout" id="portalLayout">
+
+  <!-- Mobile overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <a href="/admin/" class="sidebar-logo-inner">
+        <img src="{% static 'accounts/branding/digilatics-wordmark.svg' %}" alt="digilatics" class="sidebar-logo-img">
+      </a>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+      <!-- Dashboard -->
+      <a href="/admin/"
+         class="sidebar-item {% if request.path == '/admin/' %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        <span class="sidebar-item-label">Dashboard</span>
+      </a>
+
+      <!-- ════════════════════════
+           HR ACCOUNTS
+      ════════════════════════ -->
+      <div class="sidebar-section">HR Accounts</div>
+
+      <a href="/admin/accounts/employeeprofile/"
+         class="sidebar-item {% if 'accounts/employeeprofile' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span class="sidebar-item-label">Employee Registrations</span>
+      </a>
+
+      <!-- ════════════════════════
+           ATTENDANCE
+      ════════════════════════ -->
+      {% if perms.attendance.view_attendancerecord %}
+      <div class="sidebar-section">Attendance</div>
+
+      <a href="/admin/attendance/attendancerecord/"
+         class="sidebar-item {% if 'attendance/attendancerecord' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+          <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+        </svg>
+        <span class="sidebar-item-label">Attendance Records</span>
+      </a>
+
+      {% if request.user.is_superuser %}
+      <a href="/admin/attendance/shift/"
+         class="sidebar-item {% if 'attendance/shift' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="sidebar-item-label">Shifts</span>
+      </a>
+
+      <a href="/admin/attendance/attendancepolicy/"
+         class="sidebar-item {% if 'attendance/attendancepolicy' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <span class="sidebar-item-label">Attendance Policies</span>
+      </a>
+
+      <a href="/admin/attendance/publicholiday/"
+         class="sidebar-item {% if 'attendance/publicholiday' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="sidebar-item-label">Public Holidays</span>
+      </a>
+
+      <a href="/admin/attendance/deviceemployee/"
+         class="sidebar-item {% if 'attendance/deviceemployee' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+        <span class="sidebar-item-label">Device Employees</span>
+      </a>
+
+      <a href="/admin/attendance/syncschedule/"
+         class="sidebar-item {% if 'attendance/syncschedule' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="23 4 23 10 17 10"/>
+          <polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        <span class="sidebar-item-label">Sync Schedules</span>
+      </a>
+      {% endif %}
+
+      {% endif %}
+
+      <!-- ════════════════════════
+           LEAVE MANAGEMENT
+      ════════════════════════ -->
+      <div class="sidebar-section">Leave Management</div>
+
+      <a href="/admin/leaves/leaverequest/"
+         class="sidebar-item {% if 'leaves/leaverequest' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        <span class="sidebar-item-label">Leave Requests</span>
+      </a>
+
+      {% if request.user.is_superuser %}
+      <a href="/admin/leaves/leaveallocation/"
+         class="sidebar-item {% if 'leaves/leaveallocation' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+        </svg>
+        <span class="sidebar-item-label">Leave Allocations</span>
+      </a>
+
+      <a href="/admin/leaves/leavetype/"
+         class="sidebar-item {% if 'leaves/leavetype' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+        <span class="sidebar-item-label">Leave Types</span>
+      </a>
+      {% endif %}
+
+      <!-- ════════════════════════
+           PAYROLL
+      ════════════════════════ -->
+      {% if perms.salary.view_payrollrun %}
+      <div class="sidebar-section">Payroll</div>
+
+      <a href="/admin/salary/payrollrun/"
+         class="sidebar-item {% if 'salary/payrollrun' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/>
+        </svg>
+        <span class="sidebar-item-label">Payroll Runs</span>
+      </a>
+
+      <a href="/admin/salary/payslip/"
+         class="sidebar-item {% if 'salary/payslip' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <line x1="10" y1="9" x2="8" y2="9"/>
+        </svg>
+        <span class="sidebar-item-label">Payslips</span>
+      </a>
+
+      <a href="/admin/salary/salarysetup/"
+         class="sidebar-item {% if 'salary/salarysetup' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        <span class="sidebar-item-label">Salary Setups</span>
+      </a>
+
+      <a href="/admin/salary/statutorydeductionpolicy/"
+         class="sidebar-item {% if 'salary/statutorydeductionpolicy' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="sidebar-item-label">Statutory Deductions</span>
+      </a>
+
+      <a href="/admin/salary/taxyear/"
+         class="sidebar-item {% if 'salary/taxyear' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+        <span class="sidebar-item-label">Tax Years</span>
+      </a>
+      {% endif %}
+
+      <!-- ════════════════════════
+           TEAMS
+      ════════════════════════ -->
+      {% if perms.teams.view_team or perms.teams.view_teammember %}
+      <div class="sidebar-section">Teams</div>
+
+      {% if request.user.is_superuser %}
+      <a href="/admin/teams/team/"
+         class="sidebar-item {% if 'teams/team' in request.path and 'teammember' not in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+          <path d="M2 20v-1a3 3 0 0 1 3-3h1M22 20v-1a3 3 0 0 0-3-3h-1"/>
+        </svg>
+        <span class="sidebar-item-label">Teams</span>
+      </a>
+      {% endif %}
+
+      {% if perms.teams.view_teammember %}
+      <a href="/admin/teams/teammember/"
+         class="sidebar-item {% if 'teams/teammember' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span class="sidebar-item-label">Team Members</span>
+      </a>
+      {% endif %}
+
+      {% endif %}
+
+      <!-- ════════════════════════
+           AUTHENTICATION
+      ════════════════════════ -->
+      {% if request.user.is_superuser %}
+      <div class="sidebar-section">Authentication</div>
+
+      <a href="/admin/auth/user/"
+         class="sidebar-item {% if 'auth/user' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="sidebar-item-label">Users</span>
+      </a>
+
+      <a href="/admin/auth/group/"
+         class="sidebar-item {% if 'auth/group' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span class="sidebar-item-label">Groups</span>
+      </a>
+      {% endif %}
+
+      <!-- ════════════════════════
+           APPS
+      ════════════════════════ -->
+      <div class="sidebar-section">Apps</div>
+
+      <a href="/punch/"
+         class="sidebar-item {% if 'punch' in request.path %}active{% endif %}">
+        <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="sidebar-item-label">Punch Portal</span>
+      </a>
+
+    </nav>
+
+    <!-- Help & Support footer -->
+    <div class="sidebar-footer">
+      <a href="/admin/" class="sidebar-help">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Help and Support
+      </a>
+    </div>
+
+  </aside>
+
+
+  <!-- ══════════════════════════════════════════
+       MAIN
+  ══════════════════════════════════════════ -->
+  <div class="portal-main" id="portalMain">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-hamburger" id="hamburger" aria-label="Toggle sidebar" onclick="toggleSidebar()">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" placeholder="Search anything's" id="topbarSearchInput">
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <a href="/admin/" class="topbar-link">Reports &amp; Analytics</a>
+        <a href="/admin/" class="topbar-link">Help</a>
+
+        <div class="topbar-icons">
+          <button class="topbar-icon-btn" title="Theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </button>
+          <button class="topbar-icon-btn" title="Messages">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span class="topbar-badge">3</span>
+          </button>
+          <button class="topbar-icon-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <button class="topbar-icon-btn" title="Calendar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </button>
+        </div>
+
+        <div class="topbar-user">
+          <div class="topbar-user-info">
+            <span class="topbar-user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+            <span class="topbar-user-role">
+              {% with profile=request.user.employee_profile %}
+                {% if profile %}{{ profile.role }}{% else %}Admin{% endif %}
+              {% endwith %}
+            </span>
+          </div>
+          <div class="topbar-avatar">
+            {% with profile=request.user.employee_profile %}
+              {% if profile and profile.profile_photo %}
+                <img src="{{ profile.profile_photo.url }}" alt="{{ request.user.get_full_name }}">
+              {% else %}
+                {{ request.user.username|first|upper }}
+              {% endif %}
+            {% endwith %}
+          </div>
+        </div>
+
+        <a href="/admin/logout/" class="topbar-logout" title="Log out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="portal-content">
+      {% block content %}{% endblock %}
+    </main>
+
+  </div><!-- /.portal-main -->
+
+
+  <!-- ══════════════════════════════════════════
+       RIGHT QUICK ACTIONS
+  ══════════════════════════════════════════ -->
+  <div class="quick-actions">
+    <a href="/admin/accounts/employeeprofile/add/" class="qa-item" title="Add Employee">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      <span>Add</span>
+    </a>
+    <a href="/admin/leaves/leaverequest/" class="qa-item" title="Leave Requests">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Leave</span>
+    </a>
+    <a href="/admin/attendance/attendancerecord/" class="qa-item" title="Attendance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
+      <span>Attend</span>
+    </a>
+    <a href="/admin/" class="qa-item" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </div>
+
+</div><!-- /.portal-layout -->
+
+<script>
+(function () {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+  window.toggleSidebar = function () {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  };
+  window.closeSidebar = closeSidebar;
+  overlay.addEventListener('click', closeSidebar);
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 768) closeSidebar();
+  });
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

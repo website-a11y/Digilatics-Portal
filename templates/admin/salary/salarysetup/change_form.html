@@ -1,0 +1,1037 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} salary-setup-form{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+
+
+
+.ss-emp-header {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex; align-items: center; gap: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.ss-emp-avatar {
+  width: 60px; height: 60px; border-radius: 16px;
+  object-fit: cover; border: 3px solid rgba(245,132,0,0.18); flex-shrink:0;
+}
+.ss-emp-avatar-ph {
+  width: 60px; height: 60px; border-radius: 16px; flex-shrink:0;
+  background: linear-gradient(135deg,#F58400,#C86A00);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:800;
+}
+.ss-emp-name { font-size:18px; font-weight:800; color:#111827; line-height:1.2; }
+.ss-emp-meta { font-size:12.5px; color:#6B7280; display:flex; gap:14px; flex-wrap:wrap; margin-top:4px; }
+.ss-emp-meta span { display:flex; align-items:center; gap:4px; }
+.ss-active-pill {
+  font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;
+  background:#DCFCE7; color:#16A34A; border:1px solid #BBF7D0;
+}
+.ss-inactive-pill {
+  font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;
+  background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB;
+}
+
+.ss-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.ss-kpi {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  display:flex; flex-direction:column; gap:6px;
+  position:relative; overflow:hidden;
+}
+.ss-kpi::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  border-radius:14px 14px 0 0;
+}
+.ss-kpi-gross::before { background:#F58400; }
+.ss-kpi-net::before   { background:#16A34A; }
+.ss-kpi-tax::before   { background:#2563EB; }
+.ss-kpi-ded::before   { background:#DC2626; }
+.ss-kpi-icon {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; margin-bottom:4px;
+}
+.ss-kpi-gross .ss-kpi-icon { background:#FFF8EE; color:#F58400; }
+.ss-kpi-net   .ss-kpi-icon { background:#DCFCE7; color:#16A34A; }
+.ss-kpi-tax   .ss-kpi-icon { background:#DBEAFE; color:#2563EB; }
+.ss-kpi-ded   .ss-kpi-icon { background:#FEE2E2; color:#DC2626; }
+.ss-kpi-label { font-size:11.5px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
+.ss-kpi-value { font-size:22px; font-weight:800; color:#111827; line-height:1; letter-spacing:-0.02em; }
+.ss-kpi-sub   { font-size:11px; color:#9CA3AF; }
+
+/* ── Breakdown panel ──────────────────────────────── */
+.ss-breakdown-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.ss-breakdown-card {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.ss-breakdown-head {
+  display:flex; align-items:center; gap:8px;
+  padding:13px 18px; border-bottom:1px solid #E5E7EB;
+  background:#F9FAFB; font-size:12px; font-weight:700; color:#374151;
+}
+.ss-breakdown-head svg { flex-shrink:0; }
+.ss-breakdown-body { padding:12px 18px; }
+.ss-brow {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:6px 0; border-bottom:1px solid #F9FAFB; font-size:13px;
+}
+.ss-brow:last-child { border-bottom:none; }
+.ss-brow-label { color:#6B7280; display:flex; align-items:center; gap:6px; }
+.ss-brow-bar {
+  flex:1; height:5px; background:#F3F4F6; border-radius:999px;
+  margin:0 12px; overflow:hidden;
+}
+.ss-brow-bar-fill { height:100%; border-radius:999px; transition:width 0.4s ease; }
+.ss-brow-val { font-size:13px; font-weight:700; color:#111827; white-space:nowrap; min-width:90px; text-align:right; }
+.ss-brow-val.neg { color:#DC2626; }
+.ss-btotal {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 0 2px; border-top:2px solid #E5E7EB; margin-top:4px;
+  font-size:13px; font-weight:700; color:#111827;
+}
+.ss-btotal-val { font-size:15px; font-weight:800; }
+.ss-btotal-val.net { color:#16A34A; }
+
+/* Donut chart */
+.ss-donut-wrap {
+  display:flex; align-items:center; justify-content:center; gap:24px;
+  padding:18px;
+}
+.ss-donut-svg { transform:rotate(-90deg); }
+.ss-donut-center {
+  position:absolute; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  inset:0; pointer-events:none;
+}
+.ss-donut-container { position:relative; width:130px; height:130px; flex-shrink:0; }
+.ss-donut-center-val { font-size:15px; font-weight:800; color:#111827; transform:rotate(90deg); }
+.ss-donut-center-lbl { font-size:10px; color:#9CA3AF; font-weight:600; transform:rotate(90deg); }
+.ss-legend { display:flex; flex-direction:column; gap:8px; }
+.ss-legend-item { display:flex; align-items:center; gap:8px; font-size:12.5px; color:#374151; }
+.ss-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.ss-legend-pct { font-weight:700; margin-left:auto; min-width:36px; text-align:right; }
+
+/* Annual summary strip */
+.ss-annual-strip {
+  background:#111827; border-radius:12px; padding:16px 20px;
+  display:flex; gap:0; overflow:hidden; margin-bottom:18px;
+}
+.ss-annual-item {
+  flex:1; text-align:center;
+  border-right:1px solid rgba(255,255,255,0.1);
+  padding:0 12px;
+}
+.ss-annual-item:last-child { border-right:none; }
+.ss-annual-label { font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; }
+.ss-annual-value { font-size:16px; font-weight:800; color:#fff; margin-top:5px; letter-spacing:-0.01em; }
+
+/* ── Tabbed form sections ─────────────────────────── */
+.ss-tabs-wrapper {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.ss-tab-nav {
+  display:flex; overflow-x:auto; border-bottom:1px solid #E5E7EB;
+  background:#F9FAFB; scrollbar-width:none;
+}
+.ss-tab-nav::-webkit-scrollbar { display:none; }
+.ss-tab-btn {
+  display:flex; align-items:center; gap:7px;
+  padding:13px 18px; font-size:12.5px; font-weight:600; color:#6B7280;
+  background:none; border:none; border-bottom:2px solid transparent;
+  cursor:pointer; white-space:nowrap; transition:all 0.15s;
+  font-family:inherit; flex-shrink:0;
+}
+.ss-tab-btn:hover { color:#F58400; background:rgba(245,132,0,0.04); }
+.ss-tab-btn.active { color:#F58400; border-bottom-color:#F58400; background:#fff; }
+.ss-tab-pane { display:none; }
+.ss-tab-pane.active { display:block; }
+
+/* ── Form row / cols ──────────────────────────────── */
+.ss-row {
+  display:flex; gap:24px; padding:16px 20px;
+  border-bottom:1px solid #F3F4F6; align-items:flex-start;
+}
+.ss-row:last-child { border-bottom:none; }
+.ss-col {
+  flex:0 0 calc(50% - 12px); min-width:0;
+  display:flex; flex-direction:column; gap:6px;
+}
+.ss-col-third {
+  flex:0 0 calc(33.333% - 16px); min-width:0;
+  display:flex; flex-direction:column; gap:6px;
+}
+.ss-col-full {
+  flex:0 0 100%; min-width:0;
+  display:flex; flex-direction:column; gap:6px;
+}
+.ss-label {
+  font-size:11px; font-weight:700; color:#6B7280;
+  text-transform:uppercase; letter-spacing:0.06em; display:block;
+}
+.ss-label-hint { font-weight:400; color:#9CA3AF; margin-left:4px; font-style:italic; }
+
+/* Inputs */
+.ss-col input, .ss-col select, .ss-col textarea,
+.ss-col-third input, .ss-col-third select,
+.ss-col-full input, .ss-col-full select, .ss-col-full textarea {
+  width:100% !important; box-sizing:border-box !important;
+  border:1px solid #E5E7EB !important; border-radius:8px !important;
+  padding:9px 13px !important; font-size:13.5px !important;
+  color:#111827 !important; background:#F9FAFB !important;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif !important;
+  outline:none !important; transition:border-color 0.15s,box-shadow 0.15s !important;
+  max-width:100% !important;
+}
+.ss-col input:focus, .ss-col select:focus, .ss-col textarea:focus,
+.ss-col-third input:focus, .ss-col-third select:focus,
+.ss-col-full input:focus, .ss-col-full select:focus {
+  border-color:#F58400 !important;
+  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  background:#fff !important;
+}
+/* Gross salary highlight */
+#id_gross_salary_input {
+  border-color:#F58400 !important;
+  background:#FFFBF2 !important;
+  font-size:16px !important; font-weight:700 !important;
+}
+#id_gross_salary_input:focus {
+  box-shadow:0 0 0 3px rgba(245,132,0,0.18) !important;
+}
+/* Autocomplete */
+.ss-col .related-widget-wrapper,
+.ss-col-full .related-widget-wrapper {
+  display:flex !important; align-items:center !important;
+  gap:0 !important; width:100% !important; min-width:0 !important;
+}
+.ss-col .related-widget-wrapper .select2-container,
+.ss-col-full .related-widget-wrapper .select2-container {
+  flex:1 1 0 !important; min-width:0 !important; width:0 !important;
+}
+.ss-col .related-widget-wrapper span.select2-container:not(:last-of-type),
+.ss-col-full .related-widget-wrapper span.select2-container:not(:last-of-type) {
+  display:none !important;
+}
+.ss-col .related-widget-wrapper-link,
+.ss-col-full .related-widget-wrapper-link { display:none !important; }
+
+.ss-help { font-size:11.5px; color:#9CA3AF; line-height:1.5; }
+.ss-errors {
+  background:#FFF1F2; border:1px solid #FECDD3; border-radius:8px;
+  color:#BE123C; font-size:12.5px; padding:8px 12px;
+  margin:0; list-style:none;
+}
+.ss-errors li { margin:0; }
+
+/* Loan balance chips */
+.ss-loan-chips { display:flex; gap:10px; flex-wrap:wrap; padding:4px 0; }
+.ss-loan-chip {
+  display:flex; flex-direction:column; align-items:center;
+  background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px;
+  padding:10px 16px; min-width:80px; gap:3px;
+}
+.ss-loan-chip .val { font-size:15px; font-weight:800; color:#111827; line-height:1; }
+.ss-loan-chip .key { font-size:10px; font-weight:600; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.05em; }
+.ss-loan-chip.total .val { color:#2563EB; }
+.ss-loan-chip.paid  .val { color:#16A34A; }
+.ss-loan-chip.bal   .val { color:#F58400; }
+
+/* ── Submit row ───────────────────────────────────── */
+.ss-submit-row {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:14px 20px; display:flex; align-items:center; gap:10px;
+  flex-wrap:wrap; margin-top:16px;
+}
+.ss-btn-save {
+  background:#F58400; color:#fff; border:none; border-radius:8px;
+  padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer;
+  transition:background 0.15s,box-shadow 0.15s; font-family:inherit;
+}
+.ss-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.ss-btn-ghost {
+  background:#F3F4F6; color:#374151; border:1px solid #E5E7EB;
+  border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600;
+  cursor:pointer; transition:background 0.15s; font-family:inherit;
+}
+.ss-btn-ghost:hover { background:#E5E7EB; }
+.ss-btn-delete {
+  margin-left:auto; color:#DC2626; font-size:13px; font-weight:500;
+  padding:9px 16px; border:1px solid #FECDD3; border-radius:8px;
+  background:#FFF1F2; text-decoration:none; transition:background 0.15s;
+}
+.ss-btn-delete:hover { background:#FFE4E6; color:#DC2626; }
+.ss-readonly { font-size:13.5px; color:#374151; padding:9px 0; }
+</style>
+{% endblock %}
+
+
+{% block field_sets %}
+{% with form=adminform.form %}
+
+{# ── Errors ── #}
+{% if adminform.form.non_field_errors %}
+<ul class="ss-errors" style="margin-bottom:14px">
+  {% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+
+<div class="ss-emp-header">
+  {% if original and original.employee.profile_photo %}
+    <img class="ss-emp-avatar" src="{{ original.employee.profile_photo.url }}" alt="">
+  {% else %}
+    <div class="ss-emp-avatar-ph">
+      {% if original %}{{ original.employee.full_name|first|upper }}{% else %}+{% endif %}
+    </div>
+  {% endif %}
+  <div style="flex:1;min-width:0;">
+    <div class="ss-emp-name">
+      {% if original %}{{ original.employee.full_name }}{% else %}New Salary Setup{% endif %}
+    </div>
+    <div class="ss-emp-meta">
+      {% if original %}
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          {{ original.employee.employee_code }}
+        </span>
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          {{ original.employee.department }}
+        </span>
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          {{ original.currency }}
+        </span>
+        {% if original.is_active %}
+          <span class="ss-active-pill">Active</span>
+        {% else %}
+          <span class="ss-inactive-pill">Inactive</span>
+        {% endif %}
+      {% else %}
+        <span>Select an employee and enter salary details below.</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if original %}
+  <div style="text-align:right;flex-shrink:0;">
+    <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Payment Mode</div>
+    <div style="font-size:14px;font-weight:700;color:#111827;display:flex;align-items:center;gap:6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      {{ original.payment_mode }}
+    </div>
+    {% if original.bank_name %}
+    <div style="font-size:11.5px;color:#9CA3AF;margin-top:2px;">{{ original.bank_name }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+
+
+<div class="ss-kpi-row">
+  <div class="ss-kpi ss-kpi-gross">
+    <div class="ss-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div class="ss-kpi-label">Gross Salary</div>
+    <div class="ss-kpi-value" id="kpi-gross">PKR 0</div>
+    <div class="ss-kpi-sub">Monthly CTC</div>
+  </div>
+  <div class="ss-kpi ss-kpi-net">
+    <div class="ss-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,12 20,22 4,22 4,12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+    </div>
+    <div class="ss-kpi-label">Net Pay</div>
+    <div class="ss-kpi-value" id="kpi-net">PKR 0</div>
+    <div class="ss-kpi-sub" id="kpi-net-pct">0% of gross</div>
+  </div>
+  <div class="ss-kpi ss-kpi-tax">
+    <div class="ss-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    </div>
+    <div class="ss-kpi-label">Income Tax</div>
+    <div class="ss-kpi-value" id="kpi-tax">PKR 0</div>
+    <div class="ss-kpi-sub">Monthly / mo</div>
+  </div>
+  <div class="ss-kpi ss-kpi-ded">
+    <div class="ss-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </div>
+    <div class="ss-kpi-label">Total Deductions</div>
+    <div class="ss-kpi-value" id="kpi-ded">PKR 0</div>
+    <div class="ss-kpi-sub">Tax + all deductions</div>
+  </div>
+</div>
+
+<div class="ss-breakdown-row">
+
+  {# ── Earnings breakdown ── #}
+  <div class="ss-breakdown-card">
+    <div class="ss-breakdown-head" style="color:#F58400;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Earnings Breakdown
+    </div>
+    <div class="ss-breakdown-body">
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#F58400;display:inline-block;"></span>Basic Salary <em style="font-size:10px;color:#9CA3AF;">(60%)</em></span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-basic" style="width:60%;background:#F58400;"></div></div>
+        <span class="ss-brow-val" id="bv-basic">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#2563EB;display:inline-block;"></span>House Rent <em style="font-size:10px;color:#9CA3AF;">(20%)</em></span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-hra" style="width:20%;background:#2563EB;"></div></div>
+        <span class="ss-brow-val" id="bv-hra">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#16A34A;display:inline-block;"></span>Utility <em style="font-size:10px;color:#9CA3AF;">(10%)</em></span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-util" style="width:10%;background:#16A34A;"></div></div>
+        <span class="ss-brow-val" id="bv-util">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#7C3AED;display:inline-block;"></span>Medical <em style="font-size:10px;color:#9CA3AF;">(10%)</em></span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-med" style="width:10%;background:#7C3AED;"></div></div>
+        <span class="ss-brow-val" id="bv-med">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#0891B2;display:inline-block;"></span>Other</span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-other" style="width:0%;background:#0891B2;"></div></div>
+        <span class="ss-brow-val" id="bv-other">0</span>
+      </div>
+      <div class="ss-btotal">
+        <span>Gross Pay</span>
+        <span class="ss-btotal-val" id="btotal-gross">PKR 0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ss-breakdown-card">
+    <div class="ss-breakdown-head" style="color:#DC2626;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Deductions &amp; Net Pay
+    </div>
+    <div class="ss-breakdown-body">
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#2563EB;display:inline-block;"></span>Income Tax</span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-tax" style="width:0%;background:#2563EB;"></div></div>
+        <span class="ss-brow-val neg" id="bv-tax">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#F59E0B;display:inline-block;"></span>Attendance Ded.</span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-att" style="width:0%;background:#F59E0B;"></div></div>
+        <span class="ss-brow-val neg" id="bv-att">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#6366F1;display:inline-block;"></span>EOBI + PESSI</span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-stat" style="width:0%;background:#6366F1;"></div></div>
+        <span class="ss-brow-val neg" id="bv-stat">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#EC4899;display:inline-block;"></span>Loan + Advance</span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-loan" style="width:0%;background:#EC4899;"></div></div>
+        <span class="ss-brow-val neg" id="bv-loan">0</span>
+      </div>
+      <div class="ss-brow">
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#DC2626;display:inline-block;"></span>PF + Gratuity + Misc</span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-pf" style="width:0%;background:#DC2626;"></div></div>
+        <span class="ss-brow-val neg" id="bv-pf">0</span>
+      </div>
+      <div class="ss-btotal">
+        <span>Net Pay</span>
+        <span class="ss-btotal-val net" id="btotal-net">PKR 0</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="ss-annual-strip">
+  <div class="ss-annual-item">
+    <div class="ss-annual-label">Annual Gross</div>
+    <div class="ss-annual-value" id="ann-gross">PKR 0</div>
+  </div>
+  <div class="ss-annual-item">
+    <div class="ss-annual-label">Annual Tax</div>
+    <div class="ss-annual-value" id="ann-tax">PKR 0</div>
+  </div>
+  <div class="ss-annual-item">
+    <div class="ss-annual-label">Annual Net</div>
+    <div class="ss-annual-value" id="ann-net">PKR 0</div>
+  </div>
+  <div class="ss-annual-item">
+    <div class="ss-annual-label">Monthly Taxable</div>
+    <div class="ss-annual-value" id="ann-taxable">PKR 0</div>
+  </div>
+  <div class="ss-annual-item">
+    <div class="ss-annual-label">Net / Gross</div>
+    <div class="ss-annual-value" id="ann-pct">0%</div>
+  </div>
+</div>
+
+
+<div class="ss-tabs-wrapper">
+  <nav class="ss-tab-nav">
+    <button class="ss-tab-btn active" type="button" data-tab="earnings">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Earnings
+    </button>
+    <button class="ss-tab-btn" type="button" data-tab="deductions">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Deductions
+    </button>
+    <button class="ss-tab-btn" type="button" data-tab="payment">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Payment
+    </button>
+    <button class="ss-tab-btn" type="button" data-tab="loans">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Loans &amp; PF
+    </button>
+    <button class="ss-tab-btn" type="button" data-tab="notes">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Notes &amp; Audit
+    </button>
+  </nav>
+
+  <div class="ss-tab-pane active" id="tab-earnings">
+
+    
+    <div class="ss-row">
+      <div class="ss-col-full">
+        <label class="ss-label" for="{{ form.employee.id_for_label }}">Employee *</label>
+        {{ form.employee }}
+        {% if form.employee.errors %}<ul class="ss-errors">{% for e in form.employee.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# Gross + Currency #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.gross_salary_input.id_for_label }}">
+          Gross Salary (CTC)
+          <span class="ss-label-hint">auto-splits components →</span>
+        </label>
+        {{ form.gross_salary_input }}
+        {% if form.gross_salary_input.errors %}<ul class="ss-errors">{% for e in form.gross_salary_input.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="ss-help">Enter gross to auto-fill: Basic 60%, HRA 20%, Utility 10%, Medical 10%.</span>
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.currency.id_for_label }}">Currency</label>
+        {{ form.currency }}
+        {% if form.currency.errors %}<ul class="ss-errors">{% for e in form.currency.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# Basic + HRA #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.basic_salary.id_for_label }}">
+          Basic Salary
+          <span style="background:#FFF8EE;color:#F58400;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">60%</span>
+        </label>
+        {{ form.basic_salary }}
+        {% if form.basic_salary.errors %}<ul class="ss-errors">{% for e in form.basic_salary.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.house_rent_allowance.id_for_label }}">
+          House Rent Allowance
+          <span style="background:#DBEAFE;color:#2563EB;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">20%</span>
+        </label>
+        {{ form.house_rent_allowance }}
+        {% if form.house_rent_allowance.errors %}<ul class="ss-errors">{% for e in form.house_rent_allowance.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# Utility + Medical #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.utility_allowance.id_for_label }}">
+          Utility Allowance
+          <span style="background:#DCFCE7;color:#16A34A;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">10%</span>
+        </label>
+        {{ form.utility_allowance }}
+        {% if form.utility_allowance.errors %}<ul class="ss-errors">{% for e in form.utility_allowance.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.medical_allowance.id_for_label }}">
+          Medical Allowance
+          <span style="background:#F3E8FF;color:#7C3AED;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">10%</span>
+        </label>
+        {{ form.medical_allowance }}
+        {% if form.medical_allowance.errors %}<ul class="ss-errors">{% for e in form.medical_allowance.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# Conveyance + Other #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.conveyance_allowance.id_for_label }}">Conveyance Allowance</label>
+        {{ form.conveyance_allowance }}
+        {% if form.conveyance_allowance.errors %}<ul class="ss-errors">{% for e in form.conveyance_allowance.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.other_allowance.id_for_label }}">Other Allowance</label>
+        {{ form.other_allowance }}
+        {% if form.other_allowance.errors %}<ul class="ss-errors">{% for e in form.other_allowance.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# Working Days + NTN #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.total_working_days.id_for_label }}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:3px;vertical-align:middle;color:#6B7280"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Total Working Days
+        </label>
+        {{ form.total_working_days }}
+        {% if form.total_working_days.errors %}<ul class="ss-errors">{% for e in form.total_working_days.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="ss-help">Used to calculate per-day rate for attendance deduction.</span>
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.ntn_no.id_for_label }}">NTN Number</label>
+        {{ form.ntn_no }}
+        {% if form.ntn_no.errors %}<ul class="ss-errors">{% for e in form.ntn_no.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="ss-help">National Tax Number — used for payslips and tax filing.</span>
+      </div>
+    </div>
+
+    {# Active #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.is_active.id_for_label }}">Status</label>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;">
+          {{ form.is_active }}
+          <span style="font-size:13.5px;color:#374151;">Active setup</span>
+        </div>
+        {% if form.is_active.errors %}<ul class="ss-errors">{% for e in form.is_active.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col"></div>
+    </div>
+
+  </div>{# /tab-earnings #}
+
+
+  <div class="ss-tab-pane" id="tab-deductions">
+
+    {# Absent + Unpaid #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.absent_days.id_for_label }}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" style="margin-right:3px;vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Absent Days
+        </label>
+        {{ form.absent_days }}
+        {% if form.absent_days.errors %}<ul class="ss-errors">{% for e in form.absent_days.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.unpaid_days.id_for_label }}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" style="margin-right:3px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Unpaid Days
+        </label>
+        {{ form.unpaid_days }}
+        {% if form.unpaid_days.errors %}<ul class="ss-errors">{% for e in form.unpaid_days.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="ss-help">Attendance deduction = (Gross ÷ Working Days) × Unpaid Days.</span>
+      </div>
+    </div>
+
+    {# Loan + Advance #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.loan_installment.id_for_label }}">
+          Loan Installment
+        </label>
+        {{ form.loan_installment }}
+        {% if form.loan_installment.errors %}<ul class="ss-errors">{% for e in form.loan_installment.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.advance_salary_repayment.id_for_label }}">Advance Salary Repayment</label>
+        {{ form.advance_salary_repayment }}
+        {% if form.advance_salary_repayment.errors %}<ul class="ss-errors">{% for e in form.advance_salary_repayment.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# EOBI + PESSI #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.eobi_contribution.id_for_label }}">
+          EOBI Contribution
+        </label>
+        {{ form.eobi_contribution }}
+        {% if form.eobi_contribution.errors %}<ul class="ss-errors">{% for e in form.eobi_contribution.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="ss-help">Employee's Old-Age Benefits — fixed monthly amount.</span>
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pessi_contribution.id_for_label }}">PESSI / Social Security</label>
+        {{ form.pessi_contribution }}
+        {% if form.pessi_contribution.errors %}<ul class="ss-errors">{% for e in form.pessi_contribution.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# Gratuity + PF #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.gratuity_deduction.id_for_label }}">Gratuity Deduction</label>
+        {{ form.gratuity_deduction }}
+        {% if form.gratuity_deduction.errors %}<ul class="ss-errors">{% for e in form.gratuity_deduction.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.provident_fund_deduction.id_for_label }}">Provident Fund Deduction</label>
+        {{ form.provident_fund_deduction }}
+        {% if form.provident_fund_deduction.errors %}<ul class="ss-errors">{% for e in form.provident_fund_deduction.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    {# Misc #}
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.misc_deduction.id_for_label }}">Miscellaneous Deduction</label>
+        {{ form.misc_deduction }}
+        {% if form.misc_deduction.errors %}<ul class="ss-errors">{% for e in form.misc_deduction.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col"></div>
+    </div>
+
+  </div>{# /tab-deductions #}
+
+
+  <div class="ss-tab-pane" id="tab-payment">
+
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.payment_mode.id_for_label }}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:3px;vertical-align:middle;color:#F58400"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          Payment Mode
+        </label>
+        {{ form.payment_mode }}
+        {% if form.payment_mode.errors %}<ul class="ss-errors">{% for e in form.payment_mode.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col"></div>
+    </div>
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.bank_name.id_for_label }}">Bank Name</label>
+        {{ form.bank_name }}
+        {% if form.bank_name.errors %}<ul class="ss-errors">{% for e in form.bank_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.account_title.id_for_label }}">Account Title</label>
+        {{ form.account_title }}
+        {% if form.account_title.errors %}<ul class="ss-errors">{% for e in form.account_title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+    <div class="ss-row">
+      <div class="ss-col-full">
+        <label class="ss-label" for="{{ form.account_number.id_for_label }}">Account Number</label>
+        {{ form.account_number }}
+        {% if form.account_number.errors %}<ul class="ss-errors">{% for e in form.account_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+  </div>{# /tab-payment #}
+
+
+  <div class="ss-tab-pane" id="tab-loans">
+
+    {% if original %}
+    <div class="ss-row">
+      <div class="ss-col-full">
+        <label class="ss-label">General Loan Summary</label>
+        <div class="ss-loan-chips">
+          <div class="ss-loan-chip total"><span class="val">{{ original.general_total_loan|floatformat:0 }}</span><span class="key">Total</span></div>
+          <div class="ss-loan-chip paid"><span class="val">{{ original.general_paid_loan|floatformat:0 }}</span><span class="key">Paid</span></div>
+          <div class="ss-loan-chip bal"><span class="val">{{ original.general_balance_loan|floatformat:0 }}</span><span class="key">Balance</span></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="ss-row">
+      <div class="ss-col-third">
+        <label class="ss-label" for="{{ form.general_total_loan.id_for_label }}">General Total Loan</label>
+        {{ form.general_total_loan }}
+      </div>
+      <div class="ss-col-third">
+        <label class="ss-label" for="{{ form.general_paid_loan.id_for_label }}">Paid</label>
+        {{ form.general_paid_loan }}
+      </div>
+      <div class="ss-col-third">
+        <label class="ss-label" for="{{ form.general_balance_loan.id_for_label }}">Balance</label>
+        {{ form.general_balance_loan }}
+      </div>
+    </div>
+
+    {% if original %}
+    <div class="ss-row">
+      <div class="ss-col-full">
+        <label class="ss-label">PF Loan Summary</label>
+        <div class="ss-loan-chips">
+          <div class="ss-loan-chip total"><span class="val">{{ original.pf_total_loan|floatformat:0 }}</span><span class="key">Total</span></div>
+          <div class="ss-loan-chip paid"><span class="val">{{ original.pf_paid_loan|floatformat:0 }}</span><span class="key">Paid</span></div>
+          <div class="ss-loan-chip bal"><span class="val">{{ original.pf_balance_loan|floatformat:0 }}</span><span class="key">Balance</span></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="ss-row">
+      <div class="ss-col-third">
+        <label class="ss-label" for="{{ form.pf_total_loan.id_for_label }}">PF Total Loan</label>
+        {{ form.pf_total_loan }}
+      </div>
+      <div class="ss-col-third">
+        <label class="ss-label" for="{{ form.pf_paid_loan.id_for_label }}">Paid</label>
+        {{ form.pf_paid_loan }}
+      </div>
+      <div class="ss-col-third">
+        <label class="ss-label" for="{{ form.pf_balance_loan.id_for_label }}">Balance</label>
+        {{ form.pf_balance_loan }}
+      </div>
+    </div>
+
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pf_starting_balance_own.id_for_label }}">PF Starting Balance (Own)</label>
+        {{ form.pf_starting_balance_own }}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pf_starting_balance_company.id_for_label }}">PF Starting Balance (Company)</label>
+        {{ form.pf_starting_balance_company }}
+      </div>
+    </div>
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pf_record_date.id_for_label }}">PF Record Date</label>
+        {{ form.pf_record_date }}
+      </div>
+      <div class="ss-col"></div>
+    </div>
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pf_permanent_loan_own.id_for_label }}">PF Permanent Loan (Own)</label>
+        {{ form.pf_permanent_loan_own }}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pf_permanent_loan_company.id_for_label }}">PF Permanent Loan (Company)</label>
+        {{ form.pf_permanent_loan_company }}
+      </div>
+    </div>
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pf_refundable_loan_own.id_for_label }}">PF Refundable Loan (Own)</label>
+        {{ form.pf_refundable_loan_own }}
+      </div>
+      <div class="ss-col">
+        <label class="ss-label" for="{{ form.pf_refundable_loan_company.id_for_label }}">PF Refundable Loan (Company)</label>
+        {{ form.pf_refundable_loan_company }}
+      </div>
+    </div>
+
+  </div>{# /tab-loans #}
+
+
+  <div class="ss-tab-pane" id="tab-notes">
+
+    <div class="ss-row">
+      <div class="ss-col-full">
+        <label class="ss-label" for="{{ form.notes.id_for_label }}">Notes</label>
+        {{ form.notes }}
+        {% if form.notes.errors %}<ul class="ss-errors">{% for e in form.notes.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+    <div class="ss-row">
+      <div class="ss-col">
+        <label class="ss-label">Created At</label>
+        <div class="ss-readonly">{% if original %}{{ original.created_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div>
+      </div>
+      <div class="ss-col">
+        <label class="ss-label">Last Updated</label>
+        <div class="ss-readonly">{% if original %}{{ original.updated_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div>
+      </div>
+    </div>
+
+  </div>{# /tab-notes #}
+
+</div>{# /tabs-wrapper #}
+
+{% endwith %}
+{% endblock field_sets %}
+
+
+{% block submit_buttons_bottom %}
+<div class="ss-submit-row">
+  <button type="submit" name="_save" class="ss-btn-save">{% trans "Save" %} →</button>
+  <button type="submit" name="_continue" class="ss-btn-ghost">{% trans "Save and continue editing" %}</button>
+  <button type="submit" name="_addanother" class="ss-btn-ghost">{% trans "Save and add another" %}</button>
+  {% if original %}
+  <a href="{% url 'admin:salary_salarysetup_delete' original.pk %}"
+     class="ss-btn-delete"
+     onclick="return confirm('Delete salary setup for {{ original.employee.full_name }}?')">{% trans "Delete" %}</a>
+  {% endif %}
+</div>
+{% endblock submit_buttons_bottom %}
+
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script>
+(function () {
+  /* ── helpers ── */
+  function g(id) {
+    var el = document.getElementById(id);
+    if (!el) return 0;
+    var v = parseFloat(String(el.value).replace(/,/g, '').trim());
+    return isNaN(v) ? 0 : v;
+  }
+  function fmt(v) {
+    if (v === 0) return '0';
+    return 'PKR ' + Math.round(v).toLocaleString();
+  }
+  function pct(part, whole) { return whole > 0 ? Math.min(Math.round(part / whole * 100), 100) : 0; }
+  function bar(id, p) {
+    var el = document.getElementById(id);
+    if (el) el.style.width = p + '%';
+  }
+  function set(id, v) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = v;
+  }
+
+  function calc() {
+    var gross  = g('id_gross_salary_input');
+    var basic  = g('id_basic_salary');
+    var hra    = g('id_house_rent_allowance');
+    var util   = g('id_utility_allowance');
+    var med    = g('id_medical_allowance');
+    var conv   = g('id_conveyance_allowance');
+    var other  = g('id_other_allowance');
+    var wd     = g('id_total_working_days') || 30;
+    var unpaid = g('id_unpaid_days');
+    var loan   = g('id_loan_installment') + g('id_advance_salary_repayment');
+    var stat   = g('id_eobi_contribution') + g('id_pessi_contribution');
+    var pfgrat = g('id_gratuity_deduction') + g('id_provident_fund_deduction') + g('id_misc_deduction');
+
+    /* If gross is set, use it; otherwise sum components */
+    if (gross <= 0) gross = basic + hra + util + conv + med + other;
+
+    /* FBR income tax (Pakistan) */
+    var taxable = gross * 0.9;
+    var annTaxable = taxable * 12, annTax = 0;
+    if      (annTaxable <= 600000)  annTax = 0;
+    else if (annTaxable <= 1200000) annTax = (annTaxable - 600000) * 0.01;
+    else if (annTaxable <= 2200000) annTax = 6000   + (annTaxable - 1200000) * 0.11;
+    else if (annTaxable <= 3200000) annTax = 116000 + (annTaxable - 2200000) * 0.23;
+    else if (annTaxable <= 4100000) annTax = 345000 + (annTaxable - 3200000) * 0.30;
+    else                            annTax = 615000 + (annTaxable - 4100000) * 0.35;
+    var tax = annTax / 12;
+
+    var attDed = wd > 0 ? (gross / wd) * unpaid : 0;
+    var totDed = tax + attDed + loan + stat + pfgrat;
+    var net    = gross - totDed;
+    var netPct = pct(net, gross);
+
+    return { gross, basic, hra, util, med, conv, other, tax, attDed, loan, stat, pfgrat,
+             totDed, net, netPct, annGross: gross*12, annTax, annNet: net*12, taxable };
+  }
+
+  function refresh() {
+    var c = calc();
+    var G = c.gross;
+
+    /* KPI cards */
+    set('kpi-gross', fmt(c.gross));
+    set('kpi-net',   fmt(c.net));
+    set('kpi-tax',   fmt(c.tax));
+    set('kpi-ded',   fmt(c.totDed));
+    set('kpi-net-pct', c.netPct + '% of gross');
+
+    /* Earnings bars */
+    var ep = function(v) { return pct(v, G); };
+    bar('bar-basic', ep(c.basic));  set('bv-basic', fmt(c.basic));
+    bar('bar-hra',   ep(c.hra));    set('bv-hra',   fmt(c.hra));
+    bar('bar-util',  ep(c.util));   set('bv-util',  fmt(c.util));
+    bar('bar-med',   ep(c.med));    set('bv-med',   fmt(c.med));
+    bar('bar-other', ep(c.other + c.conv)); set('bv-other', fmt(c.other + c.conv));
+    set('btotal-gross', fmt(c.gross));
+
+    /* Deduction bars */
+    var dp = function(v) { return pct(v, c.totDed || 1); };
+    bar('bar-tax',  dp(c.tax));    set('bv-tax',  fmt(c.tax));
+    bar('bar-att',  dp(c.attDed)); set('bv-att',  fmt(c.attDed));
+    bar('bar-stat', dp(c.stat));   set('bv-stat', fmt(c.stat));
+    bar('bar-loan', dp(c.loan));   set('bv-loan', fmt(c.loan));
+    bar('bar-pf',   dp(c.pfgrat)); set('bv-pf',   fmt(c.pfgrat));
+    set('btotal-net', fmt(c.net));
+
+    /* Annual strip */
+    set('ann-gross',   fmt(c.annGross));
+    set('ann-tax',     fmt(c.annTax));
+    set('ann-net',     fmt(c.annNet));
+    set('ann-taxable', fmt(c.taxable));
+    set('ann-pct',     c.netPct + '%');
+  }
+
+  /* Watch all salary fields */
+  var watchIds = [
+    'id_gross_salary_input','id_basic_salary','id_house_rent_allowance',
+    'id_utility_allowance','id_medical_allowance','id_conveyance_allowance',
+    'id_other_allowance','id_total_working_days','id_unpaid_days',
+    'id_loan_installment','id_advance_salary_repayment',
+    'id_eobi_contribution','id_pessi_contribution',
+    'id_gratuity_deduction','id_provident_fund_deduction','id_misc_deduction'
+  ];
+  watchIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.addEventListener('input', refresh); el.addEventListener('change', refresh); }
+  });
+
+  /* Tab switching */
+  document.querySelectorAll('.ss-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.ss-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.ss-tab-pane').forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      var pane = document.getElementById('tab-' + btn.dataset.tab);
+      if (pane) pane.classList.add('active');
+      try { sessionStorage.setItem('ss_tab', btn.dataset.tab); } catch(e) {}
+    });
+  });
+
+  /* Restore tab + auto-jump to error tab */
+  var errorTab = null;
+  document.querySelectorAll('.ss-tab-pane').forEach(function(p) {
+    if (p.querySelector('.ss-errors')) errorTab = p.id.replace('tab-', '');
+  });
+  var saved = ''; try { saved = sessionStorage.getItem('ss_tab') || ''; } catch(e) {}
+  var activeTab = errorTab || saved || 'earnings';
+  document.querySelectorAll('.ss-tab-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.tab === activeTab);
+  });
+  document.querySelectorAll('.ss-tab-pane').forEach(function(p) {
+    p.classList.toggle('active', p.id === 'tab-' + activeTab);
+  });
+
+  /* Initial render */
+  refresh();
+})();
+</script>
+{% endblock %}

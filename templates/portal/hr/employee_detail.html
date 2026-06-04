@@ -1,0 +1,260 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{{ emp.full_name }} — Digilatics HR{% endblock %}
+{% block page_title %}Employee Profile{% endblock %}
+
+{% block content %}
+
+<!-- ══ BACK + HEADER ══ -->
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+  <a href="{% url 'portal:hr_employees' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Employees</a>
+  <a href="{% url 'portal:hr_employee_edit' emp.pk %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:34px;padding:0 16px;font-size:13px;margin-left:auto;">Edit Employee</a>
+</div>
+
+<!-- ══ PROFILE HERO ══ -->
+<div class="hr-profile-hero">
+  <div class="hr-profile-avatar">
+    {% if emp.profile_photo %}
+      <img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}">
+    {% else %}
+      {{ emp.full_name|slice:":2"|upper }}
+    {% endif %}
+  </div>
+  <div class="hr-profile-meta">
+    <div class="hr-profile-name">{{ emp.full_name }}</div>
+    <div class="hr-profile-sub">{{ emp.designation }} &middot; {{ emp.department }}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <span class="ep-badge {{ emp.employment_status|slugify }}">{{ emp.employment_status }}</span>
+      <span class="ep-badge {{ emp.employment_type|slugify }}">{{ emp.employment_type }}</span>
+      <span class="ep-badge {{ emp.role|slugify }}">{{ emp.role }}</span>
+    </div>
+  </div>
+  <div class="hr-profile-stats">
+    <div class="hr-profile-stat">
+      <div class="hr-profile-stat-val">{{ stats.present }}</div>
+      <div class="hr-profile-stat-lbl">Present</div>
+    </div>
+    <div class="hr-profile-stat">
+      <div class="hr-profile-stat-val">{{ stats.absent }}</div>
+      <div class="hr-profile-stat-lbl">Absent</div>
+    </div>
+    <div class="hr-profile-stat">
+      <div class="hr-profile-stat-val">{{ att_pct }}%</div>
+      <div class="hr-profile-stat-lbl">Rate</div>
+    </div>
+    <div class="hr-profile-stat">
+      <div class="hr-profile-stat-val">{{ stats.leave }}</div>
+      <div class="hr-profile-stat-lbl">On Leave</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INFO GRID ══ -->
+<div class="hr-detail-grid">
+
+  <!-- Employment Info -->
+  <div class="ep-card">
+    <div class="ep-card-header"><div class="ep-card-title">Employment Details</div></div>
+    <div class="ep-card-body">
+      <div class="hr-info-grid">
+        <div class="hr-info-item">
+          <div class="hr-info-label">Employee Code</div>
+          <div class="hr-info-val">{{ emp.employee_code }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Official Email</div>
+          <div class="hr-info-val">{{ emp.official_email }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Department</div>
+          <div class="hr-info-val">{{ emp.department|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Designation</div>
+          <div class="hr-info-val">{{ emp.designation|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Employment Type</div>
+          <div class="hr-info-val">{{ emp.employment_type }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Joining Date</div>
+          <div class="hr-info-val">{{ emp.joining_date|date:"M j, Y" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Reporting Manager</div>
+          <div class="hr-info-val">{{ emp.reporting_manager.full_name|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Shift</div>
+          <div class="hr-info-val">
+            {% if emp.shift_master %}{{ emp.shift_master }}
+            {% elif emp.scheduled_checkin %}{{ emp.scheduled_checkin|time:"g:i A" }} – {{ emp.scheduled_checkout|time:"g:i A" }}
+            {% else %}—{% endif %}
+          </div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Work Location</div>
+          <div class="hr-info-val">{{ emp.work_location|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Payment Mode</div>
+          <div class="hr-info-val">{{ emp.payment_mode }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Personal Info -->
+  <div class="ep-card">
+    <div class="ep-card-header"><div class="ep-card-title">Personal Details</div></div>
+    <div class="ep-card-body">
+      <div class="hr-info-grid">
+        <div class="hr-info-item">
+          <div class="hr-info-label">Personal Email</div>
+          <div class="hr-info-val">{{ emp.personal_email|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Phone</div>
+          <div class="hr-info-val">{{ emp.personal_phone|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">CNIC</div>
+          <div class="hr-info-val">{{ emp.cnic|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Gender</div>
+          <div class="hr-info-val">{{ emp.gender|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Date of Birth</div>
+          <div class="hr-info-val">{{ emp.date_of_birth|date:"M j, Y"|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Marital Status</div>
+          <div class="hr-info-val">{{ emp.marital_status|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">City</div>
+          <div class="hr-info-val">{{ emp.city|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item">
+          <div class="hr-info-label">Country</div>
+          <div class="hr-info-val">{{ emp.country|default:"—" }}</div>
+        </div>
+        <div class="hr-info-item" style="grid-column:1/-1;">
+          <div class="hr-info-label">Address</div>
+          <div class="hr-info-val">{{ emp.current_address|default:"—" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ SALARY + LEAVE BALANCE ══ -->
+<div class="hr-detail-grid" style="margin-top:20px;">
+
+  <!-- Salary -->
+  <div class="ep-card">
+    <div class="ep-card-header"><div class="ep-card-title">Salary Structure</div></div>
+    <div class="ep-card-body">
+      <div class="hr-salary-row">
+        <span>Basic Salary</span>
+        <span class="hr-salary-val">PKR {{ emp.basic_salary|floatformat:0 }}</span>
+      </div>
+      <div class="hr-salary-row">
+        <span>House Rent Allowance</span>
+        <span class="hr-salary-val">PKR {{ emp.house_rent_allowance|floatformat:0 }}</span>
+      </div>
+      <div class="hr-salary-row">
+        <span>Conveyance</span>
+        <span class="hr-salary-val">PKR {{ emp.conveyance_allowance|floatformat:0 }}</span>
+      </div>
+      <div class="hr-salary-row">
+        <span>Medical</span>
+        <span class="hr-salary-val">PKR {{ emp.medical_allowance|floatformat:0 }}</span>
+      </div>
+      <div class="hr-salary-row">
+        <span>Other</span>
+        <span class="hr-salary-val">PKR {{ emp.other_allowance|floatformat:0 }}</span>
+      </div>
+      <div class="hr-salary-row total">
+        <span>Gross Total</span>
+        <span class="hr-salary-val">PKR {% with g=emp.basic_salary|add:emp.house_rent_allowance %}{{ g|add:emp.conveyance_allowance|add:emp.medical_allowance|add:emp.other_allowance|floatformat:0 }}{% endwith %}</span>
+      </div>
+      {% if payslips %}
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Recent Payslips</div>
+        {% for ps in payslips %}
+        <div class="hr-salary-row" style="font-size:12px;">
+          <span>{{ ps.payroll_run.get_month_display }} {{ ps.payroll_run.year }}</span>
+          <span style="font-weight:700;">PKR {{ ps.net_salary|floatformat:0 }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Leave Balance -->
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">Leave Balance {{ today.year }}</div>
+    </div>
+    <div class="ep-card-body">
+      {% for alloc in allocations %}
+      <div class="hr-leave-bal-row">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-1);">{{ alloc.leave_type.name }}</div>
+          <div style="font-size:11px;color:var(--text-2);">{{ alloc.booked_days|floatformat:"-2" }} used / {{ alloc.total_available_days|floatformat:"-2" }} total</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:22px;font-weight:800;color:var(--brand);">{{ alloc.remaining_days|floatformat:"-2" }}</div>
+          <div style="font-size:10px;color:var(--text-2);">days left</div>
+        </div>
+        <div style="width:100%;grid-column:1/-1;">
+          <div class="ep-progress" style="margin-top:4px;">
+            {% with used_pct=alloc.booked_days|floatformat:0 total=alloc.total_available_days|floatformat:0 %}
+            <div class="ep-progress-bar {% if alloc.remaining_days <= 0 %}red{% else %}green{% endif %}"
+                 style="width:{% widthratio alloc.booked_days alloc.total_available_days 100 %}%;"></div>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="color:var(--text-2);font-size:13px;">No leave allocations for this year.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ RECENT LEAVE REQUESTS ══ -->
+<div class="ep-card" style="margin-top:20px;">
+  <div class="ep-card-header"><div class="ep-card-title">Recent Leave Requests</div></div>
+  <div class="ep-card-body" style="padding:0;">
+    {% if recent_leaves %}
+    <table class="hr-table">
+      <thead>
+        <tr><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        {% for lr in recent_leaves %}
+        <tr>
+          <td style="font-size:13px;">{{ lr.leave_type.name }}</td>
+          <td style="font-size:13px;">{{ lr.from_date|date:"M j, Y" }}</td>
+          <td style="font-size:13px;">{{ lr.to_date|date:"M j, Y" }}</td>
+          <td style="font-weight:700;">{{ lr.number_of_days|floatformat:"-2" }}d</td>
+          <td><span class="ep-badge {{ lr.status|slugify }}">{{ lr.status }}</span></td>
+          <td style="font-size:12px;color:var(--text-2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ lr.reason|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="hr-empty"><div>No leave requests yet.</div></div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

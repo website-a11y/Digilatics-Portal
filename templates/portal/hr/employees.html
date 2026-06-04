@@ -1,0 +1,260 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Employees — Digilatics HR{% endblock %}
+{% block page_title %}Employees{% endblock %}
+
+{% block content %}
+
+<!-- ══ TOP BAR ══ -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+  <div style="font-size:13px;color:var(--text-2);font-weight:500;">
+    <span style="font-size:22px;font-weight:700;color:var(--text-1);">{{ total }}</span>
+    &nbsp;employee{{ total|pluralize }} found
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <!-- Bulk delete toolbar (hidden until rows are selected) -->
+    <div id="bulk-bar" style="display:none;align-items:center;gap:8px;">
+      <span id="bulk-count" style="font-size:13px;font-weight:600;color:#374151;"></span>
+      <button id="bulk-delete-btn" type="button"
+        style="height:40px;padding:0 18px;font-size:13px;font-weight:600;border-radius:9px;border:none;background:#ef4444;color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Delete Selected
+      </button>
+    </div>
+    <a href="{% url 'portal:hr_employee_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:40px;padding:0 20px;gap:7px;font-size:14px;font-weight:600;border-radius:10px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Employee
+    </a>
+  </div>
+</div>
+
+<!-- Hidden bulk-delete form -->
+<form id="bulk-delete-form" method="post" action="{% url 'portal:hr_employees_bulk_delete' %}">
+  {% csrf_token %}
+  <div id="bulk-hidden-inputs"></div>
+</form>
+
+<!-- Confirm modal -->
+<div id="bulk-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div style="font-size:18px;font-weight:700;color:#111;margin-bottom:8px;">Delete Employees?</div>
+    <div id="modal-msg" style="font-size:14px;color:#6b7280;margin-bottom:24px;"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button id="modal-cancel" type="button" style="height:38px;padding:0 18px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:600;background:#fff;color:#374151;cursor:pointer;">Cancel</button>
+      <button id="modal-confirm" type="button" style="height:38px;padding:0 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;background:#ef4444;color:#fff;cursor:pointer;">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FILTERS ══ -->
+<div class="ep-card" style="margin-bottom:20px;border-radius:14px;">
+  <div style="padding:16px 20px;">
+    <form method="get" id="filter-form">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+
+        <!-- Search -->
+        <div style="flex:1;min-width:220px;position:relative;">
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" name="q" value="{{ q }}" placeholder="Search name, code, email, dept…"
+            style="width:100%;height:40px;padding:0 12px 0 36px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:13px;background:#fafafa;color:var(--text-1);outline:none;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#f97316'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+
+        <!-- Department -->
+        <div style="position:relative;min-width:160px;">
+          <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>
+          <select name="dept"
+            style="height:40px;padding:0 32px 0 28px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:13px;background:#fafafa;color:var(--text-1);appearance:none;outline:none;cursor:pointer;min-width:160px;">
+            <option value="">All Departments</option>
+            {% for d in departments %}
+            <option value="{{ d }}" {% if dept == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+          <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+
+        <!-- Status -->
+        <div style="position:relative;min-width:140px;">
+          <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <select name="status"
+            style="height:40px;padding:0 32px 0 28px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:13px;background:#fafafa;color:var(--text-1);appearance:none;outline:none;cursor:pointer;min-width:140px;">
+            <option value="">All Statuses</option>
+            {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if status_f == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+
+        <!-- Role -->
+        <div style="position:relative;min-width:130px;">
+          <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <select name="role"
+            style="height:40px;padding:0 32px 0 28px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:13px;background:#fafafa;color:var(--text-1);appearance:none;outline:none;cursor:pointer;min-width:130px;">
+            <option value="">All Roles</option>
+            {% for val, label in role_choices %}
+            <option value="{{ val }}" {% if role_f == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+
+        <!-- Buttons -->
+        <button type="submit" class="hr-filter-btn" style="height:40px;padding:0 22px;font-size:13px;font-weight:600;border-radius:9px;white-space:nowrap;">
+          Search
+        </button>
+        {% if q or dept or status_f or role_f %}
+        <a href="{% url 'portal:hr_employees' %}" style="height:40px;display:inline-flex;align-items:center;padding:0 16px;font-size:13px;font-weight:500;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:9px;text-decoration:none;background:#fff;white-space:nowrap;">
+          ✕ Clear
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- Active filter chips -->
+      {% if q or dept or status_f or role_f %}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+        {% if q %}<span style="display:inline-flex;align-items:center;gap:5px;background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Search: "{{ q }}"</span>{% endif %}
+        {% if dept %}<span style="display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Dept: {{ dept }}</span>{% endif %}
+        {% if status_f %}<span style="display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Status: {{ status_f }}</span>{% endif %}
+        {% if role_f %}<span style="display:inline-flex;align-items:center;gap:5px;background:#faf5ff;color:#7c3aed;border:1px solid #e9d5ff;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Role: {{ role_f }}</span>{% endif %}
+      </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- ══ TABLE ══ -->
+<div class="ep-card" style="padding:0;overflow:hidden;border-radius:14px;">
+  <div style="overflow-x:auto;">
+    <table class="hr-table">
+      <thead>
+        <tr>
+          <th style="width:40px;text-align:center;">
+            <input type="checkbox" id="select-all" style="width:15px;height:15px;cursor:pointer;accent-color:#f97316;">
+          </th>
+          <th>Employee</th>
+          <th>Department</th>
+          <th>Designation</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in employees %}
+        <tr>
+          <td style="text-align:center;">
+            <input type="checkbox" class="emp-checkbox" value="{{ row.emp.pk }}" style="width:15px;height:15px;cursor:pointer;accent-color:#f97316;">
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ep-avatar-sm">
+                {% if row.emp.profile_photo %}
+                  <img src="{{ row.emp.profile_photo.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                {% else %}
+                  {{ row.emp.full_name|slice:":1" }}
+                {% endif %}
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:13px;color:var(--text-1);">{{ row.emp.full_name }}</div>
+                <div style="font-size:11px;color:var(--text-2);">{{ row.emp.employee_code }} · {{ row.emp.official_email }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-size:13px;">{{ row.emp.department|default:"—" }}</td>
+          <td style="font-size:13px;color:var(--text-2);">{{ row.emp.designation|default:"—" }}</td>
+          <td>
+            <span class="hr-type-badge {{ row.emp.employment_type|lower }}">{{ row.emp.employment_type }}</span>
+          </td>
+          <td>
+            <span class="ep-badge {{ row.emp.employment_status|slugify }}">{{ row.emp.employment_status }}</span>
+          </td>
+          <td style="font-size:12px;color:var(--text-2);">{{ row.emp.role }}</td>
+          <td style="font-size:12px;color:var(--text-2);">{{ row.emp.joining_date|date:"M j, Y" }}</td>
+          <td style="white-space:nowrap;">
+            <a href="{% url 'portal:hr_employee_detail' row.emp.pk %}" class="ep-btn-sm" style="text-decoration:none;">View</a>
+            <a href="{% url 'portal:hr_employee_edit' row.emp.pk %}" class="ep-btn-sm" style="text-decoration:none;background:#fff7ed;color:#ea580c;margin-left:4px;">Edit</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9">
+            <div class="hr-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <div>No employees found</div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const selectAll = document.getElementById('select-all');
+  const checkboxes = () => document.querySelectorAll('.emp-checkbox');
+  const bulkBar = document.getElementById('bulk-bar');
+  const bulkCount = document.getElementById('bulk-count');
+  const bulkBtn = document.getElementById('bulk-delete-btn');
+  const modal = document.getElementById('bulk-confirm-modal');
+  const modalMsg = document.getElementById('modal-msg');
+  const modalCancel = document.getElementById('modal-cancel');
+  const modalConfirm = document.getElementById('modal-confirm');
+
+  function updateBar() {
+    const checked = [...checkboxes()].filter(c => c.checked);
+    if (checked.length > 0) {
+      bulkCount.textContent = checked.length + ' selected';
+      bulkBar.style.display = 'flex';
+    } else {
+      bulkBar.style.display = 'none';
+    }
+    selectAll.indeterminate = checked.length > 0 && checked.length < checkboxes().length;
+    selectAll.checked = checked.length === checkboxes().length && checkboxes().length > 0;
+  }
+
+  selectAll.addEventListener('change', function () {
+    checkboxes().forEach(c => c.checked = this.checked);
+    updateBar();
+  });
+
+  document.addEventListener('change', function (e) {
+    if (e.target.classList.contains('emp-checkbox')) updateBar();
+  });
+
+  bulkBtn.addEventListener('click', function () {
+    const checked = [...checkboxes()].filter(c => c.checked);
+    modalMsg.textContent = 'You are about to permanently delete ' + checked.length + ' employee' + (checked.length > 1 ? 's' : '') + '. This cannot be undone.';
+    modal.style.display = 'flex';
+  });
+
+  modalCancel.addEventListener('click', function () {
+    modal.style.display = 'none';
+  });
+
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+
+  modalConfirm.addEventListener('click', function () {
+    const checked = [...checkboxes()].filter(c => c.checked);
+    const container = document.getElementById('bulk-hidden-inputs');
+    container.innerHTML = '';
+    checked.forEach(function (c) {
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = 'employee_ids';
+      inp.value = c.value;
+      container.appendChild(inp);
+    });
+    document.getElementById('bulk-delete-form').submit();
+  });
+})();
+</script>
+{% endblock %}

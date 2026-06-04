@@ -1,0 +1,181 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}WFH Policy — Digilatics HR{% endblock %}
+{% block page_title %}Work From Home Policy{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;">
+
+  <!-- Policy form -->
+  <div class="ep-card">
+    <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+      <div>
+        <div class="ep-card-title">WFH Policy Settings</div>
+        <div class="ep-card-sub">Changes apply immediately to all employees</div>
+      </div>
+    </div>
+    <div class="ep-card-body" style="padding:28px;">
+
+      {% if errors.general %}
+      <div class="ep-alert error" style="margin-bottom:20px;">{{ errors.general }}</div>
+      {% endif %}
+
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+
+        <!-- Enable / Disable -->
+        <div style="background:{% if policy.is_enabled %}#f0fdf4{% else %}#fef2f2{% endif %};border:1px solid {% if policy.is_enabled %}#bbf7d0{% else %}#fecaca{% endif %};border-radius:12px;padding:16px 18px;margin-bottom:24px;">
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+            <input type="checkbox" name="is_enabled" id="id_is_enabled"
+                   {% if policy.is_enabled %}checked{% endif %}
+                   style="width:18px;height:18px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;"
+                   onchange="this.closest('div').style.background=this.checked?'#f0fdf4':'#fef2f2';this.closest('div').style.borderColor=this.checked?'#bbf7d0':'#fecaca'">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);">WFH Programme Enabled</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">
+                When off, employees cannot submit WFH requests and no accrual happens.
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="form-grid">
+
+          <!-- Monthly accrual -->
+          <div class="hr-form-group">
+            <label class="hr-form-label">Days accrued per month <span class="hr-required">*</span></label>
+            <input type="number" step="0.5" min="0.5" max="30" name="monthly_accrual_days"
+                   class="hr-form-input" value="{{ policy.monthly_accrual_days|floatformat:'-2' }}" required>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+              Currently: <strong>{{ policy.monthly_accrual_days|floatformat:'-2' }} days</strong> added each calendar month
+            </div>
+          </div>
+
+          <!-- Max balance -->
+          <div class="hr-form-group">
+            <label class="hr-form-label">Maximum balance (cap) <span class="hr-required">*</span></label>
+            <input type="number" step="0.5" min="1" max="365" name="max_balance"
+                   class="hr-form-input" value="{{ policy.max_balance|floatformat:'-2' }}" required>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+              Employees cannot accumulate more than <strong>{{ policy.max_balance|floatformat:'-2' }} days</strong>
+            </div>
+          </div>
+
+          <!-- Max per request -->
+          <div class="hr-form-group">
+            <label class="hr-form-label">Max days per single request <span class="hr-required">*</span></label>
+            <input type="number" step="0.5" min="0.5" name="max_days_per_request"
+                   class="hr-form-input" value="{{ policy.max_days_per_request|floatformat:'-2' }}" required>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+              An employee cannot request more than this in one application
+            </div>
+          </div>
+
+          <!-- Rollover -->
+          <div class="hr-form-group">
+            <label class="hr-form-label">Rollover</label>
+            <div style="padding:12px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                <input type="checkbox" name="rollover_enabled" id="id_rollover"
+                       {% if policy.rollover_enabled %}checked{% endif %}
+                       style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer;">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text);">Unused days roll over</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:1px;">
+                    Off = balance resets to monthly accrual at each month start
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="hr-form-group form-grid-full">
+            <label class="hr-form-label">Policy notes (internal)</label>
+            <textarea name="notes" class="hr-form-input hr-textarea" rows="3"
+                      placeholder="e.g. Approved at board meeting on 01 Jan 2025…">{{ policy.notes }}</textarea>
+          </div>
+
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:12px;">
+          <button type="submit" class="ep-btn ep-btn-primary">Save Policy</button>
+          <a href="{% url 'portal:hr_wfh_balances' %}" class="ep-btn ep-btn-outline" style="text-decoration:none;">
+            View Balances
+          </a>
+          <a href="{% url 'portal:hr_wfh_days' %}" class="ep-btn ep-btn-outline" style="text-decoration:none;">
+            Company WFH Days
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Current summary -->
+  <div style="position:sticky;top:16px;">
+    <div class="ep-card">
+      <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:16px 20px;">
+        <div class="ep-card-title">Current Policy</div>
+      </div>
+      <div class="ep-card-body" style="padding:20px;">
+
+        <div style="display:flex;flex-direction:column;gap:14px;">
+
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--muted);">Status</span>
+            {% if policy.is_enabled %}
+            <span class="ep-badge active">Enabled</span>
+            {% else %}
+            <span class="ep-badge draft">Disabled</span>
+            {% endif %}
+          </div>
+
+          <div style="border-top:1px solid var(--border);"></div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--muted);">Monthly accrual</span>
+            <span style="font-size:16px;font-weight:800;color:var(--brand);">{{ policy.monthly_accrual_days|floatformat:"-2" }} days</span>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--muted);">Max balance</span>
+            <span style="font-size:16px;font-weight:800;color:var(--text);">{{ policy.max_balance|floatformat:"-2" }} days</span>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--muted);">Max per request</span>
+            <span style="font-size:14px;font-weight:700;color:var(--text);">{{ policy.max_days_per_request|floatformat:"-2" }} days</span>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--muted);">Rollover</span>
+            {% if policy.rollover_enabled %}
+            <span style="font-size:12px;font-weight:600;color:#16a34a;">✓ On</span>
+            {% else %}
+            <span style="font-size:12px;font-weight:600;color:#dc2626;">✗ Off</span>
+            {% endif %}
+          </div>
+
+          <div style="border-top:1px solid var(--border);"></div>
+
+          <div style="font-size:11px;color:var(--muted);">
+            Last updated: {{ policy.updated_at|date:"d M Y, g:i A" }}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+      <a href="{% url 'portal:hr_wfh_balances' %}" class="ep-btn ep-btn-outline" style="text-decoration:none;justify-content:center;">
+        Employee WFH Balances →
+      </a>
+      <a href="{% url 'portal:hr_wfh_days' %}" class="ep-btn ep-btn-outline" style="text-decoration:none;justify-content:center;">
+        Company WFH Days →
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

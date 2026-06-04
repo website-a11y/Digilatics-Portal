@@ -1,0 +1,31 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'leaves/css/leaves.css' %}">
+{% endblock %}
+
+{% block object-tools-items %}
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+{% include "admin/leaves/leaverequest/kpi_cards.html" %}
+{{ block.super }}
+{% endblock %}
+
+{% block result_list %}
+<!-- ── Custom table wrapper to hide right-side filter and style table ── -->
+<div class="lr-table-wrapper">
+  {{ block.super }}
+</div>
+{% endblock %}
+
+{% block sidebar %}
+{# Suppress the right-side filter panel #}
+{% endblock %}
+
+{% block extrabody %}
+{{ block.super }}
+{% endblock %}

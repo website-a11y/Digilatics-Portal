@@ -1,0 +1,115 @@
+{% extends "unfold/layouts/base_simple.html" %}
+{% load i18n static unfold %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block content %}
+<style>
+  .module-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .module-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .module-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    border-color: #F58400;
+  }
+
+  .module-card-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    background: #FFF8EE;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #D97200;
+  }
+
+  .module-card-icon .material-symbols-outlined {
+    font-size: 22px;
+  }
+
+  .module-card-body {
+    min-width: 0;
+  }
+
+  .module-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .module-card-actions {
+    font-size: 12px;
+    color: #6B7280;
+    margin-top: 2px;
+  }
+
+  .module-card-actions a {
+    color: #F58400;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .module-card-actions a:hover {
+    text-decoration: underline;
+  }
+
+  .app-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6B7280;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+</style>
+
+{% if app_list %}
+  {% for app in app_list %}
+    <div class="mb-8">
+      <h2 class="app-section-title">{{ app.name }}</h2>
+      <div class="module-card-grid">
+        {% for model in app.models %}
+          <a href="{{ model.admin_url }}" class="module-card">
+            <div class="module-card-icon">{% icon app.icon|default:"widgets" %}</div>
+            <div class="module-card-body">
+              <div class="module-card-title">{{ model.name }}</div>
+              <div class="module-card-actions">
+                {% if model.add_url %}<a href="{{ model.add_url }}">{% translate 'Add' %}</a>{% endif %}
+                {% if model.add_url and model.admin_url %} | {% endif %}
+                <a href="{{ model.admin_url }}">{% translate 'View' %}</a>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>{% translate "You don't have permission to view or edit anything." %}</p>
+{% endif %}
+
+{% endblock %}

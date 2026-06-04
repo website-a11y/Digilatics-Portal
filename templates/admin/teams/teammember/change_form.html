@@ -1,0 +1,879 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block title %}{% if original %}{{ original.employee.full_name }}{% else %}Add Team Member{% endif %} — Digilatics HRIS{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+* { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+/* ── Layout ── */
+.mp-wrap { max-width: 1200px; }
+.mp-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+@media(max-width:900px){ .mp-grid{ grid-template-columns:1fr; } }
+
+/* ── Profile card ── */
+.mp-profile-card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 20px;
+  overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  position: sticky; top: 20px;
+}
+.mp-profile-banner {
+  height: 80px;
+  background: linear-gradient(135deg, #111827 0%, #1F2937 60%, #F58400 200%);
+}
+.mp-profile-photo-wrap {
+  padding: 0 20px;
+  margin-top: -36px;
+  margin-bottom: 12px;
+}
+.mp-profile-photo {
+  width: 72px; height: 72px; border-radius: 18px;
+  border: 3px solid #fff;
+  object-fit: cover;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  display: block;
+}
+.mp-profile-photo-placeholder {
+  width: 72px; height: 72px; border-radius: 18px;
+  border: 3px solid #fff;
+  background: linear-gradient(135deg, #F58400, #C86A00);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(245,132,0,0.3);
+  font-size: 28px; font-weight: 800; color: #fff;
+}
+.mp-profile-body { padding: 0 20px 20px; }
+.mp-profile-name { font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -0.02em; line-height: 1.2; }
+.mp-profile-code { font-size: 12px; color: #6B7280; margin-top: 3px; }
+.mp-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.mp-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+}
+.mp-badge-active      { background: #DCFCE7; color: #15803D; }
+.mp-badge-inactive    { background: #F3F4F6; color: #6B7280; }
+.mp-badge-onleave     { background: #FEF9C3; color: #854D0E; }
+.mp-badge-onboarding  { background: #EFF6FF; color: #1D4ED8; }
+.mp-badge-lead        { background: #EFF6FF; color: #2563EB; }
+.mp-badge-coordinator { background: #F3E8FF; color: #7C3AED; }
+.mp-badge-member      { background: #F3F4F6; color: #374151; }
+.mp-badge-primary     { background: #FFF8EE; color: #C86A00; }
+
+.mp-divider { height: 1px; background: #F3F4F6; margin: 16px 0; }
+
+.mp-info-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-bottom: 12px;
+}
+.mp-info-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: #6B7280;
+}
+.mp-info-icon svg { width: 14px; height: 14px; }
+.mp-info-label { font-size: 10px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; }
+.mp-info-value { font-size: 12px; font-weight: 600; color: #374151; margin-top: 1px; word-break: break-all; }
+
+/* ── Main content ── */
+.mp-main {}
+
+/* ── Tabs ── */
+.mp-tabs-nav {
+  display: flex; gap: 2px; border-bottom: 2px solid #E5E7EB; margin-bottom: 20px;
+  overflow-x: auto;
+}
+.mp-tab-btn {
+  padding: 10px 18px; font-size: 13px; font-weight: 700;
+  color: #6B7280; background: transparent; border: none;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit;
+}
+.mp-tab-btn:hover { color: #374151; }
+.mp-tab-btn.active { color: #F58400; border-bottom-color: #F58400; }
+.mp-tab-pane { display: none; }
+.mp-tab-pane.active { display: block; }
+
+/* ── Cards ── */
+.mp-card {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 16px;
+}
+.mp-card-head {
+  padding: 14px 20px; border-bottom: 1px solid #E5E7EB; background: #F9FAFB;
+  font-size: 13px; font-weight: 800; color: #374151; letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 8px;
+}
+.mp-card-head svg { width: 15px; height: 15px; color: #9CA3AF; }
+.mp-card-body { padding: 20px; }
+
+/* ── KPI row ── */
+.mp-kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+@media(max-width:700px){ .mp-kpi-row{ grid-template-columns:repeat(2,1fr); } }
+.mp-kpi {
+  background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px;
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+}
+.mp-kpi-label { font-size: 10px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; }
+.mp-kpi-value { font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+.mp-kpi-sub { font-size: 11px; color: #9CA3AF; }
+
+/* ── Info grid ── */
+.mp-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:600px){ .mp-info-grid{ grid-template-columns:1fr; } }
+.mp-info-item { display: flex; flex-direction: column; gap: 4px; }
+.mp-info-item .lbl { font-size: 11px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.04em; }
+.mp-info-item .val { font-size: 13px; font-weight: 600; color: #374151; }
+.mp-info-item .val.mono { font-family: monospace; }
+
+/* ── Leave cards ── */
+.mp-leave-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+@media(max-width:600px){ .mp-leave-grid{ grid-template-columns:1fr; } }
+.mp-leave-card {
+  border: 1px solid #E5E7EB; border-radius: 12px; padding: 14px 16px;
+  background: #F9FAFB; display: flex; flex-direction: column; gap: 8px;
+}
+.mp-leave-name { font-size: 12px; font-weight: 800; color: #374151; }
+.mp-leave-remaining { font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+.mp-leave-remaining span { font-size: 13px; font-weight: 600; color: #6B7280; }
+.mp-leave-bar-track {
+  height: 6px; background: #E5E7EB; border-radius: 99px; overflow: hidden;
+}
+.mp-leave-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,#F58400,#FBBF24); }
+.mp-leave-meta { display: flex; justify-content: space-between; font-size: 11px; color: #9CA3AF; font-weight: 600; }
+
+/* ── Attendance table ── */
+.mp-att-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mp-att-table th {
+  padding: 8px 12px; font-size: 11px; font-weight: 700; color: #6B7280;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  background: #F9FAFB; border-bottom: 1px solid #E5E7EB; text-align: left;
+}
+.mp-att-table td { padding: 10px 12px; border-bottom: 1px solid #F3F4F6; color: #374151; }
+.mp-att-table tr:last-child td { border-bottom: none; }
+.mp-att-pill {
+  display: inline-flex; align-items: center;
+  padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700;
+}
+.mp-att-present  { background: #DCFCE7; color: #15803D; }
+.mp-att-absent   { background: #FEE2E2; color: #DC2626; }
+.mp-att-leave    { background: #FEF9C3; color: #854D0E; }
+.mp-att-late     { background: #FFF8EE; color: #C86A00; }
+.mp-att-holiday  { background: #EFF6FF; color: #1D4ED8; }
+.mp-att-default  { background: #F3F4F6; color: #374151; }
+.mp-empty { padding: 32px; text-align: center; color: #9CA3AF; font-size: 13px; }
+
+/* ── Form fields ── */
+.mp-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.mp-form-row.single { grid-template-columns: 1fr; }
+@media(max-width:600px){ .mp-form-row{ grid-template-columns:1fr; } }
+.mp-field { display: flex; flex-direction: column; gap: 6px; }
+.mp-field label { font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.04em; }
+.mp-field input, .mp-field select, .mp-field textarea {
+  padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 10px;
+  font-size: 13px; color: #374151; background: #fff; font-family: inherit;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
+}
+.mp-field input:focus, .mp-field select:focus { border-color: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+.mp-field input[readonly] { background: #F9FAFB; color: #6B7280; cursor: default; }
+.mp-field .help { font-size: 11px; color: #9CA3AF; margin-top: 3px; }
+.mp-field .errorlist { list-style: none; padding: 0; margin: 3px 0 0; }
+.mp-field .errorlist li { font-size: 12px; color: #DC2626; font-weight: 600; }
+.mp-checkbox-row {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px;
+}
+.mp-checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: #F58400; flex-shrink: 0; }
+.mp-checkbox-row .mp-cb-label { font-size: 13px; font-weight: 600; color: #374151; }
+.mp-checkbox-row .mp-cb-sub   { font-size: 12px; color: #9CA3AF; margin-top: 1px; }
+
+/* ── Submit ── */
+.mp-submit-row {
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+  padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-top: 20px;
+}
+.mp-submit-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.mp-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; border: none; font-family: inherit; text-decoration: none;
+}
+.mp-btn-primary   { background: linear-gradient(135deg, #F58400, #C86A00); color: #fff; }
+.mp-btn-primary:hover { opacity: 0.9; color: #fff; }
+.mp-btn-secondary { background: #F9FAFB; color: #374151; border: 1px solid #E5E7EB; }
+.mp-btn-secondary:hover { background: #F3F4F6; }
+.mp-btn-danger    { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+.mp-btn-danger:hover { background: #FEE2E2; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if original %}
+{% with emp=original.employee %}
+<div class="mp-wrap">
+  <div class="mp-grid">
+
+    <!-- ── Left: Profile Card ── -->
+    <div>
+      <div class="mp-profile-card">
+        <div class="mp-profile-banner"></div>
+        <div class="mp-profile-photo-wrap">
+          {% if emp.profile_photo %}
+            <img src="{{ emp.profile_photo.url }}" alt="{{ emp.full_name }}" class="mp-profile-photo">
+          {% else %}
+            <div class="mp-profile-photo-placeholder">{{ emp.full_name|first|upper }}</div>
+          {% endif %}
+        </div>
+        <div class="mp-profile-body">
+          <div class="mp-profile-name">{{ emp.full_name }}</div>
+          <div class="mp-profile-code">{{ emp.employee_code }}{% if emp.designation %} · {{ emp.designation }}{% endif %}</div>
+
+          <div class="mp-badges">
+            {% if emp.employment_status == "Active" %}
+              <span class="mp-badge mp-badge-active">Active</span>
+            {% elif emp.employment_status == "Inactive" %}
+              <span class="mp-badge mp-badge-inactive">Inactive</span>
+            {% elif emp.employment_status == "On Leave" %}
+              <span class="mp-badge mp-badge-onleave">On Leave</span>
+            {% elif emp.employment_status == "Onboarding" %}
+              <span class="mp-badge mp-badge-onboarding">Onboarding</span>
+            {% endif %}
+            {% if original.role_in_team == "Lead" %}
+              <span class="mp-badge mp-badge-lead">Lead</span>
+            {% elif original.role_in_team == "Coordinator" %}
+              <span class="mp-badge mp-badge-coordinator">Coordinator</span>
+            {% else %}
+              <span class="mp-badge mp-badge-member">Member</span>
+            {% endif %}
+            {% if original.is_primary %}<span class="mp-badge mp-badge-primary">Primary</span>{% endif %}
+          </div>
+
+          <div class="mp-divider"></div>
+
+          {% if emp.official_email %}
+          <div class="mp-info-row">
+            <div class="mp-info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div>
+              <div class="mp-info-label">Email</div>
+              <div class="mp-info-value">{{ emp.official_email }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if emp.personal_phone %}
+          <div class="mp-info-row">
+            <div class="mp-info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 5.67 5.67l1.06-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div>
+              <div class="mp-info-label">Phone</div>
+              <div class="mp-info-value">{{ emp.personal_phone }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if emp.department %}
+          <div class="mp-info-row">
+            <div class="mp-info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div>
+              <div class="mp-info-label">Department</div>
+              <div class="mp-info-value">{{ emp.department }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if emp.work_location %}
+          <div class="mp-info-row">
+            <div class="mp-info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <div class="mp-info-label">Location</div>
+              <div class="mp-info-value">{{ emp.work_location }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if emp.reporting_manager %}
+          <div class="mp-info-row">
+            <div class="mp-info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="mp-info-label">Reports To</div>
+              <div class="mp-info-value">{{ emp.reporting_manager.full_name }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if emp.joining_date %}
+          <div class="mp-info-row">
+            <div class="mp-info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
+            <div>
+              <div class="mp-info-label">Joined</div>
+              <div class="mp-info-value">{{ emp.joining_date|date:"M d, Y" }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right: Tabs ── -->
+    <div class="mp-main">
+      <div class="mp-tabs-nav" id="mpTabsNav">
+        <button class="mp-tab-btn active" data-tab="mp-overview">Overview</button>
+        <button class="mp-tab-btn" data-tab="mp-leave">Leave</button>
+        <button class="mp-tab-btn" data-tab="mp-attendance">Attendance</button>
+        <button class="mp-tab-btn" data-tab="mp-salary">Salary</button>
+        <button class="mp-tab-btn" data-tab="mp-assignment">Edit Assignment</button>
+      </div>
+
+      <!-- TAB: Overview -->
+      <div class="mp-tab-pane active" id="mp-overview">
+
+        <!-- Employment -->
+        <div class="mp-card">
+          <div class="mp-card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            Employment
+          </div>
+          <div class="mp-card-body">
+            <div class="mp-info-grid">
+              <div class="mp-info-item">
+                <span class="lbl">Employee ID</span>
+                <span class="val mono">{{ emp.employee_code }}</span>
+              </div>
+              <div class="mp-info-item">
+                <span class="lbl">Status</span>
+                <span class="val">{{ emp.employment_status }}</span>
+              </div>
+              <div class="mp-info-item">
+                <span class="lbl">Employment Type</span>
+                <span class="val">{{ emp.employment_type }}{% if emp.confirmation_date %} (Confirmed){% endif %}</span>
+              </div>
+              <div class="mp-info-item">
+                <span class="lbl">Pay Type</span>
+                <span class="val">{{ emp.get_payment_mode_display|default:emp.payment_mode }}</span>
+              </div>
+              {% if emp.shift_master %}
+              <div class="mp-info-item">
+                <span class="lbl">Shift</span>
+                <span class="val">{{ emp.shift_master }}</span>
+              </div>
+              {% endif %}
+              {% if emp.scheduled_checkin %}
+              <div class="mp-info-item">
+                <span class="lbl">Check-in / Check-out</span>
+                <span class="val">{{ emp.scheduled_checkin }} – {{ emp.scheduled_checkout }}</span>
+              </div>
+              {% endif %}
+              {% if emp.hire_date %}
+              <div class="mp-info-item">
+                <span class="lbl">Hire Date</span>
+                <span class="val">{{ emp.hire_date|date:"M d, Y" }}</span>
+              </div>
+              {% endif %}
+              {% if emp.joining_date %}
+              <div class="mp-info-item">
+                <span class="lbl">Joining Date</span>
+                <span class="val">{{ emp.joining_date|date:"M d, Y" }}</span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Team Assignment -->
+        <div class="mp-card">
+          <div class="mp-card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Team Assignment
+          </div>
+          <div class="mp-card-body">
+            <div class="mp-kpi-row">
+              <div class="mp-kpi">
+                <div class="mp-kpi-label">Team</div>
+                <div class="mp-kpi-value" style="font-size:15px;">{{ original.team.name }}</div>
+                <div class="mp-kpi-sub">{{ original.team.code|default:"—" }}</div>
+              </div>
+              <div class="mp-kpi">
+                <div class="mp-kpi-label">Role in Team</div>
+                <div class="mp-kpi-value" style="font-size:15px;color:#C86A00;">{{ original.role_in_team }}</div>
+                <div class="mp-kpi-sub">Team role</div>
+              </div>
+              <div class="mp-kpi">
+                <div class="mp-kpi-label">Joined Team</div>
+                <div class="mp-kpi-value" style="font-size:15px;color:#16A34A;">{{ original.joined_at|date:"M d, Y" }}</div>
+                <div class="mp-kpi-sub">{% if original.is_primary %}Primary team{% else %}Additional team{% endif %}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB: Leave -->
+      <div class="mp-tab-pane" id="mp-leave">
+        {% with allocs=leave_allocs %}
+        {% if allocs %}
+        <div class="mp-card">
+          <div class="mp-card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 14l2 2 4-4"/></svg>
+            Leave Balances — {{ allocs.0.year }}
+          </div>
+          <div class="mp-card-body">
+            <div class="mp-leave-grid">
+              {% for alloc in allocs %}
+              <div class="mp-leave-card">
+                <div class="mp-leave-name">{{ alloc.leave_type.name }}</div>
+                <div>
+                  <div class="mp-leave-remaining">
+                    {{ alloc.remaining_days|floatformat:"-2" }} <span>remaining</span>
+                  </div>
+                </div>
+                {% if alloc.total_available_days > 0 %}
+                <div class="mp-leave-bar-track">
+                  <div class="mp-leave-bar-fill" style="width:{% widthratio alloc.remaining_days alloc.total_available_days 100 %}%"></div>
+                </div>
+                {% endif %}
+                <div class="mp-leave-meta">
+                  <span>Entitled: {{ alloc.total_available_days|floatformat:"-2" }}</span>
+                  <span>Availed: {{ alloc.booked_days|floatformat:"-2" }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="mp-card">
+          <div class="mp-card-body">
+            <div class="mp-empty">No leave allocations found for this employee.</div>
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Recent leave requests -->
+        {% with requests=emp.leave_requests.all %}
+        {% if requests %}
+        <div class="mp-card">
+          <div class="mp-card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Recent Leave Requests
+          </div>
+          <div class="mp-card-body" style="padding:0;">
+            <table class="mp-att-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Days</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for req in requests|slice:":10" %}
+                <tr>
+                  <td>{{ req.leave_type.name }}</td>
+                  <td>{{ req.from_date|date:"M d, Y" }}</td>
+                  <td>{{ req.to_date|date:"M d, Y" }}</td>
+                  <td>{{ req.number_of_days|floatformat:"-2" }}</td>
+                  <td>
+                    {% if req.status == "Approved" %}
+                      <span class="mp-att-pill mp-att-present">Approved</span>
+                    {% elif req.status == "Rejected" %}
+                      <span class="mp-att-pill mp-att-absent">Rejected</span>
+                    {% elif req.status == "Pending" %}
+                      <span class="mp-att-pill mp-att-late">Pending</span>
+                    {% else %}
+                      <span class="mp-att-pill mp-att-default">{{ req.status }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- TAB: Attendance -->
+      <div class="mp-tab-pane" id="mp-attendance">
+        {% with records=attendance_records %}
+        {% if records %}
+        <div class="mp-card">
+          <div class="mp-card-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Recent Attendance (Last 30 Records)
+          </div>
+          <div class="mp-card-body" style="padding:0;">
+            <table class="mp-att-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Flags</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for rec in records %}
+                <tr>
+                  <td style="font-weight:600;">{{ rec.date|date:"M d, Y" }}</td>
+                  <td>
+                    {% if rec.status == "present" %}
+                      <span class="mp-att-pill mp-att-present">Present</span>
+                    {% elif rec.status == "absent" %}
+                      <span class="mp-att-pill mp-att-absent">Absent</span>
+                    {% elif rec.status == "on_leave" %}
+                      <span class="mp-att-pill mp-att-leave">On Leave</span>
+                    {% elif rec.status == "holiday" %}
+                      <span class="mp-att-pill mp-att-holiday">Holiday</span>
+                    {% else %}
+                      <span class="mp-att-pill mp-att-default">{{ rec.status|title }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ rec.check_in|default:"—" }}</td>
+                  <td>{{ rec.check_out|default:"—" }}</td>
+                  <td>
+                    {% if rec.is_late %}<span class="mp-att-pill mp-att-late" style="margin-right:4px;">Late</span>{% endif %}
+                    {% if rec.is_early_checkout %}<span class="mp-att-pill mp-att-default">Early Out</span>{% endif %}
+                    {% if not rec.is_late and not rec.is_early_checkout %}—{% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="mp-card">
+          <div class="mp-card-body">
+            <div class="mp-empty">No attendance records found for this employee.</div>
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- TAB: Salary -->
+      <div class="mp-tab-pane" id="mp-salary">
+        <style>
+        .sal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        @media(max-width:600px){ .sal-grid{ grid-template-columns:1fr; } }
+
+        .sal-item {
+          position: relative; border: 1px solid #E5E7EB; border-radius: 14px;
+          padding: 16px 18px; background: #F9FAFB; overflow: hidden;
+          cursor: default; transition: box-shadow 0.2s;
+        }
+        .sal-item:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); }
+
+        .sal-label {
+          font-size: 10px; font-weight: 700; color: #9CA3AF;
+          text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+        }
+        .sal-amount {
+          font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.02em;
+        }
+        .sal-item.sal-primary .sal-amount { color: #C86A00; font-size: 24px; }
+        .sal-item.sal-gross  .sal-amount { color: #1D4ED8; }
+        .sal-item.sal-net    .sal-amount { color: #15803D; }
+
+        /* glass mask */
+        .sal-mask {
+          position: absolute; inset: 0;
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          background: rgba(249,250,251,0.55);
+          border-radius: 13px;
+          display: flex; align-items: center; justify-content: center;
+          transition: opacity 0.25s;
+          pointer-events: none;
+        }
+        .sal-mask-hint {
+          font-size: 11px; font-weight: 700; color: #6B7280;
+          display: flex; align-items: center; gap: 5px;
+        }
+        .sal-mask-hint svg { width: 13px; height: 13px; }
+        .sal-item:hover .sal-mask { opacity: 0; }
+        </style>
+
+        <!-- Gross / Net / Tax summary row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+
+          <!-- Gross -->
+          <div class="sal-item" style="background:#111827;border-color:#111827;border-radius:16px;padding:20px 22px;">
+            <div class="sal-label" style="color:rgba(255,255,255,.5);">Gross Salary</div>
+            <div class="sal-amount" style="color:#fff;font-size:22px;">PKR {{ salary_total|floatformat:2 }}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px;">Basic + allowances</div>
+            <div class="sal-mask" style="background:rgba(17,24,39,0.6);">
+              <div class="sal-mask-hint" style="color:rgba(255,255,255,.7);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+          <!-- Tax -->
+          <div class="sal-item" style="border-color:#FEE2E2;background:#FFF5F5;border-radius:16px;padding:20px 22px;">
+            <div class="sal-label" style="color:#DC2626;">Income Tax</div>
+            <div class="sal-amount" style="color:#DC2626;font-size:22px;">PKR {{ sal_income_tax|floatformat:2 }}</div>
+            <div style="font-size:11px;color:#F87171;margin-top:4px;">{% if sal_income_tax %}From latest payslip{% else %}No payslip yet{% endif %}</div>
+            <div class="sal-mask" style="background:rgba(255,245,245,0.65);">
+              <div class="sal-mask-hint" style="color:#DC2626;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+          <!-- Net -->
+          <div class="sal-item" style="border-color:#BBF7D0;background:#F0FFF4;border-radius:16px;padding:20px 22px;">
+            <div class="sal-label" style="color:#15803D;">Net Salary</div>
+            <div class="sal-amount" style="color:#15803D;font-size:22px;">PKR {{ sal_net|floatformat:2 }}</div>
+            <div style="font-size:11px;color:#4ADE80;margin-top:4px;">{% if sal_income_tax %}After tax & deductions{% else %}Est. after deductions{% endif %}</div>
+            <div class="sal-mask" style="background:rgba(240,255,244,0.65);">
+              <div class="sal-mask-hint" style="color:#15803D;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div style="font-size:10px;color:#9CA3AF;margin-bottom:14px;display:flex;align-items:center;gap:5px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Hover over any card to reveal the amount
+        </div>
+
+        <!-- Breakdown grid -->
+        <div class="sal-grid">
+
+          <div class="sal-item sal-primary">
+            <div class="sal-label">Basic Salary</div>
+            <div class="sal-amount">PKR {{ sal_basic|floatformat:2 }}</div>
+            <div class="sal-mask">
+              <div class="sal-mask-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+          <div class="sal-item">
+            <div class="sal-label">House Rent Allowance</div>
+            <div class="sal-amount">PKR {{ sal_hra|floatformat:2 }}</div>
+            <div class="sal-mask">
+              <div class="sal-mask-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+          <div class="sal-item">
+            <div class="sal-label">Conveyance Allowance</div>
+            <div class="sal-amount">PKR {{ sal_ca|floatformat:2 }}</div>
+            <div class="sal-mask">
+              <div class="sal-mask-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+          <div class="sal-item">
+            <div class="sal-label">Medical Allowance</div>
+            <div class="sal-amount">PKR {{ sal_ma|floatformat:2 }}</div>
+            <div class="sal-mask">
+              <div class="sal-mask-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+          {% if sal_ua %}
+          <div class="sal-item">
+            <div class="sal-label">Utility Allowance</div>
+            <div class="sal-amount">PKR {{ sal_ua|floatformat:2 }}</div>
+            <div class="sal-mask"><div class="sal-mask-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Hover to reveal</div></div>
+          </div>
+          {% endif %}
+          {% if sal_oa %}
+          <div class="sal-item">
+            <div class="sal-label">Other Allowance</div>
+            <div class="sal-amount">PKR {{ sal_oa|floatformat:2 }}</div>
+            <div class="sal-mask">
+              <div class="sal-mask-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="sal-item sal-gross">
+            <div class="sal-label">Total Allowances</div>
+            <div class="sal-amount">PKR {{ allowances_total|floatformat:2 }}</div>
+            <div class="sal-mask">
+              <div class="sal-mask-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Hover to reveal
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB: Edit Assignment -->
+      <div class="mp-tab-pane" id="mp-assignment">
+        <form method="post" novalidate id="mpForm">
+          {% csrf_token %}
+          <div class="mp-card">
+            <div class="mp-card-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Assignment
+            </div>
+            <div class="mp-card-body">
+              {% for fieldset in adminform %}
+                {% for line in fieldset %}
+                  <div class="mp-form-row {% if line|length == 1 %}single{% endif %}">
+                    {% for field in line %}
+                      {% if field.field.name != "created_at" and field.field.name != "updated_at" %}
+                      <div class="mp-field">
+                        <label for="{{ field.field.id_for_label }}">{{ field.field.label }}</label>
+                        {% if field.field.name == "is_primary" %}
+                          <div class="mp-checkbox-row">
+                            {{ field.field }}
+                            <div>
+                              <div class="mp-cb-label">Primary Team</div>
+                              <div class="mp-cb-sub">This is the employee's main team</div>
+                            </div>
+                          </div>
+                        {% else %}
+                          {{ field.field }}
+                        {% endif %}
+                        {% if field.field.help_text %}<div class="help">{{ field.field.help_text }}</div>{% endif %}
+                        {{ field.field.errors }}
+                      </div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endfor %}
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mp-submit-row">
+            <div class="mp-submit-group">
+              <button type="submit" name="_save" class="mp-btn mp-btn-primary">Save Changes</button>
+              <button type="submit" name="_continue" class="mp-btn mp-btn-secondary">Save and continue editing</button>
+            </div>
+            <div>
+              {% url 'admin:teams_teammember_delete' original.pk as delete_url %}
+              {% if delete_url %}
+                <a href="{{ delete_url }}" class="mp-btn mp-btn-danger">Remove Member</a>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </div><!-- end mp-main -->
+  </div><!-- end mp-grid -->
+</div>
+{% endwith %}
+
+{% else %}
+{# ── Add new team member (no employee yet) ── #}
+<div class="mp-wrap">
+  <div class="mp-card">
+    <div class="mp-card-head">Add Team Member</div>
+    <div class="mp-card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for fieldset in adminform %}
+          {% for line in fieldset %}
+            <div class="mp-form-row {% if line|length == 1 %}single{% endif %}">
+              {% for field in line %}
+              <div class="mp-field">
+                <label for="{{ field.field.id_for_label }}">{{ field.field.label }}</label>
+                {% if field.field.name == "is_primary" %}
+                  <div class="mp-checkbox-row">
+                    {{ field.field }}
+                    <div>
+                      <div class="mp-cb-label">Primary Team</div>
+                      <div class="mp-cb-sub">This is the employee's main team</div>
+                    </div>
+                  </div>
+                {% else %}
+                  {{ field.field }}
+                {% endif %}
+                {% if field.field.help_text %}<div class="help">{{ field.field.help_text }}</div>{% endif %}
+                {{ field.field.errors }}
+              </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        {% endfor %}
+
+        <div class="mp-submit-row" style="margin-top:16px;">
+          <div class="mp-submit-group">
+            <button type="submit" name="_save" class="mp-btn mp-btn-primary">Save Member</button>
+            <button type="submit" name="_addanother" class="mp-btn mp-btn-secondary">Save and add another</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+(function(){
+  var SK = 'mp_member_tab';
+  var nav = document.getElementById('mpTabsNav');
+  if(!nav) return;
+  function activate(id){
+    nav.querySelectorAll('.mp-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.mp-tab-pane').forEach(function(p){ p.classList.remove('active'); });
+    var btn = nav.querySelector('[data-tab="'+id+'"]');
+    var pane = document.getElementById(id);
+    if(btn && pane){ btn.classList.add('active'); pane.classList.add('active'); }
+    sessionStorage.setItem(SK, id);
+  }
+  nav.addEventListener('click', function(e){
+    var btn = e.target.closest('.mp-tab-btn');
+    if(btn) activate(btn.dataset.tab);
+  });
+  var saved = sessionStorage.getItem(SK);
+  if(saved && document.getElementById(saved)) activate(saved);
+  var errors = document.querySelectorAll('.errorlist li');
+  if(errors.length){
+    var pane = errors[0].closest('.mp-tab-pane');
+    if(pane) activate(pane.id);
+  }
+})();
+</script>
+{% endblock %}

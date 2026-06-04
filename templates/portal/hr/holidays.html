@@ -1,0 +1,74 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Public Holidays — Digilatics HR{% endblock %}
+{% block page_title %}Public Holidays{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+  <a href="{% url 'portal:hr_attendance' %}" class="ep-btn-sm" style="text-decoration:none;">← Attendance</a>
+  <a href="{% url 'portal:hr_holiday_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:38px;padding:0 20px;">
+    + Add Holiday
+  </a>
+</div>
+
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <table class="hr-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Days</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in holidays %}
+      <tr>
+        <td style="font-weight:700;font-size:13px;">{{ h.name }}</td>
+        <td style="font-size:13px;">
+          {{ h.start_date|date:"M j, Y" }}
+          <span style="font-size:11px;color:var(--text-2);">({{ h.start_date|date:"l" }})</span>
+        </td>
+        <td style="font-size:13px;">
+          {% if h.end_date and h.end_date != h.start_date %}
+            {{ h.end_date|date:"M j, Y" }}
+            <span style="font-size:11px;color:var(--text-2);">({{ h.end_date|date:"l" }})</span>
+          {% else %}
+            <span style="color:var(--muted);">—</span>
+          {% endif %}
+        </td>
+        <td style="font-size:13px;font-weight:600;color:var(--brand);">
+          {{ h.duration_days }} day{{ h.duration_days|pluralize }}
+        </td>
+        <td style="font-size:12px;color:var(--text-2);">{{ h.description|default:"—"|truncatechars:50 }}</td>
+        <td>
+          {% if h.is_active %}
+          <span class="ep-badge active">Active</span>
+          {% else %}
+          <span class="ep-badge draft">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:8px;">
+            <a href="{% url 'portal:hr_holiday_edit' h.pk %}" class="ep-btn-sm" style="text-decoration:none;">Edit</a>
+            <a href="{% url 'portal:hr_holiday_delete' h.pk %}" class="hr-action-btn reject" style="text-decoration:none;display:inline-flex;align-items:center;padding:5px 12px;">Delete</a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7">
+          <div class="hr-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <div>No public holidays added yet.</div>
+            <a href="{% url 'portal:hr_holiday_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 18px;margin-top:4px;">Add First Holiday</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

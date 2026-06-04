@@ -1,0 +1,54 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if shift %}Edit{% else %}Add{% endif %} Shift — Digilatics HR{% endblock %}
+{% block page_title %}{% if shift %}Edit{% else %}Add{% endif %} Shift{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;">
+    <a href="{% url 'portal:hr_shifts' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Shifts</a>
+  </div>
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">{% if shift %}Edit Shift{% else %}Add Shift{% endif %}</div>
+    </div>
+    <div class="ep-card-body">
+      {% if errors.general or errors.time %}
+      <div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general|default:errors.time }}</div>
+      {% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+        <div class="hr-form-group">
+          <label class="hr-form-label">Shift Name <span class="hr-required">*</span></label>
+          <input type="text" name="name" class="hr-form-input {% if errors.name %}error{% endif %}"
+                 value="{{ shift.name|default:'' }}" placeholder="e.g. Morning Shift" required>
+          {% if errors.name %}<div class="hr-form-error">{{ errors.name }}</div>{% endif %}
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Start Time <span class="hr-required">*</span></label>
+            <input type="time" name="start_time" class="hr-form-input {% if errors.start_time %}error{% endif %}"
+                   value="{{ shift.start_time|time:'H:i'|default:'' }}" required>
+            {% if errors.start_time %}<div class="hr-form-error">{{ errors.start_time }}</div>{% endif %}
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">End Time <span class="hr-required">*</span></label>
+            <input type="time" name="end_time" class="hr-form-input {% if errors.end_time %}error{% endif %}"
+                   value="{{ shift.end_time|time:'H:i'|default:'' }}" required>
+            {% if errors.end_time %}<div class="hr-form-error">{{ errors.end_time }}</div>{% endif %}
+          </div>
+        </div>
+        <label class="hr-checkbox-label" style="margin-bottom:20px;">
+          <input type="checkbox" name="is_active" {% if not shift or shift.is_active %}checked{% endif %}>
+          Active
+        </label>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">
+            {% if shift %}Update Shift{% else %}Create Shift{% endif %}
+          </button>
+          <a href="{% url 'portal:hr_shifts' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

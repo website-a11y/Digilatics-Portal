@@ -1,0 +1,298 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if setup %}Edit{% else %}Add{% endif %} Salary Setup — Digilatics HR{% endblock %}
+{% block page_title %}{% if setup %}Edit{% else %}Add{% endif %} Salary Setup{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;">
+    <a href="{% url 'portal:hr_salary_setups' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Salary Setups</a>
+  </div>
+
+  <form method="post" class="hr-form" id="salary-form">
+    {% csrf_token %}
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+
+      <!-- LEFT: form fields -->
+      <div>
+        <div class="ep-card" style="margin-bottom:16px;">
+          <div class="ep-card-header">
+            <div class="ep-card-title">{% if setup %}{{ setup.employee.full_name }}{% else %}New Salary Setup{% endif %}</div>
+          </div>
+          <div class="ep-card-body">
+            {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+
+            {% if not setup %}
+            <div class="hr-form-group">
+              <label class="hr-form-label">Employee <span class="hr-required">*</span></label>
+              <select name="employee" class="hr-form-input" required>
+                <option value="">Select employee…</option>
+                {% for emp in all_employees %}
+                <option value="{{ emp.pk }}">{{ emp.full_name }} ({{ emp.employee_code }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <!-- Gross Salary — the trigger field -->
+            <div class="hr-form-group">
+              <label class="hr-form-label" style="display:flex;align-items:center;gap:8px;">
+                Gross Salary (PKR)
+                <span style="font-size:11px;background:#fff7ed;color:#ea580c;padding:2px 8px;border-radius:10px;font-weight:600;">Auto-calculates below</span>
+              </label>
+              <input type="number" step="1" name="gross_salary_input" id="gross_salary_input"
+                class="hr-form-input" value="{{ setup.gross_salary_input|floatformat:0|default:'0' }}"
+                style="font-size:16px;font-weight:700;border-color:#f97316;"
+                oninput="scheduleCalc()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Salary Components -->
+        <div class="ep-card" style="margin-bottom:16px;">
+          <div class="ep-card-body">
+            <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Salary Components</div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Basic Salary (60%)</label>
+                <input type="number" step="1" name="basic_salary" id="f-basic" class="hr-form-input calc-field" value="{{ setup.basic_salary|floatformat:0|default:'0' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">House Rent Allowance (20%)</label>
+                <input type="number" step="1" name="house_rent_allowance" id="f-hra" class="hr-form-input calc-field" value="{{ setup.house_rent_allowance|floatformat:0|default:'0' }}">
+              </div>
+            </div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Utility Allowance (10%)</label>
+                <input type="number" step="1" name="utility_allowance" id="f-util" class="hr-form-input calc-field" value="{{ setup.utility_allowance|floatformat:0|default:'0' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Medical Allowance (10%)</label>
+                <input type="number" step="1" name="medical_allowance" id="f-med" class="hr-form-input calc-field" value="{{ setup.medical_allowance|floatformat:0|default:'0' }}">
+              </div>
+            </div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Conveyance Allowance</label>
+                <input type="number" step="1" name="conveyance_allowance" class="hr-form-input" value="{{ setup.conveyance_allowance|floatformat:0|default:'0' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Other Allowance</label>
+                <input type="number" step="1" name="other_allowance" class="hr-form-input" value="{{ setup.other_allowance|floatformat:0|default:'0' }}">
+              </div>
+            </div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Currency</label>
+                <input type="text" name="currency" class="hr-form-input" value="{{ setup.currency|default:'PKR' }}">
+              </div>
+              <div class="hr-form-group"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deductions -->
+        <div class="ep-card" style="margin-bottom:16px;">
+          <div class="ep-card-body">
+            <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Deductions</div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Income Tax (auto)</label>
+                <input type="number" step="1" id="f-tax" class="hr-form-input calc-field" value="0" readonly style="background:#fef9f0;cursor:default;" tabindex="-1">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">EOBI Contribution</label>
+                <input type="number" step="1" name="eobi_contribution" class="hr-form-input" value="{{ setup.eobi_contribution|floatformat:0|default:'0' }}">
+              </div>
+            </div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Provident Fund Deduction</label>
+                <input type="number" step="1" name="provident_fund_deduction" class="hr-form-input" value="{{ setup.provident_fund_deduction|floatformat:0|default:'0' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Loan Installment</label>
+                <input type="number" step="1" name="loan_installment" class="hr-form-input" value="{{ setup.loan_installment|floatformat:0|default:'0' }}">
+              </div>
+            </div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Advance Salary Repayment</label>
+                <input type="number" step="1" name="advance_salary_repayment" class="hr-form-input" value="{{ setup.advance_salary_repayment|floatformat:0|default:'0' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Misc Deduction</label>
+                <input type="number" step="1" name="misc_deduction" class="hr-form-input" value="{{ setup.misc_deduction|floatformat:0|default:'0' }}">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="ep-card" style="margin-bottom:16px;">
+          <div class="ep-card-body">
+            <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Payment Details</div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Payment Mode</label>
+                <select name="payment_mode" class="hr-form-input">
+                  {% for val, label in payment_modes %}
+                  <option value="{{ val }}" {% if setup.payment_mode == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">NTN No.</label>
+                <input type="text" name="ntn_no" class="hr-form-input" value="{{ setup.ntn_no|default:'' }}">
+              </div>
+            </div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Bank Name</label>
+                <input type="text" name="bank_name" class="hr-form-input" value="{{ setup.bank_name|default:'' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Account Title</label>
+                <input type="text" name="account_title" class="hr-form-input" value="{{ setup.account_title|default:'' }}">
+              </div>
+            </div>
+            <div class="hr-form-group">
+              <label class="hr-form-label">Account Number</label>
+              <input type="text" name="account_number" class="hr-form-input" value="{{ setup.account_number|default:'' }}">
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes & Save -->
+        <div class="ep-card">
+          <div class="ep-card-body">
+            <div class="hr-form-group">
+              <label class="hr-form-label">Notes</label>
+              <textarea name="notes" class="hr-form-input hr-textarea" rows="3">{{ setup.notes|default:'' }}</textarea>
+            </div>
+            <label class="hr-checkbox-label" style="margin-bottom:16px;">
+              <input type="checkbox" name="is_active" {% if setup.is_active or not setup %}checked{% endif %}> Active
+            </label>
+            <div style="display:flex;gap:12px;margin-top:8px;">
+              <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save</button>
+              <a href="{% url 'portal:hr_salary_setups' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Live Calculation Preview -->
+      <div style="position:sticky;top:16px;">
+        <div class="ep-card" id="calc-preview" style="border:2px solid #fed7aa;">
+          <div style="background:#fff7ed;padding:12px 16px;border-bottom:1px solid #fed7aa;border-radius:10px 10px 0 0;">
+            <div style="font-size:13px;font-weight:700;color:#ea580c;">Salary Preview</div>
+            <div style="font-size:11px;color:#9a6233;margin-top:2px;" id="calc-status">Enter gross salary to calculate</div>
+          </div>
+          <div style="padding:16px;">
+
+            <div style="margin-bottom:14px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:6px;">Earnings</div>
+              <div class="calc-row"><span>Basic Salary (60%)</span><span id="p-basic">—</span></div>
+              <div class="calc-row"><span>House Rent (20%)</span><span id="p-hra">—</span></div>
+              <div class="calc-row"><span>Utility (10%)</span><span id="p-util">—</span></div>
+              <div class="calc-row"><span>Medical (10%)</span><span id="p-med">—</span></div>
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:6px;">Tax Calculation</div>
+              <div class="calc-row"><span>Taxable Income/mo</span><span id="p-taxable">—</span></div>
+              <div class="calc-row"><span>Annual Taxable</span><span id="p-annual-taxable">—</span></div>
+              <div class="calc-row"><span>Annual Tax</span><span id="p-annual-tax">—</span></div>
+              <div class="calc-row" style="font-weight:600;color:#dc2626;"><span>Monthly Income Tax</span><span id="p-tax">—</span></div>
+            </div>
+
+            <div style="border-top:2px solid #f3f4f6;padding-top:12px;margin-top:4px;">
+              <div class="calc-row" style="font-size:13px;font-weight:700;color:#1d4ed8;">
+                <span>Gross Salary</span><span id="p-gross">—</span>
+              </div>
+              <div class="calc-row" style="font-size:12px;color:#dc2626;">
+                <span>− Income Tax</span><span id="p-tax2">—</span>
+              </div>
+              <div style="border-top:1px dashed #e5e7eb;margin:8px 0;"></div>
+              <div class="calc-row" style="font-size:14px;font-weight:700;color:#15803d;">
+                <span>Est. Net Salary</span><span id="p-net">—</span>
+              </div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:6px;">* Excludes EOBI, PF, and other manual deductions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end grid -->
+  </form>
+</div>
+
+<style>
+.calc-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:3px 0; color:var(--text-1); }
+.calc-row span:last-child { font-weight:600; font-family:monospace; font-size:13px; }
+.calc-field { background:#fefce8 !important; }
+</style>
+
+<script>
+const CALC_URL = "{% url 'portal:hr_salary_calculate' %}";
+let calcTimer = null;
+
+function scheduleCalc() {
+  clearTimeout(calcTimer);
+  calcTimer = setTimeout(runCalc, 400);
+}
+
+function fmt(v) {
+  if (!v || Number(v) === 0) return "0";
+  return Math.round(Number(v)).toLocaleString("en-PK");
+}
+
+function setPreview(d) {
+  document.getElementById("p-basic").textContent = fmt(d.basic_salary);
+  document.getElementById("p-hra").textContent = fmt(d.house_rent_allowance);
+  document.getElementById("p-util").textContent = fmt(d.utility_allowance);
+  document.getElementById("p-med").textContent = fmt(d.medical_allowance);
+  document.getElementById("p-taxable").textContent = fmt(d.monthly_taxable_income);
+  document.getElementById("p-annual-taxable").textContent = fmt(d.annual_taxable_income);
+  document.getElementById("p-annual-tax").textContent = fmt(d.annual_tax);
+  document.getElementById("p-tax").textContent = fmt(d.monthly_income_tax);
+  document.getElementById("p-tax2").textContent = fmt(d.monthly_income_tax);
+  const gross = document.getElementById("gross_salary_input").value || "0";
+  document.getElementById("p-gross").textContent = fmt(gross);
+  document.getElementById("p-net").textContent = fmt(d.net_salary);
+}
+
+function fillFields(d) {
+  document.getElementById("f-basic").value = Math.round(Number(d.basic_salary));
+  document.getElementById("f-hra").value = Math.round(Number(d.house_rent_allowance));
+  document.getElementById("f-util").value = Math.round(Number(d.utility_allowance));
+  document.getElementById("f-med").value = Math.round(Number(d.medical_allowance));
+  const taxEl = document.getElementById("f-tax");
+  if (taxEl) taxEl.value = Math.round(Number(d.monthly_income_tax));
+}
+
+function runCalc() {
+  const gross = document.getElementById("gross_salary_input").value;
+  if (!gross || Number(gross) <= 0) {
+    document.getElementById("calc-status").textContent = "Enter gross salary to calculate";
+    return;
+  }
+  document.getElementById("calc-status").textContent = "Calculating…";
+  fetch(`${CALC_URL}?gross=${encodeURIComponent(gross)}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) { document.getElementById("calc-status").textContent = d.error; return; }
+      setPreview(d);
+      fillFields(d);
+      document.getElementById("calc-status").textContent = "Based on active tax slabs";
+    })
+    .catch(() => { document.getElementById("calc-status").textContent = "Calculation failed"; });
+}
+
+// Run on page load if gross already has a value
+window.addEventListener("DOMContentLoaded", () => {
+  const gross = document.getElementById("gross_salary_input").value;
+  if (gross && Number(gross) > 0) runCalc();
+});
+</script>
+{% endblock %}

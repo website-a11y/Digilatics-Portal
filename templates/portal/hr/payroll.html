@@ -1,0 +1,55 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Payroll — Digilatics HR{% endblock %}
+{% block page_title %}Payroll{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+  <a href="{% url 'portal:hr_payroll_create' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:38px;padding:0 20px;">
+    + New Payroll Run
+  </a>
+</div>
+
+<div class="ep-card" style="padding:0;overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="hr-table">
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in runs %}
+        <tr>
+          <td>
+            <div style="font-weight:800;font-size:16px;color:var(--text-1);">{{ run.get_month_display }} {{ run.year }}</div>
+          </td>
+          <td>
+            <span class="ep-badge {{ run.status|slugify }}" style="font-size:13px;padding:5px 12px;">{{ run.status }}</span>
+          </td>
+          <td style="font-size:12px;color:var(--text-2);">{{ run.created_at|date:"M j, Y" }}</td>
+          <td style="font-size:12px;color:var(--text-2);">{{ run.notes|default:"—"|truncatechars:60 }}</td>
+          <td>
+            <a href="{% url 'portal:hr_payroll_detail' run.pk %}" class="ep-btn-sm" style="text-decoration:none;">View Payslips →</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">
+            <div class="hr-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+              <div>No payroll runs found</div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

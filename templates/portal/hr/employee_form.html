@@ -1,0 +1,1349 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if emp %}Edit Employee{% else %}Add Employee{% endif %} — Digilatics HR{% endblock %}
+{% block page_title %}{% if emp %}Edit — {{ emp.full_name }}{% else %}Add New Employee{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+/* ── Stepper ── */
+.msf-stepper {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 28px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+}
+.msf-step { display: flex; align-items: center; gap: 10px; }
+.msf-step-circle {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+  border: 2px solid var(--border);
+  background: var(--surface); color: var(--muted-2);
+  transition: all .25s;
+}
+.msf-step.active .msf-step-circle { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 0 0 4px rgba(245,132,0,.15); }
+.msf-step.done  .msf-step-circle { background: #16a34a; border-color: #16a34a; color: #fff; }
+.msf-step-info { display: flex; flex-direction: column; }
+.msf-step-num  { font-size: 10px; font-weight: 600; color: var(--muted-2); text-transform: uppercase; letter-spacing: .5px; }
+.msf-step-label { font-size: 13px; font-weight: 600; color: var(--muted-2); white-space: nowrap; }
+.msf-step.active .msf-step-num   { color: var(--brand); }
+.msf-step.active .msf-step-label { color: var(--text); }
+.msf-step.done  .msf-step-label  { color: #16a34a; }
+.msf-connector  { flex: 1; height: 2px; background: var(--border); margin: 0 12px; min-width: 16px; }
+.msf-connector.done { background: #16a34a; }
+
+/* ── Step panels ── */
+.msf-panel { display: none; }
+.msf-panel.active { display: block; }
+
+/* ── Section headers inside cards ── */
+.form-section {
+  margin-bottom: 28px;
+}
+.form-section:last-child { margin-bottom: 0; }
+.form-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.form-section-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.form-section-title  { font-size: 14px; font-weight: 800; color: var(--text); letter-spacing: -.2px; }
+.form-section-desc   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ── Nav buttons ── */
+.msf-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 28px;
+  padding: 20px 24px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.msf-btn-prev {
+  height: 42px; padding: 0 20px; border: 1.5px solid var(--border);
+  border-radius: 9px; background: var(--white); color: var(--text-2);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; font-family: var(--font);
+  transition: border-color .15s, background .15s;
+}
+.msf-btn-prev:hover { background: var(--surface); border-color: #d1d5db; }
+.msf-btn-next {
+  height: 42px; padding: 0 24px; border-radius: 9px;
+  background: var(--brand); color: #fff; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font); transition: background .15s;
+}
+.msf-btn-next:hover { background: var(--brand-dark); }
+.msf-btn-save {
+  height: 42px; padding: 0 28px; border-radius: 9px;
+  background: #16a34a; color: #fff; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font); transition: background .15s;
+}
+.msf-btn-save:hover { background: #15803d; }
+.msf-btn-save-close {
+  height: 42px; padding: 0 20px; border-radius: 9px;
+  background: var(--white); color: var(--text-2);
+  border: 1.5px solid var(--border);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font); transition: background .15s;
+}
+.msf-btn-save-close:hover { background: var(--surface); }
+/* Quick-jump dropdown */
+.step-jump { position: relative; }
+.step-jump-btn {
+  height: 36px; padding: 0 14px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--white); color: var(--text-2);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font);
+}
+.step-jump-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 6px);
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 8px 24px rgba(17,24,39,.1);
+  min-width: 180px; z-index: 100; overflow: hidden;
+}
+.step-jump-menu.open { display: block; }
+.step-jump-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; font-size: 13px; cursor: pointer;
+  color: var(--text-2); font-weight: 500;
+  transition: background .12s;
+}
+.step-jump-item:hover { background: var(--surface); color: var(--brand); }
+.msf-step-indicator {
+  font-size: 12px; color: var(--muted); font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 20px;
+}
+
+/* ── Unified section grid — ALL fields share one grid so columns align perfectly ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+  align-items: start;
+}
+.form-grid-full { grid-column: span 2; }
+
+/* ── Validation error style ── */
+.field-error { font-size: 11px; color: #ef4444; margin-top: 4px; display: none; }
+.hr-form-input.has-error { border-color: #ef4444; background: #fff8f8; }
+
+/* ── Login account block ── */
+.login-account-block {
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 28px;
+}
+.login-account-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: #c2410c; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ── Salary preview ── */
+.sal-preview-row {
+  display: flex; justify-content: space-between;
+  padding: 6px 0; font-size: 13px;
+  border-bottom: 1px solid var(--surface);
+}
+.sal-preview-row:last-child { border: none; }
+
+/* ── Confirmation modal ── */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(17,24,39,.45); backdrop-filter: blur(3px);
+  align-items: center; justify-content: center;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-modal {
+  background: #fff; border-radius: 18px; width: 100%; max-width: 500px;
+  box-shadow: 0 24px 64px rgba(17,24,39,.18); overflow: hidden;
+  margin: 16px;
+}
+.confirm-modal-header {
+  padding: 24px 28px 0;
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.confirm-modal-icon {
+  width: 48px; height: 48px; flex-shrink: 0;
+  background: #fff7ed; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.confirm-modal-body { padding: 20px 28px 0; }
+.confirm-summary {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px;
+  margin: 16px 0 0;
+}
+.confirm-summary-item { font-size: 12px; }
+.confirm-summary-item .cs-label { color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+.confirm-summary-item .cs-val   { color: var(--text); font-weight: 600; }
+.confirm-modal-footer {
+  padding: 20px 28px 24px;
+  display: flex; gap: 12px; justify-content: flex-end;
+}
+</style>
+
+<div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <a href="{% url 'portal:hr_employees' %}" class="ep-btn-sm" style="text-decoration:none;">
+      ← Back to Employees
+    </a>
+    {% if emp %}
+    <div class="step-jump">
+      <button type="button" class="step-jump-btn" onclick="toggleJumpMenu()">
+        Jump to section
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="step-jump-menu" id="jump-menu">
+        <div class="step-jump-item" onclick="goStep(1);toggleJumpMenu()">Personal Info</div>
+        <div class="step-jump-item" onclick="goStep(2);toggleJumpMenu()">Employment</div>
+        <div class="step-jump-item" onclick="goStep(3);toggleJumpMenu()">Salary</div>
+        <div class="step-jump-item" onclick="goStep(4);toggleJumpMenu()">Documents</div>
+        <div class="step-jump-item" onclick="buildReview();goStep(5);toggleJumpMenu()">Review</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if errors.general %}
+  <div class="ep-alert error" style="margin-bottom:20px;">
+    <strong>Error:</strong> {{ errors.general }}
+  </div>
+  {% endif %}
+
+  <!-- ══════════ STEPPER ══════════ -->
+  <div class="msf-stepper" id="stepper">
+    <div class="msf-step active" data-step="1">
+      <div class="msf-step-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="msf-step-info">
+        <span class="msf-step-num">Step 1</span>
+        <span class="msf-step-label">Personal</span>
+      </div>
+    </div>
+    <div class="msf-connector" id="conn-1"></div>
+
+    <div class="msf-step" data-step="2">
+      <div class="msf-step-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>
+      </div>
+      <div class="msf-step-info">
+        <span class="msf-step-num">Step 2</span>
+        <span class="msf-step-label">Employment</span>
+      </div>
+    </div>
+    <div class="msf-connector" id="conn-2"></div>
+
+    <div class="msf-step" data-step="3">
+      <div class="msf-step-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div class="msf-step-info">
+        <span class="msf-step-num">Step 3</span>
+        <span class="msf-step-label">Salary</span>
+      </div>
+    </div>
+    <div class="msf-connector" id="conn-3"></div>
+
+    <div class="msf-step" data-step="4">
+      <div class="msf-step-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="msf-step-info">
+        <span class="msf-step-num">Step 4</span>
+        <span class="msf-step-label">Documents</span>
+      </div>
+    </div>
+    <div class="msf-connector" id="conn-4"></div>
+
+    <div class="msf-step" data-step="5">
+      <div class="msf-step-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div class="msf-step-info">
+        <span class="msf-step-num">Step 5</span>
+        <span class="msf-step-label">Review</span>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="msf-form">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="all">
+
+    <!-- ════════════════ STEP 1: PERSONAL ════════════════ -->
+    <div class="msf-panel active" id="panel-1">
+      <div class="ep-card">
+        <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#fff7ed;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="ep-card-title">Personal Information</div>
+              <div class="ep-card-sub">Identity, contact details and emergency info</div>
+            </div>
+          </div>
+        </div>
+        <div class="ep-card-body" style="padding:28px;">
+
+          {% if not emp %}
+          <!-- Login Account -->
+          <div class="login-account-block">
+            <div class="login-account-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Login Account Setup
+            </div>
+            <div class="hr-form-row">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Username <span class="hr-required">*</span></label>
+                <input type="text" name="username" id="f-username" class="hr-form-input"
+                       autocomplete="off" placeholder="e.g. ali.khan or EMP-1001">
+                <div class="field-error" id="err-username">Username is required</div>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Password
+                  <span style="font-size:10px;font-weight:500;color:var(--muted);margin-left:4px;">(or send setup email below)</span>
+                </label>
+                <input type="password" name="password" id="id_password" class="hr-form-input"
+                       autocomplete="new-password" placeholder="Leave blank to send setup email">
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:12px 14px;background:#fff;border:1px solid #fed7aa;border-radius:9px;">
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                <input type="checkbox" name="send_setup_email" id="id_send_setup_email" checked
+                       style="width:16px;height:16px;margin-top:2px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;">
+                <span style="font-size:13px;color:#374151;line-height:1.5;">
+                  <strong style="color:#111827;">Send password setup email</strong><br>
+                  <span style="color:var(--muted);font-size:12px;">
+                    The employee will receive a secure one-time link at their official email to set their own password.
+                    Leave the password field blank when this is checked.
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Basic Details -->
+          <div class="form-section">
+            <div class="form-section-header" style="background:#f9fafb;border:1px solid var(--border);">
+              <div class="form-section-icon" style="background:#fff7ed;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2" width="14" height="14"><circle cx="12" cy="8" r="5"/><path d="M3 21a9 9 0 0 1 18 0"/></svg>
+              </div>
+              <div>
+                <div class="form-section-title">Basic Details</div>
+                <div class="form-section-desc">Name, gender, date of birth and photo</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <!-- Full Name — spans both columns -->
+              <div class="hr-form-group form-grid-full">
+                <label class="hr-form-label">Full Name <span class="hr-required">*</span></label>
+                <div style="display:flex;align-items:center;gap:14px;">
+                  <div style="flex:1;">
+                    <input type="text" name="full_name" id="f-full_name" class="hr-form-input"
+                           value="{{ emp.full_name|default:'' }}" placeholder="Employee full name" required>
+                    <div class="field-error" id="err-full_name">Full name is required</div>
+                  </div>
+                  {% if emp.profile_photo %}
+                  <img src="{{ emp.profile_photo.url }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0;">
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Gender -->
+              <div class="hr-form-group">
+                <label class="hr-form-label">Gender</label>
+                <select name="gender" class="hr-form-input">
+                  <option value="">— Select gender —</option>
+                  {% for val, label in gender_choices %}
+                  <option value="{{ val }}" {% if emp.gender == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Date of Birth -->
+              <div class="hr-form-group">
+                <label class="hr-form-label">Date of Birth</label>
+                <input type="date" name="date_of_birth" class="hr-form-input"
+                       value="{{ emp.date_of_birth|date:'Y-m-d'|default:'' }}">
+              </div>
+
+              <!-- Marital Status -->
+              <div class="hr-form-group">
+                <label class="hr-form-label">Marital Status</label>
+                <select name="marital_status" class="hr-form-input">
+                  <option value="">— Select status —</option>
+                  {% for val, label in marital_choices %}
+                  <option value="{{ val }}" {% if emp.marital_status == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Profile Photo -->
+              <div class="hr-form-group">
+                <label class="hr-form-label">Profile Photo</label>
+                <input type="file" name="profile_photo" class="hr-form-input" accept="image/*">
+                {% if emp.profile_photo %}<div style="font-size:11px;color:var(--muted);margin-top:4px;">Current photo on file — upload to replace</div>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="form-section" style="margin-top:28px;">
+            <div class="form-section-header" style="background:#f0f9ff;border:1px solid #bae6fd;">
+              <div class="form-section-icon" style="background:#e0f2fe;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" width="14" height="14"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.61 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.09 4.18 2 2 0 0 1 5.07 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 23 17z"/></svg>
+              </div>
+              <div>
+                <div class="form-section-title">Contact Information</div>
+                <div class="form-section-desc">Email addresses, phone and location</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Personal Email</label>
+                <input type="email" name="personal_email" class="hr-form-input"
+                       value="{{ emp.personal_email|default:'' }}" placeholder="personal@gmail.com">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Official Work Email <span class="hr-required">*</span></label>
+                <input type="email" name="official_email" id="f-official_email" class="hr-form-input"
+                       value="{{ emp.official_email|default:'' }}" placeholder="name@digilatics.com" required>
+                <div class="field-error" id="err-official_email">Official email is required</div>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Personal Phone</label>
+                <input type="text" name="personal_phone" class="hr-form-input"
+                       value="{{ emp.personal_phone|default:'' }}" placeholder="+92 300 0000000">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">City</label>
+                <input type="text" name="city" class="hr-form-input"
+                       value="{{ emp.city|default:'' }}" placeholder="e.g. Lahore">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Country</label>
+                <input type="text" name="country" class="hr-form-input"
+                       value="{{ emp.country|default:'Pakistan' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Current Address</label>
+                <input type="text" name="current_address" class="hr-form-input"
+                       value="{{ emp.current_address|default:'' }}" placeholder="Street, Area">
+              </div>
+            </div>
+          </div>
+
+          <!-- Emergency Contact -->
+          <div class="form-section" style="margin-top:28px;">
+            <div class="form-section-header" style="background:#fef2f2;border:1px solid #fecaca;">
+              <div class="form-section-icon" style="background:#fee2e2;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" width="14" height="14"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.61 19a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-2.51-8.82A2 2 0 0 1 5.07 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 23 17z"/><circle cx="12" cy="12" r="1"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+              </div>
+              <div>
+                <div class="form-section-title">Emergency Contact</div>
+                <div class="form-section-desc">Person to contact in case of emergency</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Contact Name</label>
+                <input type="text" name="emergency_contact_name" class="hr-form-input"
+                       value="{{ emp.emergency_contact_name|default:'' }}" placeholder="Full name">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Contact Number</label>
+                <input type="text" name="emergency_contact_number" class="hr-form-input"
+                       value="{{ emp.emergency_contact_number|default:'' }}" placeholder="+92 300 0000000">
+              </div>
+            </div>
+          </div>
+
+          <!-- Identity -->
+          <div class="form-section" style="margin-top:28px;">
+            <div class="form-section-header" style="background:#f5f3ff;border:1px solid #ddd6fe;">
+              <div class="form-section-icon" style="background:#ede9fe;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" width="14" height="14"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <div>
+                <div class="form-section-title">Identity Documents</div>
+                <div class="form-section-desc">National ID and passport details</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="hr-form-group form-grid-full">
+                <label class="hr-form-label">CNIC / National ID</label>
+                <input type="text" name="cnic" class="hr-form-input"
+                       value="{{ cnic_display }}" placeholder="XXXXX-XXXXXXX-X (leave blank for —)">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="msf-nav">
+        <a href="{% url 'portal:hr_employees' %}" class="msf-btn-prev">Cancel</a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="msf-step-indicator">Step 1 of 5</span>
+          <button type="submit" class="msf-btn-save-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Save &amp; Close
+          </button>
+          <button type="button" class="msf-btn-next" onclick="tryNext(1,2)">
+            Next: Employment
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ STEP 2: EMPLOYMENT ════════════════ -->
+    <div class="msf-panel" id="panel-2">
+      <div class="ep-card">
+        <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#eff6ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" width="18" height="18"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>
+            </div>
+            <div>
+              <div class="ep-card-title">Employment Details</div>
+              <div class="ep-card-sub">Role, department, dates and reporting structure</div>
+            </div>
+          </div>
+        </div>
+        <div class="ep-card-body" style="padding:28px;">
+
+          <!-- Position -->
+          <div class="form-section">
+            <div class="form-section-header" style="background:#eff6ff;border:1px solid #bfdbfe;">
+              <div class="form-section-icon" style="background:#dbeafe;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" width="14" height="14"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>
+              </div>
+              <div>
+                <div class="form-section-title">Position & Department</div>
+                <div class="form-section-desc">Job title, team and organizational placement</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Employee Code <span class="hr-required">*</span></label>
+                <input type="text" name="employee_code" id="f-employee_code" class="hr-form-input"
+                       value="{{ emp.employee_code|default:'' }}" placeholder="e.g. EMP-1001">
+                <div class="field-error" id="err-employee_code">Employee code is required</div>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Department <span class="hr-required">*</span></label>
+                <select name="department" id="f-department" class="hr-form-input">
+                  <option value="">— Select department —</option>
+                  {% for d in dept_list %}
+                  <option value="{{ d }}" {% if emp.department == d %}selected{% endif %}>{{ d }}</option>
+                  {% endfor %}
+                  {% if emp and emp.department and emp.department not in dept_list %}
+                  <option value="{{ emp.department }}" selected>{{ emp.department }}</option>
+                  {% endif %}
+                </select>
+                <div class="field-error" id="err-department">Department is required</div>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Designation <span class="hr-required">*</span></label>
+                <select name="designation" id="f-designation" class="hr-form-input">
+                  <option value="">— Select designation —</option>
+                  {% for d in desig_list %}
+                  <option value="{{ d }}" {% if emp.designation == d %}selected{% endif %}>{{ d }}</option>
+                  {% endfor %}
+                  {% if emp and emp.designation and emp.designation not in desig_list %}
+                  <option value="{{ emp.designation }}" selected>{{ emp.designation }}</option>
+                  {% endif %}
+                </select>
+                <div class="field-error" id="err-designation">Designation is required</div>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Portal Role</label>
+                <select name="role" id="f-role" class="hr-form-input" onchange="onRoleChange(this.value)">
+                  {% for val, label in role_choices %}
+                  <option value="{{ val }}" {% if emp.role == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Work Location</label>
+                <select name="work_location" class="hr-form-input">
+                  <option value="">— Select location —</option>
+                  {% for d in location_list %}
+                  <option value="{{ d }}" {% if emp.work_location == d %}selected{% endif %}>{{ d }}</option>
+                  {% endfor %}
+                  {% if emp and emp.work_location and emp.work_location not in location_list %}
+                  <option value="{{ emp.work_location }}" selected>{{ emp.work_location }}</option>
+                  {% endif %}
+                </select>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Team</label>
+                <input type="text" name="team" class="hr-form-input"
+                       value="{{ emp.team|default:'' }}" placeholder="e.g. Backend Team">
+              </div>
+            </div>
+          </div>
+
+          <!-- Status & Dates -->
+          <div class="form-section" style="margin-top:28px;">
+            <div class="form-section-header" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+              <div class="form-section-icon" style="background:#dcfce7;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div>
+                <div class="form-section-title">Status &amp; Dates</div>
+                <div class="form-section-desc">Employment type, status and key dates</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Employment Type</label>
+                <select name="employment_type" class="hr-form-input">
+                  {% for val, label in type_choices %}
+                  <option value="{{ val }}" {% if emp.employment_type == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Employment Status</label>
+                <select name="employment_status" class="hr-form-input">
+                  {% for val, label in status_choices %}
+                  <option value="{{ val }}" {% if emp.employment_status == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Joining Date</label>
+                <input type="date" name="joining_date" class="hr-form-input"
+                       value="{{ emp.joining_date|date:'Y-m-d'|default:'' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Payroll Start Date</label>
+                <input type="date" name="hire_date" class="hr-form-input"
+                       value="{{ emp.hire_date|date:'Y-m-d'|default:'' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Confirmation Date</label>
+                <input type="date" name="confirmation_date" class="hr-form-input"
+                       value="{{ emp.confirmation_date|date:'Y-m-d'|default:'' }}">
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Reporting Manager <span class="hr-required">*</span></label>
+                <select name="reporting_manager" id="f-reporting_manager" class="hr-form-input">
+                  <option value="">— Select manager —</option>
+                  {% for mgr in all_employees %}
+                  {% if not emp or mgr.pk != emp.pk %}
+                  <option value="{{ mgr.pk }}" {% if emp and emp.reporting_manager_id == mgr.pk %}selected{% endif %}>{{ mgr.full_name }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+                <div class="field-error" id="err-reporting_manager">Reporting manager is required</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shift -->
+          <div class="form-section" style="margin-top:28px;">
+            <div class="form-section-header" style="background:#fff7ed;border:1px solid #fed7aa;">
+              <div class="form-section-icon" style="background:#ffedd5;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <div class="form-section-title">Shift Assignment</div>
+                <div class="form-section-desc">Working hours and attendance schedule</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="hr-form-group">
+                <label class="hr-form-label">Shift <span class="hr-required">*</span></label>
+                <select name="shift_master" id="f-shift_master" class="hr-form-input">
+                  <option value="">— Select shift —</option>
+                  {% for s in all_shifts %}
+                  <option value="{{ s.pk }}" {% if emp.shift_master_id == s.pk %}selected{% endif %}>
+                    {{ s.name }} ({{ s.start_time|time:"g:i A" }} – {{ s.end_time|time:"g:i A" }})
+                  </option>
+                  {% endfor %}
+                </select>
+                <div class="field-error" id="err-shift_master">Shift is required</div>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Remarks / Notes</label>
+                <textarea name="remarks" class="hr-form-input hr-textarea" rows="2"
+                          placeholder="Internal notes for HR…">{{ emp.remarks|default:'' }}</textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="msf-nav">
+        <button type="button" class="msf-btn-prev" onclick="goStep(1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="msf-step-indicator">Step 2 of 5</span>
+          <button type="submit" class="msf-btn-save-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Save &amp; Close
+          </button>
+          <button type="button" class="msf-btn-next" onclick="tryNext(2,3)">
+            Next: Salary
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ STEP 3: SALARY ════════════════ -->
+    <div class="msf-panel" id="panel-3">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
+
+        <div class="ep-card">
+          <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:36px;height:36px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" width="18" height="18"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div>
+                <div class="ep-card-title">Salary &amp; Compensation</div>
+                <div class="ep-card-sub">Gross salary, components, deductions and payment info</div>
+              </div>
+            </div>
+          </div>
+          <div class="ep-card-body" style="padding:28px;">
+
+            <div class="form-section">
+              <div class="form-section-header" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                <div class="form-section-icon" style="background:#dcfce7;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div>
+                  <div class="form-section-title">Gross Salary</div>
+                  <div class="form-section-desc">Enter gross — components are calculated automatically</div>
+                </div>
+              </div>
+              <div class="hr-form-group">
+                <label class="hr-form-label">Gross Monthly Salary (PKR) <span class="hr-required">*</span></label>
+                <input type="number" step="0.01" min="0.01" name="gross_salary_input" id="gross_salary_input"
+                  class="hr-form-input"
+                  value="{{ salary_setup.gross_salary_input|floatformat:2|default:'' }}"
+                  style="font-size:18px;font-weight:700;height:52px;border-color:#16a34a;"
+                  oninput="scheduleCalc()" placeholder="e.g. 75000.00">
+              </div>
+            </div>
+
+            <div class="form-section" style="margin-top:28px;">
+              <div class="form-section-header" style="background:#fefce8;border:1px solid #fef08a;">
+                <div class="form-section-icon" style="background:#fef9c3;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" width="14" height="14"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div>
+                  <div class="form-section-title">Salary Components</div>
+                  <div class="form-section-desc">Auto-calculated from gross — adjust if needed</div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Basic Salary (60%)</label>
+                  <input type="number" step="0.01" name="basic_salary" id="f-basic" class="hr-form-input"
+                    value="{{ salary_setup.basic_salary|floatformat:2|default:'0.00' }}" style="background:#fefce8;">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">House Rent Allowance (20%)</label>
+                  <input type="number" step="0.01" name="house_rent_allowance" id="f-hra" class="hr-form-input"
+                    value="{{ salary_setup.house_rent_allowance|floatformat:2|default:'0.00' }}" style="background:#fefce8;">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Medical Allowance (10%)</label>
+                  <input type="number" step="0.01" name="medical_allowance" id="f-med" class="hr-form-input"
+                    value="{{ salary_setup.medical_allowance|floatformat:2|default:'0.00' }}" style="background:#fefce8;">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Conveyance Allowance</label>
+                  <input type="number" step="0.01" name="conveyance_allowance" class="hr-form-input"
+                    value="{{ salary_setup.conveyance_allowance|floatformat:2|default:'0.00' }}">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Other Allowance</label>
+                  <input type="number" step="0.01" name="other_allowance" class="hr-form-input"
+                    value="{{ salary_setup.other_allowance|floatformat:2|default:'0.00' }}">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">NTN No.</label>
+                  <input type="text" name="ntn_no" class="hr-form-input" value="{{ salary_setup.ntn_no|default:'' }}" placeholder="Optional">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section" style="margin-top:28px;">
+              <div class="form-section-header" style="background:#fef2f2;border:1px solid #fecaca;">
+                <div class="form-section-icon" style="background:#fee2e2;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </div>
+                <div>
+                  <div class="form-section-title">Deductions</div>
+                  <div class="form-section-desc">Tax, EOBI, provident fund and other deductions</div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Income Tax (calculated)</label>
+                  <input type="number" step="0.01" id="f-tax" class="hr-form-input" value="0.00"
+                    readonly style="background:#fef9f0;cursor:default;" tabindex="-1">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">EOBI Contribution</label>
+                  <input type="number" step="0.01" name="eobi_contribution" class="hr-form-input"
+                    value="{{ salary_setup.eobi_contribution|floatformat:2|default:'0.00' }}">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Provident Fund</label>
+                  <input type="number" step="0.01" name="provident_fund_deduction" class="hr-form-input"
+                    value="{{ salary_setup.provident_fund_deduction|floatformat:2|default:'0.00' }}">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Loan Installment</label>
+                  <input type="number" step="0.01" name="loan_installment" class="hr-form-input"
+                    value="{{ salary_setup.loan_installment|floatformat:2|default:'0.00' }}">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Misc Deduction</label>
+                  <input type="number" step="0.01" name="misc_deduction" class="hr-form-input"
+                    value="{{ salary_setup.misc_deduction|floatformat:2|default:'0.00' }}">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Advance Salary Repayment</label>
+                  <input type="number" step="0.01" name="advance_salary_repayment" class="hr-form-input"
+                    value="{{ salary_setup.advance_salary_repayment|floatformat:2|default:'0.00' }}">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section" style="margin-top:28px;">
+              <div class="form-section-header" style="background:#f9fafb;border:1px solid var(--border);">
+                <div class="form-section-icon" style="background:#f3f4f6;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <div>
+                  <div class="form-section-title">Payment Details</div>
+                  <div class="form-section-desc">Bank account and payment method</div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Payment Mode</label>
+                  <select name="payment_mode" class="hr-form-input">
+                    {% for val, label in payment_choices %}
+                    <option value="{{ val }}" {% if emp.payment_mode == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Bank Name</label>
+                  <input type="text" name="bank_name" class="hr-form-input" value="{{ emp.bank_name|default:'' }}" placeholder="e.g. HBL">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Account Title</label>
+                  <input type="text" name="account_title" class="hr-form-input" value="{{ emp.account_title|default:'' }}">
+                </div>
+                <div class="hr-form-group">
+                  <label class="hr-form-label">Account Number</label>
+                  <input type="text" name="account_number" class="hr-form-input" value="{{ emp.account_number|default:'' }}">
+                </div>
+                <div class="hr-form-group form-grid-full">
+                  <label class="hr-form-label">IBAN</label>
+                  <input type="text" name="iban" class="hr-form-input" value="{{ emp.iban|default:'' }}" placeholder="PK00XXXX0000000000000000">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Salary Preview Sidebar -->
+        <div style="position:sticky;top:16px;">
+          <div class="ep-card" style="border:2px solid #bbf7d0;">
+            <div style="background:#f0fdf4;padding:14px 18px;border-bottom:1px solid #bbf7d0;">
+              <div style="font-size:13px;font-weight:700;color:#15803d;">Live Salary Preview</div>
+              <div style="font-size:11px;color:#16a34a;margin-top:3px;" id="calc-status">Enter gross salary to calculate</div>
+            </div>
+            <div style="padding:16px 18px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted-2);margin-bottom:10px;">Breakdown</div>
+              <div class="sal-preview-row"><span style="color:var(--muted);">Basic (60%)</span><span id="p-basic" style="font-family:monospace;font-weight:700;">—</span></div>
+              <div class="sal-preview-row"><span style="color:var(--muted);">HRA (20%)</span><span id="p-hra" style="font-family:monospace;font-weight:700;">—</span></div>
+              <div class="sal-preview-row"><span style="color:var(--muted);">Medical (10%)</span><span id="p-med" style="font-family:monospace;font-weight:700;">—</span></div>
+              <div class="sal-preview-row"><span style="color:var(--muted);">Utility (10%)</span><span id="p-util" style="font-family:monospace;font-weight:700;">—</span></div>
+              <div style="border-top:2px solid var(--border);padding-top:12px;margin-top:8px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted-2);margin-bottom:10px;">Tax Estimate</div>
+                <div class="sal-preview-row"><span style="color:var(--muted);">Annual Taxable</span><span id="p-annual-taxable" style="font-family:monospace;font-weight:700;">—</span></div>
+                <div class="sal-preview-row"><span style="color:var(--muted);">Annual Tax</span><span id="p-annual-tax" style="font-family:monospace;font-weight:700;">—</span></div>
+                <div class="sal-preview-row" style="color:#dc2626;"><span>Monthly Tax</span><span id="p-tax" style="font-family:monospace;font-weight:700;">—</span></div>
+              </div>
+              <div style="border-top:2px solid var(--border);padding-top:12px;margin-top:8px;">
+                <div class="sal-preview-row" style="font-size:15px;font-weight:800;color:#15803d;">
+                  <span>Est. Net</span><span id="p-net" style="font-family:monospace;">—</span>
+                </div>
+                <div style="font-size:10px;color:var(--muted-2);margin-top:4px;">* Before EOBI, PF &amp; misc deductions</div>
+              </div>
+            </div>
+          </div>
+          {% if salary_setup %}
+          <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;font-size:12px;color:#1e40af;line-height:1.5;">
+            <strong>Salary Setup exists</strong> — saving will update it automatically.
+          </div>
+          {% else %}
+          <div style="margin-top:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400e;line-height:1.5;">
+            No salary setup yet — one will be created when you save with a gross salary entered.
+          </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div class="msf-nav">
+        <button type="button" class="msf-btn-prev" onclick="goStep(2)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="msf-step-indicator">Step 3 of 5</span>
+          <button type="submit" class="msf-btn-save-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Save &amp; Close
+          </button>
+          <button type="button" class="msf-btn-next" onclick="goStep(4)">
+            Next: Documents
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ STEP 4: DOCUMENTS ════════════════ -->
+    <div class="msf-panel" id="panel-4">
+      <div class="ep-card">
+        <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#f5f3ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <div class="ep-card-title">Documents</div>
+              <div class="ep-card-sub">All fields are optional — you can upload later from the employee profile</div>
+            </div>
+          </div>
+        </div>
+        <div class="ep-card-body" style="padding:28px;">
+
+          <div style="background:#f5f3ff;border:1px solid #e9d5ff;border-radius:10px;padding:14px 16px;margin-bottom:24px;font-size:13px;color:#6d28d9;line-height:1.5;">
+            <strong>Optional step</strong> — upload employee documents here or skip to review. Accepted formats: PDF, JPG, PNG, DOC.
+          </div>
+
+          <div class="form-grid">
+            <div class="hr-form-group">
+              <label class="hr-form-label">CNIC Copy</label>
+              <input type="file" name="cnic_copy" class="hr-form-input" accept=".pdf,.jpg,.jpeg,.png">
+              {% if emp.cnic_copy %}<div style="font-size:11px;color:#16a34a;margin-top:4px;">✓ On file — <a href="{{ emp.cnic_copy.url }}" target="_blank" style="color:#7c3aed;">view current</a></div>{% endif %}
+            </div>
+            <div class="hr-form-group">
+              <label class="hr-form-label">Resume / CV</label>
+              <input type="file" name="resume" class="hr-form-input" accept=".pdf,.doc,.docx">
+              {% if emp.resume %}<div style="font-size:11px;color:#16a34a;margin-top:4px;">✓ On file — <a href="{{ emp.resume.url }}" target="_blank" style="color:#7c3aed;">view current</a></div>{% endif %}
+            </div>
+            <div class="hr-form-group">
+              <label class="hr-form-label">Offer Letter</label>
+              <input type="file" name="offer_letter" class="hr-form-input" accept=".pdf,.doc,.docx">
+              {% if emp.offer_letter %}<div style="font-size:11px;color:#16a34a;margin-top:4px;">✓ On file — <a href="{{ emp.offer_letter.url }}" target="_blank" style="color:#7c3aed;">view current</a></div>{% endif %}
+            </div>
+            <div class="hr-form-group">
+              <label class="hr-form-label">Contract</label>
+              <input type="file" name="contract" class="hr-form-input" accept=".pdf,.doc,.docx">
+              {% if emp.contract %}<div style="font-size:11px;color:#16a34a;margin-top:4px;">✓ On file — <a href="{{ emp.contract.url }}" target="_blank" style="color:#7c3aed;">view current</a></div>{% endif %}
+            </div>
+          </div>
+
+          {% if emp %}
+          <div style="margin-top:20px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text-2);">
+            Documents uploaded: <strong>{{ emp.uploaded_documents_count }}</strong> / 4
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <div class="msf-nav">
+        <button type="button" class="msf-btn-prev" onclick="goStep(3)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="msf-step-indicator">Step 4 of 5</span>
+          <button type="submit" class="msf-btn-save-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Save &amp; Close
+          </button>
+          <button type="button" class="msf-btn-next" onclick="buildReview(); goStep(5)">
+            Review &amp; Confirm
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ STEP 5: REVIEW ════════════════ -->
+    <div class="msf-panel" id="panel-5">
+      <div class="ep-card" style="margin-bottom:20px;">
+        <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:#f0fdf4;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" width="18" height="18"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div>
+              <div class="ep-card-title">Review &amp; Confirm</div>
+              <div class="ep-card-sub">Check all details before saving the employee record</div>
+            </div>
+          </div>
+        </div>
+        <div class="ep-card-body" style="padding:28px;">
+          <div id="review-content" style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="msf-nav">
+        <button type="button" class="msf-btn-prev" onclick="goStep(4)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="msf-step-indicator">Step 5 of 5</span>
+          {% if not emp %}
+          <button type="button" class="msf-btn-save" onclick="openConfirm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Create Employee
+          </button>
+          {% else %}
+          <button type="submit" class="msf-btn-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Changes
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- ════════════════ CONFIRMATION MODAL ════════════════ -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-modal">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#111827;letter-spacing:-.3px;">Create new employee?</div>
+        <div style="font-size:13px;color:#6B7280;margin-top:4px;">Please confirm the details below before saving.</div>
+      </div>
+    </div>
+    <div class="confirm-modal-body">
+      <div class="confirm-summary" id="confirm-summary">
+        <!-- populated by JS -->
+      </div>
+      {% if not emp %}
+      <div style="margin-top:14px;padding:10px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#92400e;line-height:1.5;" id="confirm-email-note">
+        <!-- populated by JS -->
+      </div>
+      {% endif %}
+    </div>
+    <div class="confirm-modal-footer">
+      <button type="button" class="msf-btn-prev" onclick="closeConfirm()">Cancel</button>
+      <button type="button" class="msf-btn-save" id="confirm-submit-btn" onclick="document.getElementById('msf-form').submit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M9 11l3 3L22 4"/></svg>
+        Confirm &amp; Create
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+const CALC_URL = "{% url 'portal:hr_salary_calculate' %}";
+let calcTimer = null;
+
+// ── Step navigation ──
+function goStep(n) {
+  document.getElementById(`panel-${currentStep}`).classList.remove("active");
+  document.querySelectorAll(".msf-step").forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.remove("active","done");
+    if (s < n) el.classList.add("done");
+    else if (s === n) el.classList.add("active");
+  });
+  document.querySelectorAll(".msf-connector").forEach((el, i) => {
+    el.classList.toggle("done", i + 1 < n);
+  });
+  currentStep = n;
+  document.getElementById(`panel-${n}`).classList.add("active");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+// ── Required field validation before advancing ──
+const STEP_REQUIRED = {
+  1: [
+    {% if not emp %}{ id:"f-username", err:"err-username", msg:"Username is required" },{% endif %}
+    { id:"f-full_name",      err:"err-full_name",      msg:"Full name is required" },
+    { id:"f-official_email", err:"err-official_email", msg:"Official email is required" },
+  ],
+  2: [
+    { id:"f-employee_code",     err:"err-employee_code",     msg:"Employee code is required" },
+    { id:"f-department",        err:"err-department",        msg:"Department is required" },
+    { id:"f-designation",       err:"err-designation",       msg:"Designation is required" },
+    { id:"f-reporting_manager", err:"err-reporting_manager", msg:"Reporting manager is required" },
+    { id:"f-shift_master",      err:"err-shift_master",      msg:"Shift is required" },
+  ],
+};
+
+function tryNext(fromStep, toStep) {
+  const fields = STEP_REQUIRED[fromStep] || [];
+  let ok = true;
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    const errEl = document.getElementById(f.err);
+    if (!el) return;
+    const empty = !el.value.trim();
+    el.classList.toggle("has-error", empty);
+    if (errEl) errEl.style.display = empty ? "block" : "none";
+    if (empty) ok = false;
+  });
+  if (ok) {
+    // Clear any lingering errors
+    fields.forEach(f => {
+      const el = document.getElementById(f.id);
+      if (el) el.classList.remove("has-error");
+      const errEl = document.getElementById(f.err);
+      if (errEl) errEl.style.display = "none";
+    });
+    if (toStep === 5) { buildReview(); }
+    goStep(toStep);
+  } else {
+    // Scroll to first error
+    const firstErr = document.querySelector(`#panel-${fromStep} .has-error`);
+    if (firstErr) firstErr.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+}
+
+// Clear error on input
+document.addEventListener("input", e => {
+  if (e.target.classList.contains("hr-form-input") && e.target.value.trim()) {
+    e.target.classList.remove("has-error");
+    const errId = "err-" + e.target.name;
+    const errEl = document.getElementById(errId);
+    if (errEl) errEl.style.display = "none";
+  }
+});
+
+// ── Salary calc ──
+function scheduleCalc() {
+  clearTimeout(calcTimer);
+  calcTimer = setTimeout(runCalc, 400);
+}
+function fmtPKR(v) {
+  if (!v || v === "0.00" || v === 0) return "0";
+  return Number(v).toLocaleString("en-PK",{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+function runCalc() {
+  const gross = document.getElementById("gross_salary_input").value;
+  if (!gross || Number(gross) <= 0) {
+    document.getElementById("calc-status").textContent = "Enter gross salary to calculate";
+    return;
+  }
+  document.getElementById("calc-status").textContent = "Calculating…";
+  fetch(`${CALC_URL}?gross=${encodeURIComponent(gross)}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) { document.getElementById("calc-status").textContent = d.error; return; }
+      document.getElementById("p-basic").textContent = fmtPKR(d.basic_salary);
+      document.getElementById("p-hra").textContent   = fmtPKR(d.house_rent_allowance);
+      document.getElementById("p-med").textContent   = fmtPKR(d.medical_allowance);
+      document.getElementById("p-util").textContent  = fmtPKR(d.utility_allowance);
+      document.getElementById("p-annual-taxable").textContent = fmtPKR(d.annual_taxable_income);
+      document.getElementById("p-annual-tax").textContent     = fmtPKR(d.annual_tax);
+      document.getElementById("p-tax").textContent  = fmtPKR(d.monthly_income_tax);
+      document.getElementById("p-net").textContent  = "PKR " + fmtPKR(d.net_salary);
+      document.getElementById("f-basic").value = d.basic_salary;
+      document.getElementById("f-hra").value   = d.house_rent_allowance;
+      document.getElementById("f-med").value   = d.medical_allowance;
+      document.getElementById("f-tax").value   = d.monthly_income_tax;
+      document.getElementById("calc-status").textContent = "Based on active tax slabs";
+    });
+}
+
+// ── Review builder ──
+function getVal(name) {
+  const el = document.querySelector(`[name="${name}"]`);
+  if (!el) return "—";
+  if (el.tagName === "SELECT") return el.options[el.selectedIndex]?.text || "—";
+  return el.value || "—";
+}
+function reviewSection(title, rows) {
+  return `<div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+                color:var(--muted-2);margin-bottom:12px;padding-bottom:8px;
+                border-bottom:2px solid var(--border);">${title}</div>
+    ${rows.map(([label,val]) => `
+      <div style="display:flex;justify-content:space-between;align-items:baseline;
+                  padding:7px 0;font-size:13px;border-bottom:1px solid var(--surface);">
+        <span style="color:var(--muted);flex-shrink:0;margin-right:12px;">${label}</span>
+        <span style="font-weight:600;color:var(--text);text-align:right;">${val}</span>
+      </div>`).join("")}
+  </div>`;
+}
+function buildReview() {
+  const gross = getVal("gross_salary_input");
+  document.getElementById("review-content").innerHTML = [
+    reviewSection("Personal", [
+      ["Full Name",      getVal("full_name")],
+      ["Gender",         getVal("gender")],
+      ["Date of Birth",  getVal("date_of_birth")],
+      ["CNIC",           getVal("cnic")],
+      ["Phone",          getVal("personal_phone")],
+      ["Official Email", getVal("official_email")],
+    ]),
+    reviewSection("Employment", [
+      ["Employee Code", getVal("employee_code")],
+      ["Department",    getVal("department")],
+      ["Designation",   getVal("designation")],
+      ["Type",          getVal("employment_type")],
+      ["Status",        getVal("employment_status")],
+      ["Joining Date",  getVal("joining_date")],
+      ["Role",          getVal("role")],
+      ["Manager",       getVal("reporting_manager")],
+    ]),
+    reviewSection("Salary", [
+      ["Gross Salary",  gross !== "—" ? "PKR " + Number(gross).toLocaleString() : "—"],
+      ["Payment Mode",  getVal("payment_mode")],
+      ["Bank",          getVal("bank_name")],
+      ["Account No.",   getVal("account_number")],
+    ]),
+    reviewSection("Documents", [
+      ["CNIC Copy",    document.querySelector('[name="cnic_copy"]')?.files?.length ? "✓ Selected" : "{% if emp.cnic_copy %}✓ On file{% else %}—{% endif %}"],
+      ["Resume",       document.querySelector('[name="resume"]')?.files?.length   ? "✓ Selected" : "{% if emp.resume %}✓ On file{% else %}—{% endif %}"],
+      ["Offer Letter", document.querySelector('[name="offer_letter"]')?.files?.length ? "✓ Selected" : "{% if emp.offer_letter %}✓ On file{% else %}—{% endif %}"],
+      ["Contract",     document.querySelector('[name="contract"]')?.files?.length ? "✓ Selected" : "{% if emp.contract %}✓ On file{% else %}—{% endif %}"],
+    ]),
+  ].join("");
+}
+
+// ── Confirmation modal ──
+function openConfirm() {
+  const name  = getVal("full_name");
+  const code  = getVal("employee_code");
+  const dept  = getVal("department");
+  const desig = getVal("designation");
+  const email = getVal("official_email");
+  const gross = getVal("gross_salary_input");
+  document.getElementById("confirm-summary").innerHTML = `
+    <div class="confirm-summary-item"><div class="cs-label">Full Name</div><div class="cs-val">${name}</div></div>
+    <div class="confirm-summary-item"><div class="cs-label">Employee Code</div><div class="cs-val">${code}</div></div>
+    <div class="confirm-summary-item"><div class="cs-label">Department</div><div class="cs-val">${dept}</div></div>
+    <div class="confirm-summary-item"><div class="cs-label">Designation</div><div class="cs-val">${desig}</div></div>
+    <div class="confirm-summary-item"><div class="cs-label">Official Email</div><div class="cs-val">${email}</div></div>
+    <div class="confirm-summary-item"><div class="cs-label">Gross Salary</div><div class="cs-val">${gross !== "—" ? "PKR " + Number(gross).toLocaleString() : "—"}</div></div>
+  `;
+  {% if not emp %}
+  const sendEmail = document.getElementById("id_send_setup_email")?.checked;
+  const noteEl = document.getElementById("confirm-email-note");
+  if (noteEl) {
+    noteEl.innerHTML = sendEmail
+      ? `<strong>Password setup email will be sent</strong> to <strong>${email}</strong> — the employee can set their own password.`
+      : `<strong>No setup email.</strong> The employee will use the password you entered.`;
+  }
+  {% endif %}
+  document.getElementById("confirm-overlay").classList.add("open");
+}
+function closeConfirm() {
+  document.getElementById("confirm-overlay").classList.remove("open");
+}
+// Close on overlay click
+document.getElementById("confirm-overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeConfirm();
+});
+
+// ── Role change → clear salary for Approver/Viewer ──
+const NON_SALARY_ROLES = ["Approver", "Viewer"];
+function onRoleChange(role) {
+  if (!NON_SALARY_ROLES.includes(role)) return;
+  const salaryFields = [
+    "gross_salary_input","basic_salary","house_rent_allowance",
+    "medical_allowance","conveyance_allowance","other_allowance",
+    "eobi_contribution","provident_fund_deduction","loan_installment",
+    "misc_deduction","advance_salary_repayment","f-tax"
+  ];
+  salaryFields.forEach(name => {
+    const el = document.getElementById(name) || document.querySelector(`[name="${name}"]`);
+    if (el) el.value = "0.00";
+  });
+  // Clear salary preview
+  ["p-basic","p-hra","p-med","p-util","p-annual-taxable","p-annual-tax","p-tax","p-net"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = "—";
+  });
+  const calcStatus = document.getElementById("calc-status");
+  if (calcStatus) calcStatus.textContent = "Salary not applicable for this role";
+}
+
+// ── Quick-jump menu toggle ──
+function toggleJumpMenu() {
+  const menu = document.getElementById("jump-menu");
+  if (menu) menu.classList.toggle("open");
+}
+document.addEventListener("click", e => {
+  const menu = document.getElementById("jump-menu");
+  if (menu && !e.target.closest(".step-jump")) menu.classList.remove("open");
+});
+
+// Run calc on page load if value is present
+window.addEventListener("DOMContentLoaded", () => {
+  const g = document.getElementById("gross_salary_input");
+  if (g && Number(g.value) > 0) runCalc();
+});
+</script>
+{% endblock %}

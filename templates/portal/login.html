@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Login — Digilatics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}">
+</head>
+<body>
+<div class="ep-login-page">
+  <div class="ep-login-box">
+
+    <div class="ep-login-logo">
+      <div class="ep-login-logo-text">Digilatics</div>
+      <div style="font-size:12px;color:#9CA3AF;margin-top:4px;font-weight:500;">HR &amp; Employee Portal</div>
+    </div>
+
+    <div class="ep-login-title">Welcome back</div>
+    <div class="ep-login-sub">Sign in with your email or username</div>
+
+    {% if error %}
+    <div class="ep-login-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="ep-login-form">
+      {% csrf_token %}
+
+      <div>
+        <label class="ep-login-label" for="id_username">Email or Username</label>
+        <input
+          class="ep-login-input"
+          type="text"
+          id="id_username"
+          name="username"
+          autocomplete="username"
+          autofocus
+          placeholder="e.g. sana@digilatics.com or 10033"
+          required
+        >
+      </div>
+
+      <div>
+        <label class="ep-login-label" for="id_password">Password</label>
+        <input
+          class="ep-login-input"
+          type="password"
+          id="id_password"
+          name="password"
+          autocomplete="current-password"
+          placeholder="Enter your password"
+          required
+        >
+      </div>
+
+      <button type="submit" class="ep-login-btn">Sign In</button>
+    </form>
+
+    <div class="ep-login-admin">
+      You'll be redirected to the right dashboard automatically.
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

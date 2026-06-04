@@ -1,0 +1,244 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ════════════════════════════════════════════════════════════
+   PAYROLL RUN CHANGELIST  —  ss-* design language
+   ════════════════════════════════════════════════════════════ */
+.pr-header {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  padding:20px 24px; display:flex; align-items:center; gap:18px;
+  margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.pr-header-icon {
+  width:56px; height:56px; border-radius:16px; flex-shrink:0;
+  background:linear-gradient(135deg,#F58400,#C86A00);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 12px rgba(245,132,0,0.30);
+}
+.pr-header-icon svg { width:26px; height:26px; stroke:#fff; }
+.pr-header-title { font-size:18px; font-weight:800; color:#111827; line-height:1.2; }
+.pr-header-sub   { font-size:12.5px; color:#6B7280; margin-top:3px; }
+.pr-header-links { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0; }
+.pr-header-link {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#fff; border:1.5px solid #E5E7EB; border-radius:9px;
+  padding:7px 14px; font-size:12.5px; font-weight:600; color:#6B7280;
+  text-decoration:none; transition:all 0.15s; box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.pr-header-link:hover { border-color:#F58400; color:#C86A00; background:#FFF8EE; }
+
+/* KPI row */
+.pr-kpi-row {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:18px;
+}
+@media(max-width:1100px){ .pr-kpi-row{ grid-template-columns:repeat(3,1fr); } }
+@media(max-width:700px) { .pr-kpi-row{ grid-template-columns:repeat(2,1fr); } }
+.pr-kpi {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  display:flex; flex-direction:column; gap:5px; position:relative; overflow:hidden;
+}
+.pr-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
+.pr-kpi-runs::before   { background:#3B82F6; }
+.pr-kpi-gross::before  { background:#F58400; }
+.pr-kpi-net::before    { background:#16A34A; }
+.pr-kpi-tax::before    { background:#2563EB; }
+.pr-kpi-status::before { background:#7C3AED; }
+.pr-kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.pr-kpi-icon svg { width:16px; height:16px; }
+.pr-kpi-runs   .pr-kpi-icon { background:#EFF6FF; color:#3B82F6; }
+.pr-kpi-gross  .pr-kpi-icon { background:#FFF8EE; color:#F58400; }
+.pr-kpi-net    .pr-kpi-icon { background:#DCFCE7; color:#16A34A; }
+.pr-kpi-tax    .pr-kpi-icon { background:#DBEAFE; color:#2563EB; }
+.pr-kpi-status .pr-kpi-icon { background:#F3E8FF; color:#7C3AED; }
+.pr-kpi-label { font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
+.pr-kpi-value { font-size:20px; font-weight:800; line-height:1; letter-spacing:-0.02em; color:#111827; }
+.pr-kpi-sub   { font-size:11px; color:#9CA3AF; }
+.pr-kpi-runs   .pr-kpi-value { color:#2563EB; }
+.pr-kpi-gross  .pr-kpi-value { color:#C86A00; }
+.pr-kpi-net    .pr-kpi-value { color:#16A34A; }
+.pr-kpi-tax    .pr-kpi-value { color:#2563EB; }
+.pr-kpi-status .pr-kpi-value { color:#7C3AED; }
+
+/* Monthly timeline cards */
+.pr-timeline-row {
+  display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:18px;
+}
+@media(max-width:1100px){ .pr-timeline-row{ grid-template-columns:repeat(3,1fr); } }
+@media(max-width:700px) { .pr-timeline-row{ grid-template-columns:repeat(2,1fr); } }
+.pr-month-card {
+  background:#fff; border:1px solid #E5E7EB; border-radius:12px;
+  padding:12px 14px; box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  display:flex; flex-direction:column; gap:5px; text-decoration:none;
+  transition:border-color 0.15s, box-shadow 0.15s;
+}
+.pr-month-card:hover { border-color:#F58400; box-shadow:0 2px 8px rgba(245,132,0,0.12); }
+.pr-month-card.current { border-color:#F58400; background:#FFFBF2; }
+.pr-month-card.no-run { opacity:0.5; }
+.pr-month-label { font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; }
+.pr-month-gross { font-size:13px; font-weight:800; color:#111827; }
+.pr-month-sub { font-size:10.5px; color:#9CA3AF; }
+.pr-month-badge {
+  font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; width:fit-content;
+}
+.pr-badge-draft    { background:#F3F4F6; color:#6B7280; }
+.pr-badge-approved { background:#DCFCE7; color:#16A34A; }
+.pr-badge-posted   { background:#DBEAFE; color:#2563EB; }
+.pr-badge-locked   { background:#F3E8FF; color:#7C3AED; }
+.pr-badge-pending  { background:#FFF8EE; color:#F58400; }
+.pr-badge-none     { background:#F3F4F6; color:#9CA3AF; }
+
+/* Annual strip */
+.pr-annual-strip {
+  background:#111827; border-radius:12px; padding:16px 20px;
+  display:flex; gap:0; overflow:hidden; margin-bottom:18px;
+}
+.pr-annual-item {
+  flex:1; text-align:center; border-right:1px solid rgba(255,255,255,0.1); padding:0 12px;
+}
+.pr-annual-item:last-child { border-right:none; }
+.pr-annual-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; }
+.pr-annual-value { font-size:15px; font-weight:800; color:#fff; margin-top:5px; letter-spacing:-0.01em; }
+
+/* Table label */
+.pr-table-label {
+  display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700;
+  color:#6B7280; text-transform:uppercase; letter-spacing:0.09em; margin-bottom:10px;
+}
+.pr-tl-dot { width:8px; height:8px; border-radius:50%; background:#F58400; }
+
+#changelist-filter { display:none !important; }
+#changelist { margin-right:0 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="pr-header">
+  <div class="pr-header-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <path d="M8 21h8M12 17v4"/>
+      <line x1="6" y1="8" x2="10" y2="8"/><line x1="6" y1="11" x2="9" y2="11"/>
+      <circle cx="16" cy="8" r="2"/><path d="M14 12s.5-1 2-1 2 1 2 1"/>
+    </svg>
+  </div>
+  <div>
+    <div class="pr-header-title">Payroll Runs</div>
+    <div class="pr-header-sub">Monthly payroll cycle management — {{ pr_today_label }}</div>
+  </div>
+  <div class="pr-header-links">
+    <a href="{% url 'admin:salary_salarysetup_changelist' %}" class="pr-header-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Salary Setups
+    </a>
+    <a href="{% url 'admin:salary_payslip_changelist' %}" class="pr-header-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      Payslips
+    </a>
+    <a href="{% url 'admin:salary_taxyear_changelist' %}" class="pr-header-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Tax Years
+    </a>
+  </div>
+</div>
+
+<div class="pr-kpi-row">
+  <div class="pr-kpi pr-kpi-runs">
+    <div class="pr-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div class="pr-kpi-label">Total Runs</div>
+    <div class="pr-kpi-value">{{ pr_total_runs }}</div>
+    <div class="pr-kpi-sub">all time</div>
+  </div>
+  <div class="pr-kpi pr-kpi-gross">
+    <div class="pr-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div class="pr-kpi-label">YTD Gross</div>
+    <div class="pr-kpi-value">PKR {{ pr_ytd_gross|floatformat:0 }}</div>
+    <div class="pr-kpi-sub">current year payroll</div>
+  </div>
+  <div class="pr-kpi pr-kpi-net">
+    <div class="pr-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="pr-kpi-label">YTD Net Pay</div>
+    <div class="pr-kpi-value">PKR {{ pr_ytd_net|floatformat:0 }}</div>
+    <div class="pr-kpi-sub">after all deductions</div>
+  </div>
+  <div class="pr-kpi pr-kpi-tax">
+    <div class="pr-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    </div>
+    <div class="pr-kpi-label">YTD Tax</div>
+    <div class="pr-kpi-value">PKR {{ pr_ytd_tax|floatformat:0 }}</div>
+    <div class="pr-kpi-sub">income tax withheld</div>
+  </div>
+  <div class="pr-kpi pr-kpi-status">
+    <div class="pr-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="pr-kpi-label">Current Month</div>
+    <div class="pr-kpi-value">{{ pr_today_label }}</div>
+    <div class="pr-kpi-sub">{% if pr_current_run %}{{ pr_current_run.status }}{% else %}No run yet{% endif %}</div>
+  </div>
+</div>
+
+<!-- Monthly Timeline -->
+<div class="pr-timeline-row">
+  {% for row in pr_monthly_rows %}
+  <{% if row.run_pk %}a href="{% url 'admin:salary_payrollrun_change' row.run_pk %}"{% else %}div{% endif %} class="pr-month-card{% if row.is_current %} current{% endif %}{% if not row.run_pk %} no-run{% endif %}">
+    <div class="pr-month-label">{{ row.label }}</div>
+    <div class="pr-month-gross">{% if row.gross %}PKR {{ row.gross|floatformat:0 }}{% else %}—{% endif %}</div>
+    <div class="pr-month-sub">{{ row.emp_count }} emp · {{ row.finalized }} final</div>
+    <span class="pr-month-badge {% if row.status == 'APPROVED' %}pr-badge-approved{% elif row.status == 'POSTED' %}pr-badge-posted{% elif row.status == 'LOCKED' %}pr-badge-locked{% elif row.status == 'PENDING_APPROVAL' %}pr-badge-pending{% elif row.status == 'DRAFT' %}pr-badge-draft{% else %}pr-badge-none{% endif %}">
+      {% if row.status %}{{ row.status }}{% else %}No Run{% endif %}
+    </span>
+  </{% if row.run_pk %}a{% else %}div{% endif %}>
+  {% endfor %}
+</div>
+
+<!-- Annual strip -->
+<div class="pr-annual-strip">
+  <div class="pr-annual-item">
+    <div class="pr-annual-label">Annual Gross Payroll</div>
+    <div class="pr-annual-value">PKR {{ pr_ytd_gross|floatformat:0 }}</div>
+  </div>
+  <div class="pr-annual-item">
+    <div class="pr-annual-label">Annual Tax Withheld</div>
+    <div class="pr-annual-value">PKR {{ pr_ytd_tax|floatformat:0 }}</div>
+  </div>
+  <div class="pr-annual-item">
+    <div class="pr-annual-label">Annual Net Payroll</div>
+    <div class="pr-annual-value">PKR {{ pr_ytd_net|floatformat:0 }}</div>
+  </div>
+  <div class="pr-annual-item">
+    <div class="pr-annual-label">Total Payroll Runs</div>
+    <div class="pr-annual-value">{{ pr_total_runs }} Runs</div>
+  </div>
+  <div class="pr-annual-item">
+    <div class="pr-annual-label">Current Period</div>
+    <div class="pr-annual-value">{{ pr_today_label }}</div>
+  </div>
+</div>
+
+<div class="pr-table-label">
+  <span class="pr-tl-dot"></span>
+  All Payroll Runs
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block result_list %}
+<div style="border-radius:14px;overflow:hidden;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+  {{ block.super }}
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

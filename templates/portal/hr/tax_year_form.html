@@ -1,0 +1,328 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}{% if obj %}Edit{% else %}Add{% endif %} Tax Year — Digilatics HR{% endblock %}
+{% block page_title %}{% if obj %}Edit{% else %}Add{% endif %} Tax Year{% endblock %}
+
+{% block content %}
+<div>
+  <div style="margin-bottom:16px;"><a href="{% url 'portal:hr_tax_years' %}" class="ep-btn-sm" style="text-decoration:none;">← Back</a></div>
+
+  <!-- Tax Year Details -->
+  <div class="ep-card" style="margin-bottom:24px;">
+    <div class="ep-card-body">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+        <div class="hr-form-group">
+          <label class="hr-form-label">Fiscal Year <span class="hr-required">*</span></label>
+          <input type="text" name="fiscal_year" class="hr-form-input" placeholder="e.g. 2024-25" value="{{ obj.fiscal_year|default:'' }}" required>
+        </div>
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Effective From</label>
+            <input type="date" name="effective_from" class="hr-form-input" value="{{ obj.effective_from|date:'Y-m-d'|default:'' }}">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Effective To</label>
+            <input type="date" name="effective_to" class="hr-form-input" value="{{ obj.effective_to|date:'Y-m-d'|default:'' }}">
+          </div>
+        </div>
+        <div class="hr-form-group">
+          <label class="hr-form-label">Notes</label>
+          <textarea name="notes" class="hr-form-input hr-textarea" rows="2">{{ obj.notes|default:'' }}</textarea>
+        </div>
+        <label class="hr-checkbox-label" style="margin-bottom:16px;">
+          <input type="checkbox" name="is_active" {% if obj.is_active or not obj %}checked{% endif %}> Active
+        </label>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save Tax Year</button>
+          <a href="{% url 'portal:hr_tax_years' %}" class="hr-modal-cancel" style="text-decoration:none;display:inline-flex;align-items:center;height:42px;padding:0 20px;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if obj %}
+  <!-- Tax Slabs -->
+  <div class="ep-card">
+    <div class="ep-card-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <h3 style="margin:0;font-size:16px;font-weight:600;">Tax Slabs <span id="slab-count" style="font-size:13px;color:#6b7280;font-weight:400;">({{ slabs|length }})</span></h3>
+          <p style="margin:4px 0 0;font-size:12px;color:#9ca3af;">Income brackets and their tax rates for {{ obj.fiscal_year }}</p>
+        </div>
+        <button type="button" class="hr-filter-btn" style="height:36px;padding:0 16px;font-size:13px;" onclick="showSlabForm()">+ Add Slab</button>
+      </div>
+
+      <!-- Add / Edit Slab Form -->
+      <div id="slab-form-wrap" style="display:none;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:18px;margin-bottom:18px;">
+        <div style="font-weight:600;font-size:14px;margin-bottom:14px;" id="slab-form-title">Add Tax Slab</div>
+        <div id="slab-form-error" style="display:none;color:#dc2626;font-size:13px;margin-bottom:10px;background:#fef2f2;padding:8px 12px;border-radius:6px;"></div>
+
+        <input type="hidden" id="slab-edit-id" value="">
+
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Slab Name <span class="hr-required">*</span></label>
+            <input type="text" id="sf-name" class="hr-form-input" placeholder="e.g. Up to 600,000">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Sort Order</label>
+            <input type="number" id="sf-sort" class="hr-form-input" value="0" min="0">
+          </div>
+        </div>
+
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Annual Min Income (PKR)</label>
+            <input type="number" id="sf-min" class="hr-form-input" value="0" min="0" step="1">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Annual Max Income (PKR) <span style="color:#9ca3af;font-weight:400;font-size:11px;">leave blank for unlimited</span></label>
+            <input type="number" id="sf-max" class="hr-form-input" placeholder="Unlimited" min="0" step="1">
+          </div>
+        </div>
+
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Taxable Excess Over (PKR)</label>
+            <input type="number" id="sf-excess" class="hr-form-input" value="0" min="0" step="1">
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Base Tax (PKR)</label>
+            <input type="number" id="sf-base" class="hr-form-input" value="0" min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Rate % <span style="color:#9ca3af;font-weight:400;font-size:11px;">applied on excess</span></label>
+            <input type="number" id="sf-rate" class="hr-form-input" value="0" min="0" max="100" step="0.01">
+          </div>
+          <div class="hr-form-group"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button type="button" class="hr-filter-btn" style="height:36px;padding:0 22px;font-size:13px;" onclick="submitSlab()">Save Slab</button>
+          <button type="button" class="hr-modal-cancel" style="height:36px;padding:0 16px;font-size:13px;cursor:pointer;border:none;background:none;" onclick="hideSlabForm()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Slabs Table -->
+      <div id="slabs-table-wrap">
+        {% if slabs %}
+        <div style="overflow-x:auto;">
+          <table class="hr-table" id="slabs-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Slab Name</th>
+                <th>Min Income</th>
+                <th>Max Income</th>
+                <th>Excess Over</th>
+                <th>Base Tax</th>
+                <th>Rate %</th>
+                <th style="width:100px;"></th>
+              </tr>
+            </thead>
+            <tbody id="slabs-tbody">
+              {% for s in slabs %}
+              <tr id="slab-row-{{ s.pk }}"
+                  data-id="{{ s.pk }}"
+                  data-name="{{ s.name }}"
+                  data-min="{{ s.annual_min_income }}"
+                  data-max="{{ s.annual_max_income|default:'' }}"
+                  data-excess="{{ s.taxable_excess_over }}"
+                  data-base="{{ s.base_tax }}"
+                  data-rate="{{ s.rate_percent }}"
+                  data-sort="{{ s.sort_order }}">
+                <td style="color:#9ca3af;font-size:12px;">{{ s.sort_order }}</td>
+                <td style="font-weight:600;font-size:13px;">{{ s.name }}</td>
+                <td style="font-size:13px;">{{ s.annual_min_income|floatformat:0 }}</td>
+                <td style="font-size:13px;">{% if s.annual_max_income %}{{ s.annual_max_income|floatformat:0 }}{% else %}<span style="color:#9ca3af;">—</span>{% endif %}</td>
+                <td style="font-size:13px;">{{ s.taxable_excess_over|floatformat:0 }}</td>
+                <td style="font-size:13px;">{{ s.base_tax|floatformat:0 }}</td>
+                <td style="font-size:13px;font-weight:600;color:#ea580c;">{{ s.rate_percent }}%</td>
+                <td style="white-space:nowrap;">
+                  <button type="button" class="ep-btn-sm" onclick="editSlab(this.closest('tr'))" style="margin-right:4px;">Edit</button>
+                  <button type="button" class="ep-btn-sm" style="background:#fef2f2;color:#dc2626;border:none;cursor:pointer;" onclick="deleteSlab({{ s.pk }}, '{{ s.name|escapejs }}')">Delete</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p id="no-slabs-msg" style="color:#6b7280;font-size:14px;margin:0;">No tax slabs yet. Add slabs using the button above.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TAX_YEAR_PK = {{ obj.pk }};
+    const ADD_SLAB_URL = "{% url 'portal:hr_tax_slab_inline_add' obj.pk %}";
+    const CSRF = "{{ csrf_token }}";
+
+    function fmt(v) { return v !== "" && v !== null && v !== undefined ? Number(v).toLocaleString() : "—"; }
+
+    function showSlabForm(clear=true) {
+      if (clear) {
+        document.getElementById("slab-edit-id").value = "";
+        document.getElementById("slab-form-title").textContent = "Add Tax Slab";
+        document.getElementById("sf-name").value = "";
+        document.getElementById("sf-sort").value = "0";
+        document.getElementById("sf-min").value = "0";
+        document.getElementById("sf-max").value = "";
+        document.getElementById("sf-excess").value = "0";
+        document.getElementById("sf-base").value = "0";
+        document.getElementById("sf-rate").value = "0";
+      }
+      document.getElementById("slab-form-error").style.display = "none";
+      document.getElementById("slab-form-wrap").style.display = "block";
+      document.getElementById("sf-name").focus();
+    }
+
+    function hideSlabForm() {
+      document.getElementById("slab-form-wrap").style.display = "none";
+    }
+
+    function editSlab(row) {
+      document.getElementById("slab-edit-id").value = row.dataset.id;
+      document.getElementById("slab-form-title").textContent = "Edit Tax Slab";
+      document.getElementById("sf-name").value = row.dataset.name;
+      document.getElementById("sf-sort").value = row.dataset.sort;
+      document.getElementById("sf-min").value = row.dataset.min;
+      document.getElementById("sf-max").value = row.dataset.max;
+      document.getElementById("sf-excess").value = row.dataset.excess;
+      document.getElementById("sf-base").value = row.dataset.base;
+      document.getElementById("sf-rate").value = row.dataset.rate;
+      showSlabForm(false);
+      document.getElementById("slab-form-wrap").scrollIntoView({behavior:"smooth", block:"nearest"});
+    }
+
+    function submitSlab() {
+      const editId = document.getElementById("slab-edit-id").value;
+      const name = document.getElementById("sf-name").value.trim();
+      const errEl = document.getElementById("slab-form-error");
+      if (!name) { errEl.textContent = "Slab name is required."; errEl.style.display = "block"; return; }
+      errEl.style.display = "none";
+
+      const body = new URLSearchParams({
+        name,
+        annual_min_income: document.getElementById("sf-min").value || "0",
+        annual_max_income: document.getElementById("sf-max").value,
+        taxable_excess_over: document.getElementById("sf-excess").value || "0",
+        base_tax: document.getElementById("sf-base").value || "0",
+        rate_percent: document.getElementById("sf-rate").value || "0",
+        sort_order: document.getElementById("sf-sort").value || "0",
+      });
+
+      const url = editId ? `/hr/salary/tax-slabs/${editId}/update/` : ADD_SLAB_URL;
+
+      fetch(url, {
+        method: "POST",
+        headers: {"X-CSRFToken": CSRF, "Content-Type": "application/x-www-form-urlencoded"},
+        body: body.toString()
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { errEl.textContent = data.error; errEl.style.display = "block"; return; }
+        if (editId) {
+          updateSlabRow(editId, {
+            name, sort_order: document.getElementById("sf-sort").value,
+            annual_min_income: document.getElementById("sf-min").value,
+            annual_max_income: document.getElementById("sf-max").value,
+            taxable_excess_over: document.getElementById("sf-excess").value,
+            base_tax: document.getElementById("sf-base").value,
+            rate_percent: document.getElementById("sf-rate").value,
+          });
+        } else {
+          appendSlabRow(data);
+          updateSlabCount(1);
+          const noMsg = document.getElementById("no-slabs-msg");
+          if (noMsg) noMsg.remove();
+        }
+        hideSlabForm();
+      })
+      .catch(() => { errEl.textContent = "An error occurred. Please try again."; errEl.style.display = "block"; });
+    }
+
+    function appendSlabRow(d) {
+      let tbody = document.getElementById("slabs-tbody");
+      if (!tbody) {
+        document.getElementById("slabs-table-wrap").innerHTML = `
+          <div style="overflow-x:auto;">
+            <table class="hr-table" id="slabs-table">
+              <thead><tr><th>#</th><th>Slab Name</th><th>Min Income</th><th>Max Income</th><th>Excess Over</th><th>Base Tax</th><th>Rate %</th><th style="width:100px;"></th></tr></thead>
+              <tbody id="slabs-tbody"></tbody>
+            </table>
+          </div>`;
+        tbody = document.getElementById("slabs-tbody");
+      }
+      const row = document.createElement("tr");
+      row.id = `slab-row-${d.id}`;
+      row.dataset.id = d.id; row.dataset.name = d.name;
+      row.dataset.min = d.annual_min_income; row.dataset.max = d.annual_max_income;
+      row.dataset.excess = d.taxable_excess_over; row.dataset.base = d.base_tax;
+      row.dataset.rate = d.rate_percent; row.dataset.sort = d.sort_order;
+      row.innerHTML = slabRowHtml(d);
+      tbody.appendChild(row);
+    }
+
+    function updateSlabRow(id, d) {
+      const row = document.getElementById(`slab-row-${id}`);
+      if (!row) return;
+      row.dataset.name = d.name; row.dataset.min = d.annual_min_income;
+      row.dataset.max = d.annual_max_income; row.dataset.excess = d.taxable_excess_over;
+      row.dataset.base = d.base_tax; row.dataset.rate = d.rate_percent; row.dataset.sort = d.sort_order;
+      row.innerHTML = slabRowHtml({id, ...d});
+    }
+
+    function slabRowHtml(d) {
+      const maxCell = d.annual_max_income ? Number(d.annual_max_income).toLocaleString() : '<span style="color:#9ca3af;">—</span>';
+      return `
+        <td style="color:#9ca3af;font-size:12px;">${d.sort_order||0}</td>
+        <td style="font-weight:600;font-size:13px;">${d.name}</td>
+        <td style="font-size:13px;">${Number(d.annual_min_income||0).toLocaleString()}</td>
+        <td style="font-size:13px;">${maxCell}</td>
+        <td style="font-size:13px;">${Number(d.taxable_excess_over||0).toLocaleString()}</td>
+        <td style="font-size:13px;">${Number(d.base_tax||0).toLocaleString()}</td>
+        <td style="font-size:13px;font-weight:600;color:#ea580c;">${d.rate_percent}%</td>
+        <td style="white-space:nowrap;">
+          <button type="button" class="ep-btn-sm" onclick="editSlab(this.closest('tr'))" style="margin-right:4px;">Edit</button>
+          <button type="button" class="ep-btn-sm" style="background:#fef2f2;color:#dc2626;border:none;cursor:pointer;" onclick="deleteSlab(${d.id}, '${String(d.name).replace(/'/g,"\\'")}')">Delete</button>
+        </td>`;
+    }
+
+    function deleteSlab(pk, name) {
+      if (!confirm(`Delete slab "${name}"? This cannot be undone.`)) return;
+      fetch(`/hr/salary/tax-slabs/${pk}/delete/`, {
+        method: "POST", headers: {"X-CSRFToken": CSRF}
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { alert(data.error); return; }
+        document.getElementById(`slab-row-${pk}`).remove();
+        updateSlabCount(-1);
+        const tbody = document.getElementById("slabs-tbody");
+        if (tbody && tbody.children.length === 0) {
+          document.getElementById("slabs-table-wrap").innerHTML = `<p id="no-slabs-msg" style="color:#6b7280;font-size:14px;margin:0;">No tax slabs yet. Add slabs using the button above.</p>`;
+        }
+      });
+    }
+
+    function updateSlabCount(delta) {
+      const el = document.getElementById("slab-count");
+      const m = el.textContent.match(/\d+/);
+      el.textContent = `(${(m ? parseInt(m[0]) : 0) + delta})`;
+    }
+  </script>
+  {% else %}
+  <div class="ep-card" style="background:#f9fafb;">
+    <div class="ep-card-body" style="color:#6b7280;font-size:14px;">
+      Save the tax year first, then you can add tax slabs.
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'salary/css/salary_admin.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">Salary</a>
+  &rsaquo; <a href="{% url 'admin:salary_payslip_changelist' %}">Payslips</a>
+  &rsaquo; {{ employee.full_name }}
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ps-page">
+
+  <!-- ── Top bar ── -->
+  <div class="ps-topbar">
+    <div class="ps-topbar-left">
+      <h1 class="ps-page-title">Payslip History</h1>
+      <span class="ps-page-sub">{{ employee.full_name }}</span>
+    </div>
+    <div class="ps-topbar-right">
+      <a href="{% url 'admin:salary_payslip_changelist' %}?employee__id__exact={{ employee.pk }}" class="ps-btn ps-btn-outline">
+        All Payslips
+      </a>
+      <a href="{% url 'admin:salary_payslip_changelist' %}" class="ps-btn ps-btn-outline">
+        ← Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Employee profile card ── -->
+  <div class="ps-profile-card">
+    <div class="ps-profile-left">
+      {% if employee.profile_photo %}
+      <img src="{{ employee.profile_photo.url }}" alt="{{ employee.full_name }}" class="ps-profile-avatar">
+      {% else %}
+      <div class="ps-profile-avatar ps-profile-avatar-ph">{{ employee.full_name|first }}</div>
+      {% endif %}
+      <div class="ps-profile-info">
+        <div class="ps-profile-name">{{ employee.full_name }}</div>
+        <div class="ps-profile-meta">
+          <span class="ps-meta-chip ps-meta-code">{{ employee.employee_code }}</span>
+          {% if employee.department %}<span class="ps-meta-chip">{{ employee.department }}</span>{% endif %}
+          {% if employee.designation %}<span class="ps-meta-chip">{{ employee.designation }}</span>{% endif %}
+          {% if employee.employment_type %}<span class="ps-meta-chip">{{ employee.employment_type }}</span>{% endif %}
+        </div>
+        {% if employee.bank_name or employee.account_number %}
+        <div class="ps-bank-row">
+          {% if employee.bank_name %}<span class="ps-bank-item">🏦 {{ employee.bank_name }}</span>{% endif %}
+          {% if employee.account_number %}<span class="ps-bank-item">{{ employee.account_number }}</span>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="ps-profile-right">
+      <div class="ps-ytd-badge">
+        <div class="ps-ytd-label">{{ selected_year }} Net Pay</div>
+        <div class="ps-ytd-value">PKR {{ ytd_net|floatformat:0 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Year selector ── -->
+  {% if years %}
+  <div class="ps-year-tabs">
+    {% for yr in years %}
+    <a href="?year={{ yr }}"
+       class="ps-year-tab {% if yr == selected_year %}ps-year-tab--active{% endif %}">
+      {{ yr }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── YTD KPI cards ── -->
+  <div class="ps-kpi-grid">
+    <div class="ps-kpi-card ps-kpi-gross">
+      <div class="ps-kpi-value">PKR {{ ytd_gross|floatformat:0 }}</div>
+      <div class="ps-kpi-label">{{ selected_year }} Gross</div>
+    </div>
+    <div class="ps-kpi-card ps-kpi-net">
+      <div class="ps-kpi-value">PKR {{ ytd_net|floatformat:0 }}</div>
+      <div class="ps-kpi-label">{{ selected_year }} Net Pay</div>
+    </div>
+    <div class="ps-kpi-card ps-kpi-tax">
+      <div class="ps-kpi-value">PKR {{ ytd_tax|floatformat:0 }}</div>
+      <div class="ps-kpi-label">{{ selected_year }} Tax</div>
+    </div>
+    <div class="ps-kpi-card ps-kpi-ded">
+      <div class="ps-kpi-value">PKR {{ ytd_ded|floatformat:0 }}</div>
+      <div class="ps-kpi-label">{{ selected_year }} Deductions</div>
+    </div>
+    <div class="ps-kpi-card ps-kpi-months">
+      <div class="ps-kpi-value">{{ months_processed }}</div>
+      <div class="ps-kpi-label">Months Processed</div>
+    </div>
+    <div class="ps-kpi-card ps-kpi-paid">
+      <div class="ps-kpi-value">{{ paid_months }}</div>
+      <div class="ps-kpi-label">Months Paid</div>
+    </div>
+  </div>
+
+  <!-- ── Month-by-month table ── -->
+  <div class="ps-table-card">
+    <div class="ps-table-header">
+      <span class="ps-table-title">Monthly Payslips — {{ selected_year }}</span>
+      <span class="ps-table-count">{{ months_processed }} record{{ months_processed|pluralize }}</span>
+    </div>
+    <div class="ps-table-wrapper">
+      <table class="ps-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th class="num">Gross</th>
+            <th class="num">Income Tax</th>
+            <th class="num">Deductions</th>
+            <th class="num">Net Pay</th>
+            <th class="num">Net %</th>
+            <th class="num">OT + Bonus</th>
+            <th class="num">Unpaid Days</th>
+            <th class="num">Status</th>
+            <th class="num">Payment</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in month_rows %}
+          <tr class="ps-tr{% if row.payslip.is_paid %} ps-tr-paid{% endif %}">
+            <td class="ps-month-cell">
+              <div class="ps-month-icon">{{ row.run.month|stringformat:"02d" }}</div>
+              <div>
+                <div class="ps-month-name">{{ row.month_label }}</div>
+                <div class="ps-run-ref">Run #{{ row.run.pk }}</div>
+              </div>
+            </td>
+            <td class="num">
+              <span class="ps-amt ps-amt-gross">PKR {{ row.gross|floatformat:0 }}</span>
+            </td>
+            <td class="num">
+              <span class="ps-amt ps-amt-tax">PKR {{ row.tax|floatformat:0 }}</span>
+            </td>
+            <td class="num">
+              <span class="ps-amt ps-amt-ded">PKR {{ row.deductions|floatformat:0 }}</span>
+            </td>
+            <td class="num">
+              <span class="ps-amt ps-amt-net">PKR {{ row.net|floatformat:0 }}</span>
+            </td>
+            <td class="num">
+              <div class="ps-net-bar-wrap">
+                <div class="ps-net-bar-track">
+                  <div class="ps-net-bar-fill" style="width:{{ row.net_pct }}%"></div>
+                </div>
+                <span class="ps-net-pct">{{ row.net_pct }}%</span>
+              </div>
+            </td>
+            <td class="num">
+              {% with ot_bonus=row.overtime|add:row.bonus %}
+              {% if ot_bonus > 0 %}
+              <span class="ps-amt ps-amt-extra">PKR {{ ot_bonus|floatformat:0 }}</span>
+              {% else %}
+              <span class="ps-muted">—</span>
+              {% endif %}
+              {% endwith %}
+            </td>
+            <td class="num">
+              {% if row.unpaid_days > 0 %}
+              <span class="ps-unpaid-badge">{{ row.unpaid_days|floatformat:1 }} days</span>
+              {% else %}
+              <span class="ps-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="num">
+              {% if row.payslip.status == "Finalized" %}
+              <span class="ps-status-badge ps-status-finalized">Finalized</span>
+              {% else %}
+              <span class="ps-status-badge ps-status-draft">Draft</span>
+              {% endif %}
+            </td>
+            <td class="num">
+              {% if row.payslip.is_paid %}
+              <span class="ps-pay-badge ps-pay-paid">✓ Paid</span>
+              {% else %}
+              <span class="ps-pay-badge ps-pay-unpaid">Pending</span>
+              {% endif %}
+            </td>
+            <td class="ps-actions-cell">
+              <a href="{% url 'admin:salary_payslip_change' row.payslip.pk %}"
+                 class="ps-edit-btn" title="Edit payslip">✏</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="11" class="ps-empty-cell">
+              No payslips found for {{ selected_year }}.
+              <a href="{% url 'admin:salary_payrollrun_changelist' %}">Manage payroll runs →</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        {% if month_rows %}
+        <tfoot>
+          <tr class="ps-tfoot">
+            <td><strong>Total {{ selected_year }}</strong></td>
+            <td class="num"><span class="ps-amt ps-amt-gross">PKR {{ ytd_gross|floatformat:0 }}</span></td>
+            <td class="num"><span class="ps-amt ps-amt-tax">PKR {{ ytd_tax|floatformat:0 }}</span></td>
+            <td class="num"><span class="ps-amt ps-amt-ded">PKR {{ ytd_ded|floatformat:0 }}</span></td>
+            <td class="num"><span class="ps-amt ps-amt-net"><strong>PKR {{ ytd_net|floatformat:0 }}</strong></span></td>
+            <td colspan="6"></td>
+          </tr>
+        </tfoot>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+
+</div><!-- /ps-page -->
+{% endblock %}

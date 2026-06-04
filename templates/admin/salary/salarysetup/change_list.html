@@ -1,0 +1,495 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'salary/css/salary_admin.css' %}">
+<style>
+/* ════════════════════════════════════════════════════════════
+   SALARY SETUP CHANGELIST  —  mirrors change_form ss-* style
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Dashboard header card ── */
+.sscl-header {
+  background:#fff; border:1px solid #E5E7EB; border-radius:16px;
+  padding:20px 24px; display:flex; align-items:center; gap:18px;
+  margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.sscl-header-icon {
+  width:56px; height:56px; border-radius:16px; flex-shrink:0;
+  background:linear-gradient(135deg,#F58400,#C86A00);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 12px rgba(245,132,0,0.30);
+}
+.sscl-header-icon svg { width:26px; height:26px; stroke:#fff; }
+.sscl-header-title { font-size:18px; font-weight:800; color:#111827; line-height:1.2; }
+.sscl-header-sub   { font-size:12.5px; color:#6B7280; margin-top:3px; }
+.sscl-header-links { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0; }
+.sscl-header-link {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#fff; border:1.5px solid #E5E7EB; border-radius:9px;
+  padding:7px 14px; font-size:12.5px; font-weight:600; color:#6B7280;
+  text-decoration:none; transition:all 0.15s; box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.sscl-header-link:hover { border-color:#F58400; color:#C86A00; background:#FFF8EE; }
+
+/* ── KPI cards row (same style as change_form ss-kpi) ── */
+.sscl-kpi-row {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:18px;
+}
+@media(max-width:1100px){ .sscl-kpi-row{ grid-template-columns:repeat(3,1fr); } }
+@media(max-width:700px) { .sscl-kpi-row{ grid-template-columns:repeat(2,1fr); } }
+
+.sscl-kpi {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  display:flex; flex-direction:column; gap:5px;
+  position:relative; overflow:hidden;
+}
+.sscl-kpi::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  border-radius:14px 14px 0 0;
+}
+.sscl-kpi-emp::before   { background:#3B82F6; }
+.sscl-kpi-gross::before { background:#F58400; }
+.sscl-kpi-net::before   { background:#16A34A; }
+.sscl-kpi-tax::before   { background:#2563EB; }
+.sscl-kpi-ded::before   { background:#DC2626; }
+
+.sscl-kpi-icon {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; margin-bottom:4px;
+}
+.sscl-kpi-icon svg { width:16px; height:16px; }
+.sscl-kpi-emp   .sscl-kpi-icon { background:#EFF6FF; color:#3B82F6; }
+.sscl-kpi-gross .sscl-kpi-icon { background:#FFF8EE; color:#F58400; }
+.sscl-kpi-net   .sscl-kpi-icon { background:#DCFCE7; color:#16A34A; }
+.sscl-kpi-tax   .sscl-kpi-icon { background:#DBEAFE; color:#2563EB; }
+.sscl-kpi-ded   .sscl-kpi-icon { background:#FEE2E2; color:#DC2626; }
+
+.sscl-kpi-label { font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
+.sscl-kpi-value { font-size:20px; font-weight:800; color:#111827; line-height:1; letter-spacing:-0.02em; }
+.sscl-kpi-sub   { font-size:11px; color:#9CA3AF; }
+.sscl-kpi-emp   .sscl-kpi-value { color:#2563EB; }
+.sscl-kpi-gross .sscl-kpi-value { color:#C86A00; }
+.sscl-kpi-net   .sscl-kpi-value { color:#16A34A; }
+.sscl-kpi-tax   .sscl-kpi-value { color:#2563EB; }
+.sscl-kpi-ded   .sscl-kpi-value { color:#DC2626; }
+
+/* ── Charts + Breakdown row ── */
+.sscl-charts-row {
+  display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;
+}
+@media(max-width:900px){ .sscl-charts-row{ grid-template-columns:1fr; } }
+
+/* ── Breakdown card (same as change_form ss-breakdown-card) ── */
+.sscl-breakdown-card {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.sscl-breakdown-head {
+  display:flex; align-items:center; gap:8px;
+  padding:13px 18px; border-bottom:1px solid #E5E7EB;
+  background:#F9FAFB; font-size:12px; font-weight:700; color:#374151;
+}
+.sscl-breakdown-head svg { flex-shrink:0; }
+.sscl-breakdown-body { padding:12px 18px; }
+.sscl-brow {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:7px 0; border-bottom:1px solid #F9FAFB; font-size:13px;
+}
+.sscl-brow:last-child { border-bottom:none; }
+.sscl-brow-label { color:#6B7280; display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.sscl-dot { width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.sscl-brow-bar { flex:1; height:6px; background:#F3F4F6; border-radius:999px; margin:0 12px; overflow:hidden; }
+.sscl-brow-bar-fill { height:100%; border-radius:999px; }
+.sscl-brow-val { font-size:12.5px; font-weight:700; color:#111827; white-space:nowrap; min-width:110px; text-align:right; }
+.sscl-brow-val.neg { color:#DC2626; }
+.sscl-btotal {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 0 2px; border-top:2px solid #E5E7EB; margin-top:4px;
+  font-size:13px; font-weight:700; color:#111827;
+}
+.sscl-btotal-val { font-size:15px; font-weight:800; }
+.sscl-btotal-val.green { color:#16A34A; }
+.sscl-btotal-val.orange { color:#C86A00; }
+
+/* ── Bar chart card ── */
+.sscl-chart-card {
+  background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+  overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.sscl-chart-head {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:13px 18px; border-bottom:1px solid #E5E7EB;
+  background:#F9FAFB; gap:12px; flex-wrap:wrap;
+}
+.sscl-chart-title { font-size:12px; font-weight:700; color:#374151; display:flex; align-items:center; gap:6px; }
+.sscl-chart-legend { display:flex; align-items:center; gap:12px; font-size:11px; color:#6B7280; flex-wrap:wrap; }
+.sscl-leg { display:flex; align-items:center; gap:4px; }
+.sscl-leg-dot { width:8px; height:8px; border-radius:50%; }
+.sscl-chart-body { padding:16px 18px; }
+.sscl-chart-wrap { height:200px; position:relative; }
+
+/* ── Annual summary strip (same dark style as change_form) ── */
+.sscl-annual-strip {
+  background:#111827; border-radius:12px; padding:16px 20px;
+  display:flex; gap:0; overflow:hidden; margin-bottom:18px;
+}
+.sscl-annual-item {
+  flex:1; text-align:center;
+  border-right:1px solid rgba(255,255,255,0.1); padding:0 12px;
+}
+.sscl-annual-item:last-child { border-right:none; }
+.sscl-annual-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; }
+.sscl-annual-value { font-size:15px; font-weight:800; color:#fff; margin-top:5px; letter-spacing:-0.01em; }
+
+/* ── Table section label ── */
+.sscl-table-label {
+  display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700;
+  color:#6B7280; text-transform:uppercase; letter-spacing:0.09em; margin-bottom:10px;
+}
+.sscl-tl-dot { width:8px; height:8px; border-radius:50%; background:#F58400; }
+
+/* ── Suppress default Django right sidebar ── */
+#changelist-filter { display:none !important; }
+#changelist { margin-right: 0 !important; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- HEADER CARD -->
+<div class="sscl-header">
+  <div class="sscl-header-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <path d="M8 21h8M12 17v4"/>
+      <path d="M6 8h4M6 11h3"/>
+      <circle cx="16" cy="8" r="2"/>
+      <path d="M14 12s.5-1 2-1 2 1 2 1"/>
+    </svg>
+  </div>
+  <div>
+    <div class="sscl-header-title">Monthly Payroll Overview</div>
+    <div class="sscl-header-sub">Active employee salary summary — live calculated</div>
+  </div>
+  <div class="sscl-header-links">
+    <a href="{% url 'admin:salary_taxyear_changelist' %}" class="sscl-header-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Tax Slabs
+    </a>
+    <a href="{% url 'admin:salary_statutorydeductionpolicy_changelist' %}" class="sscl-header-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Policies
+    </a>
+  </div>
+</div>
+
+
+<!-- KPI CARDS -->
+<div class="sscl-kpi-row">
+
+  <div class="sscl-kpi sscl-kpi-emp">
+    <div class="sscl-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="sscl-kpi-label">Active Employees</div>
+    <div class="sscl-kpi-value">{{ kpi_total_employees }}</div>
+    <div class="sscl-kpi-sub">with salary setup</div>
+  </div>
+
+  <div class="sscl-kpi sscl-kpi-gross">
+    <div class="sscl-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div class="sscl-kpi-label">Total Gross</div>
+    <div class="sscl-kpi-value">PKR {{ kpi_total_gross|floatformat:0 }}</div>
+    <div class="sscl-kpi-sub">monthly payroll</div>
+  </div>
+
+  <div class="sscl-kpi sscl-kpi-net">
+    <div class="sscl-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="sscl-kpi-label">Total Net Pay</div>
+    <div class="sscl-kpi-value">PKR {{ kpi_total_net|floatformat:0 }}</div>
+    <div class="sscl-kpi-sub">after all deductions</div>
+  </div>
+
+  <div class="sscl-kpi sscl-kpi-tax">
+    <div class="sscl-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    </div>
+    <div class="sscl-kpi-label">Total Income Tax</div>
+    <div class="sscl-kpi-value">PKR {{ kpi_total_tax|floatformat:0 }}</div>
+    <div class="sscl-kpi-sub">monthly withholding</div>
+  </div>
+
+  <div class="sscl-kpi sscl-kpi-ded">
+    <div class="sscl-kpi-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </div>
+    <div class="sscl-kpi-label">Total Deductions</div>
+    <div class="sscl-kpi-value">PKR {{ kpi_total_ded|floatformat:0 }}</div>
+    <div class="sscl-kpi-sub">avg {{ kpi_avg_gross|floatformat:0 }} gross</div>
+  </div>
+
+</div>
+
+
+<!-- CHARTS + BREAKDOWN ROW -->
+<div class="sscl-charts-row">
+
+  <!-- Bar chart -->
+  <div class="sscl-chart-card">
+    <div class="sscl-chart-head">
+      <div class="sscl-chart-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Payroll Summary — Per Employee
+      </div>
+      <div class="sscl-chart-legend">
+        <span class="sscl-leg"><span class="sscl-leg-dot" style="background:#F58400"></span>Gross</span>
+        <span class="sscl-leg"><span class="sscl-leg-dot" style="background:#16A34A"></span>Net</span>
+        <span class="sscl-leg"><span class="sscl-leg-dot" style="background:#2563EB"></span>Tax</span>
+      </div>
+    </div>
+    <div class="sscl-chart-body">
+      <div class="sscl-chart-wrap">
+        <canvas id="ssclBarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Earnings breakdown card -->
+  <div class="sscl-breakdown-card">
+    <div class="sscl-breakdown-head" style="color:#F58400;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Earnings Distribution
+    </div>
+    <div class="sscl-breakdown-body" id="ssclEarningsBody">
+      <div style="text-align:center;color:#9CA3AF;font-size:12px;padding:20px 0;">Loading…</div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Second row: Deductions breakdown + Donut -->
+<div class="sscl-charts-row">
+
+  <!-- Deductions breakdown card -->
+  <div class="sscl-breakdown-card">
+    <div class="sscl-breakdown-head" style="color:#DC2626;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Deductions &amp; Net Pay Distribution
+    </div>
+    <div class="sscl-breakdown-body" id="ssclDeductionsBody">
+      <div style="text-align:center;color:#9CA3AF;font-size:12px;padding:20px 0;">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Donut chart -->
+  <div class="sscl-chart-card">
+    <div class="sscl-chart-head">
+      <div class="sscl-chart-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+        Company Pay Breakdown
+      </div>
+    </div>
+    <div class="sscl-chart-body" style="display:flex;align-items:center;gap:20px;">
+      <div style="position:relative;width:160px;height:160px;flex-shrink:0;">
+        <canvas id="ssclDonutChart"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+          <span style="font-size:26px;font-weight:800;color:#111827;line-height:1;">{{ kpi_total_employees }}</span>
+          <span style="font-size:11px;color:#9CA3AF;margin-top:2px;">Employees</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:9px;" id="ssclDonutLegend">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><span style="width:10px;height:10px;border-radius:50%;background:#F58400;flex-shrink:0;display:inline-block;"></span><span style="flex:1;color:#374151;font-weight:600;">Basic</span><span id="ssclDp0" style="font-weight:700;color:#6B7280;font-size:12px;"></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><span style="width:10px;height:10px;border-radius:50%;background:#2563EB;flex-shrink:0;display:inline-block;"></span><span style="flex:1;color:#374151;font-weight:600;">House Rent</span><span id="ssclDp1" style="font-weight:700;color:#6B7280;font-size:12px;"></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><span style="width:10px;height:10px;border-radius:50%;background:#16A34A;flex-shrink:0;display:inline-block;"></span><span style="flex:1;color:#374151;font-weight:600;">Utility</span><span id="ssclDp2" style="font-weight:700;color:#6B7280;font-size:12px;"></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><span style="width:10px;height:10px;border-radius:50%;background:#7C3AED;flex-shrink:0;display:inline-block;"></span><span style="flex:1;color:#374151;font-weight:600;">Medical</span><span id="ssclDp3" style="font-weight:700;color:#6B7280;font-size:12px;"></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><span style="width:10px;height:10px;border-radius:50%;background:#EF4444;flex-shrink:0;display:inline-block;"></span><span style="flex:1;color:#374151;font-weight:600;">Deductions</span><span id="ssclDp4" style="font-weight:700;color:#6B7280;font-size:12px;"></span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ANNUAL SUMMARY STRIP -->
+<div class="sscl-annual-strip">
+  <div class="sscl-annual-item">
+    <div class="sscl-annual-label">Annual Gross Payroll</div>
+    <div class="sscl-annual-value" id="sscl-ann-gross">—</div>
+  </div>
+  <div class="sscl-annual-item">
+    <div class="sscl-annual-label">Annual Tax Withheld</div>
+    <div class="sscl-annual-value" id="sscl-ann-tax">—</div>
+  </div>
+  <div class="sscl-annual-item">
+    <div class="sscl-annual-label">Annual Net Payroll</div>
+    <div class="sscl-annual-value" id="sscl-ann-net">—</div>
+  </div>
+  <div class="sscl-annual-item">
+    <div class="sscl-annual-label">Avg. Monthly Gross</div>
+    <div class="sscl-annual-value">PKR {{ kpi_avg_gross|floatformat:0 }}</div>
+  </div>
+  <div class="sscl-annual-item">
+    <div class="sscl-annual-label">Total Headcount</div>
+    <div class="sscl-annual-value">{{ kpi_total_employees }} Staff</div>
+  </div>
+</div>
+
+
+<!-- Table label -->
+<div class="sscl-table-label">
+  <span class="sscl-tl-dot"></span>
+  Employee Salary Records
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+
+{% block result_list %}
+<div style="border-radius:14px;overflow:hidden;border:1px solid #E5E7EB;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+  {{ block.super }}
+</div>
+{% endblock %}
+
+
+{% block sidebar %}{% endblock %}
+
+
+{% block extrabody %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  var labels    = {{ chart_labels_json|safe }};
+  var grossData = {{ chart_gross_json|safe }};
+  var netData   = {{ chart_net_json|safe }};
+  var taxData   = {{ chart_tax_json|safe }};
+  var donutData = {{ donut_data_json|safe }};
+
+  var fmt = function(v) {
+    return 'PKR ' + Math.round(v).toLocaleString();
+  };
+  var pct = function(part, whole) {
+    return whole > 0 ? Math.min(Math.round(part / whole * 100), 100) : 0;
+  };
+
+  /* ── Bar chart ── */
+  var barCtx = document.getElementById('ssclBarChart');
+  if (barCtx && labels.length) {
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label:'Gross', data:grossData, backgroundColor:'rgba(245,132,0,0.85)', borderRadius:5, barPercentage:0.55 },
+          { label:'Net',   data:netData,   backgroundColor:'rgba(22,163,74,0.85)',  borderRadius:5, barPercentage:0.55 },
+          { label:'Tax',   data:taxData,   backgroundColor:'rgba(37,99,235,0.80)',  borderRadius:5, barPercentage:0.55 }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins: {
+          legend:{ display:false },
+          tooltip:{
+            callbacks:{
+              label:function(ctx){ return ' '+ctx.dataset.label+': PKR '+Math.round(ctx.parsed.y).toLocaleString(); }
+            }
+          }
+        },
+        scales:{
+          x:{ grid:{display:false}, ticks:{font:{family:"'Plus Jakarta Sans',sans-serif",size:11},color:'#6B7280'} },
+          y:{ grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:"'Plus Jakarta Sans',sans-serif",size:10},color:'#9CA3AF',callback:function(v){return 'PKR '+(v/1000).toFixed(0)+'k';}} }
+        }
+      }
+    });
+  } else if (barCtx) {
+    barCtx.closest('.sscl-chart-wrap').innerHTML = '<p style="text-align:center;color:#9CA3AF;padding:40px 0;font-size:13px">No active salary setups.</p>';
+  }
+
+  /* ── Donut chart ── */
+  var donCtx = document.getElementById('ssclDonutChart');
+  var donColors = ['#F58400','#2563EB','#16A34A','#7C3AED','#EF4444'];
+  if (donCtx) {
+    new Chart(donCtx, {
+      type:'doughnut',
+      data:{
+        labels:['Basic','HRA','Utility','Medical','Deductions'],
+        datasets:[{ data:donutData, backgroundColor:donColors, borderWidth:2, borderColor:'#fff', hoverOffset:5 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:function(ctx){return ' '+ctx.parsed+'%';} }} }
+      }
+    });
+    donutData.forEach(function(v,i){
+      var el = document.getElementById('ssclDp'+i);
+      if (el) el.textContent = v+'%';
+    });
+  }
+
+  /* ── Earnings breakdown panel (built from grossData) ── */
+  var totalGross = grossData.reduce(function(a,b){return a+b;},0) || 1;
+  var earningsRows = [
+    { label:'Basic Salary',        color:'#F58400', badge:'60%', val: totalGross * 0.60 },
+    { label:'House Rent Allow.',   color:'#2563EB', badge:'20%', val: totalGross * 0.20 },
+    { label:'Utility Allowance',   color:'#16A34A', badge:'10%', val: totalGross * 0.10 },
+    { label:'Medical Allowance',   color:'#7C3AED', badge:'10%', val: totalGross * 0.10 },
+  ];
+  var totalNet  = netData.reduce(function(a,b){return a+b;},0);
+  var totalTax  = taxData.reduce(function(a,b){return a+b;},0);
+  var totalDed  = totalGross - totalNet;
+
+  var eb = document.getElementById('ssclEarningsBody');
+  if (eb) {
+    var html = '';
+    earningsRows.forEach(function(row) {
+      var w = pct(row.val, totalGross);
+      html += '<div class="sscl-brow">'
+        + '<span class="sscl-brow-label"><span class="sscl-dot" style="background:'+row.color+'"></span>'+row.label
+        + ' <em style="font-size:10px;color:#9CA3AF;">('+row.badge+')</em></span>'
+        + '<div class="sscl-brow-bar"><div class="sscl-brow-bar-fill" style="width:'+w+'%;background:'+row.color+';"></div></div>'
+        + '<span class="sscl-brow-val">'+fmt(row.val)+'</span>'
+        + '</div>';
+    });
+    html += '<div class="sscl-btotal"><span>Total Gross</span><span class="sscl-btotal-val orange">'+fmt(totalGross)+'</span></div>';
+    eb.innerHTML = html;
+  }
+
+  /* ── Annual strip ── */
+  var annSet = function(id, v) { var e = document.getElementById(id); if(e) e.textContent = fmt(v); };
+  annSet('sscl-ann-gross', totalGross * 12);
+  annSet('sscl-ann-tax',   totalTax   * 12);
+  annSet('sscl-ann-net',   totalNet   * 12);
+
+  /* ── Deductions breakdown panel ── */
+  var dedRows = [
+    { label:'Income Tax',        color:'#2563EB', val: totalTax },
+    { label:'Other Deductions',  color:'#DC2626', val: Math.max(0, totalDed - totalTax) },
+  ];
+  var db = document.getElementById('ssclDeductionsBody');
+  if (db) {
+    var html2 = '';
+    dedRows.forEach(function(row){
+      var w = pct(row.val, totalDed || 1);
+      html2 += '<div class="sscl-brow">'
+        + '<span class="sscl-brow-label"><span class="sscl-dot" style="background:'+row.color+'"></span>'+row.label+'</span>'
+        + '<div class="sscl-brow-bar"><div class="sscl-brow-bar-fill" style="width:'+w+'%;background:'+row.color+';"></div></div>'
+        + '<span class="sscl-brow-val neg">'+fmt(row.val)+'</span>'
+        + '</div>';
+    });
+    html2 += '<div class="sscl-btotal"><span>Total Net Pay</span><span class="sscl-btotal-val green">'+fmt(totalNet)+'</span></div>';
+    db.innerHTML = html2;
+  }
+
+})();
+</script>
+{% endblock %}

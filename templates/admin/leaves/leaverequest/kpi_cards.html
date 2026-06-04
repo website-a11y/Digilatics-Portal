@@ -1,0 +1,332 @@
+{% load i18n %}
+<div class="lr-dashboard">
+
+  <!-- ── Period filter bar ── -->
+  <form method="get" class="lr-filter-bar" id="lr-filter-form">
+    {% for key, val in request.GET.items %}
+      {% if key != "lrview" and key != "lrdate" and key != "lrmonth" %}
+        <input type="hidden" name="{{ key }}" value="{{ val }}">
+      {% endif %}
+    {% endfor %}
+    <input type="hidden" name="lrview" id="lr-view-hidden" value="{{ view_mode }}">
+
+    <div class="lr-ftabs">
+      <button type="button" class="lr-ftab {% if view_mode == 'day' %}lr-ftab--active{% endif %}"
+              onclick="lrSetView('day')">Daily</button>
+      <button type="button" class="lr-ftab {% if view_mode == 'week' %}lr-ftab--active{% endif %}"
+              onclick="lrSetView('week')">Weekly</button>
+      <button type="button" class="lr-ftab {% if view_mode == 'month' %}lr-ftab--active{% endif %}"
+              onclick="lrSetView('month')">Monthly</button>
+    </div>
+
+    <div class="lr-filter-inputs">
+      <div id="lr-date-wrap" {% if view_mode == 'month' %}style="display:none"{% endif %}>
+        <input type="date" name="lrdate" id="lr-date-input"
+               value="{{ filter_date_val }}"
+               class="lr-filter-dateinput"
+               onchange="document.getElementById('lr-filter-form').submit()">
+      </div>
+      <div id="lr-month-wrap" {% if view_mode != 'month' %}style="display:none"{% endif %}>
+        <input type="month" name="lrmonth" id="lr-month-input"
+               value="{{ filter_month_val }}"
+               class="lr-filter-dateinput"
+               onchange="document.getElementById('lr-filter-form').submit()">
+      </div>
+    </div>
+
+    <span class="lr-filter-period-badge">{{ period_label }}</span>
+  </form>
+
+  <script>
+  function lrSetView(v) {
+    document.getElementById('lr-view-hidden').value = v;
+    document.getElementById('lr-date-wrap').style.display  = (v === 'month') ? 'none' : 'block';
+    document.getElementById('lr-month-wrap').style.display = (v === 'month') ? 'block' : 'none';
+    document.getElementById('lr-filter-form').submit();
+  }
+  </script>
+
+  <!-- ── 4 circular KPI cards (matches screenshot) ── -->
+  <div class="lr-kpi-grid">
+
+    <!-- Card 1: On Leave (period) -->
+    {% with total_emp=kpi_on_leave_today|add:0 raw=kpi_on_leave_today %}
+    <div class="lr-kpi-card">
+      <div class="lr-kpi-left">
+        <div class="lr-kpi-main">
+          <span class="lr-kpi-big">{{ kpi_on_leave_today }}</span>
+          <span class="lr-kpi-sep">/</span>
+          <span class="lr-kpi-total">—</span>
+        </div>
+        <div class="lr-kpi-title lr-kpi-title-blue">On Leave</div>
+        <div class="lr-kpi-sub">{{ period_label }}</div>
+      </div>
+      <div class="lr-kpi-right">
+        {% with pct=50 %}
+        <svg class="lr-donut" viewBox="0 0 60 60">
+          <circle class="lr-donut-track" cx="30" cy="30" r="24" fill="none" stroke-width="5"/>
+          <circle class="lr-donut-fill lr-fill-blue" cx="30" cy="30" r="24" fill="none" stroke-width="5"
+            stroke-dasharray="150.8"
+            stroke-dashoffset="{{ kpi_on_leave_today|default:0|add:0 }}"
+            data-total="{{ kpi_on_leave_today|default:1 }}"
+            data-val="{{ kpi_on_leave_today|default:0 }}"
+            data-color="#3b82f6"/>
+          <text x="30" y="34" text-anchor="middle" class="lr-donut-pct" id="lr-pct-1">—%</text>
+        </svg>
+        {% endwith %}
+      </div>
+    </div>
+    {% endwith %}
+
+    <!-- Card 2: Approved (period) -->
+    <div class="lr-kpi-card">
+      <div class="lr-kpi-left">
+        <div class="lr-kpi-main">
+          <span class="lr-kpi-big">{{ kpi_approved_month }}</span>
+          <span class="lr-kpi-sep">/</span>
+          <span class="lr-kpi-total">{{ kpi_approved_month|add:kpi_rejected_month|add:kpi_pending }}</span>
+        </div>
+        <div class="lr-kpi-title lr-kpi-title-green">Approved</div>
+        <div class="lr-kpi-sub">{{ period_label }}</div>
+      </div>
+      <div class="lr-kpi-right">
+        <svg class="lr-donut" viewBox="0 0 60 60">
+          <circle class="lr-donut-track" cx="30" cy="30" r="24" fill="none" stroke-width="5"/>
+          <circle class="lr-donut-fill" cx="30" cy="30" r="24" fill="none" stroke-width="5"
+            data-total="{{ kpi_approved_month|add:kpi_rejected_month|add:kpi_pending }}"
+            data-val="{{ kpi_approved_month }}"
+            data-color="#22c55e"/>
+          <text x="30" y="34" text-anchor="middle" class="lr-donut-pct">—%</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Card 3: Rejected (period) -->
+    <div class="lr-kpi-card">
+      <div class="lr-kpi-left">
+        <div class="lr-kpi-main">
+          <span class="lr-kpi-big">{{ kpi_rejected_month }}</span>
+          <span class="lr-kpi-sep">/</span>
+          <span class="lr-kpi-total">{{ kpi_approved_month|add:kpi_rejected_month|add:kpi_pending }}</span>
+        </div>
+        <div class="lr-kpi-title lr-kpi-title-red">Rejected</div>
+        <div class="lr-kpi-sub">{{ period_label }}</div>
+      </div>
+      <div class="lr-kpi-right">
+        <svg class="lr-donut" viewBox="0 0 60 60">
+          <circle class="lr-donut-track" cx="30" cy="30" r="24" fill="none" stroke-width="5"/>
+          <circle class="lr-donut-fill" cx="30" cy="30" r="24" fill="none" stroke-width="5"
+            data-total="{{ kpi_approved_month|add:kpi_rejected_month|add:kpi_pending }}"
+            data-val="{{ kpi_rejected_month }}"
+            data-color="#ef4444"/>
+          <text x="30" y="34" text-anchor="middle" class="lr-donut-pct">—%</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Card 4: Pending Approval -->
+    <div class="lr-kpi-card">
+      <div class="lr-kpi-left">
+        <div class="lr-kpi-main">
+          <span class="lr-kpi-big">{{ kpi_pending }}</span>
+          <span class="lr-kpi-sep">/</span>
+          <span class="lr-kpi-total">{{ kpi_approved_month|add:kpi_rejected_month|add:kpi_pending }}</span>
+        </div>
+        <div class="lr-kpi-title lr-kpi-title-amber">Pending</div>
+        <div class="lr-kpi-sub">Awaiting review</div>
+      </div>
+      <div class="lr-kpi-right">
+        <svg class="lr-donut" viewBox="0 0 60 60">
+          <circle class="lr-donut-track" cx="30" cy="30" r="24" fill="none" stroke-width="5"/>
+          <circle class="lr-donut-fill" cx="30" cy="30" r="24" fill="none" stroke-width="5"
+            data-total="{{ kpi_approved_month|add:kpi_rejected_month|add:kpi_pending }}"
+            data-val="{{ kpi_pending }}"
+            data-color="#F58400"/>
+          <text x="30" y="34" text-anchor="middle" class="lr-donut-pct">—%</text>
+        </svg>
+      </div>
+    </div>
+
+  </div><!-- /lr-kpi-grid -->
+
+  <!-- ── Animate donuts on load ── -->
+  <script>
+  (function () {
+    var CIRC = 2 * Math.PI * 24;
+    document.querySelectorAll('.lr-donut-fill').forEach(function (arc) {
+      var total = parseFloat(arc.getAttribute('data-total') || '0');
+      var val   = parseFloat(arc.getAttribute('data-val')   || '0');
+      var color = arc.getAttribute('data-color') || '#F58400';
+      var pct   = total > 0 ? Math.round(val / total * 100) : 0;
+      var offset = CIRC - (CIRC * pct / 100);
+      arc.setAttribute('stroke-dasharray', CIRC.toFixed(1));
+      arc.setAttribute('stroke-dashoffset', offset.toFixed(1));
+      arc.style.stroke = color;
+      /* Update text node sibling */
+      var txt = arc.parentNode.querySelector('.lr-donut-pct');
+      if (txt) txt.textContent = pct + '%';
+    });
+  })();
+  </script>
+
+  <!-- ── Stats chips strip ── -->
+  <div class="lr-chips-row">
+    <div class="lr-chip lr-chip-date">
+      <span class="lr-chip-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </span>
+      <span>{{ kpi_today_label }}</span>
+    </div>
+    <div class="lr-chip lr-chip-pending"><span class="lr-chip-dot"></span><strong>{{ kpi_pending }}</strong>&nbsp;Pending</div>
+    <div class="lr-chip lr-chip-approved"><span class="lr-chip-dot"></span><strong>{{ kpi_approved_month }}</strong>&nbsp;Approved</div>
+    <div class="lr-chip lr-chip-rejected"><span class="lr-chip-dot"></span><strong>{{ kpi_rejected_month }}</strong>&nbsp;Rejected</div>
+    <div class="lr-chip lr-chip-days"><span class="lr-chip-dot"></span><strong>{{ kpi_days_month }}</strong>&nbsp;Days Off</div>
+  </div>
+
+  <!-- ── Breakdown tables ── -->
+  <div class="lr-tables-row">
+
+    <div class="lr-table-card">
+      <div class="lr-table-card-header">
+        <span class="lr-table-card-title">Monthly Breakdown</span>
+        <span class="lr-table-card-sub">Last 6 months</span>
+      </div>
+      <table class="lr-breakdown-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th class="num">Approved</th>
+            <th class="num">Days Off</th>
+            <th class="num">Rejected</th>
+            <th class="num">Pending</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in monthly_rows %}
+          <tr {% if r.is_current %}class="lr-row-current"{% endif %}>
+            <td>{{ r.label }}{% if r.is_current %}<span class="lr-current-pill">now</span>{% endif %}</td>
+            <td class="num lr-num-approved">{{ r.approved }}</td>
+            <td class="num lr-num-days">{{ r.days }}</td>
+            <td class="num lr-num-rejected">{{ r.rejected }}</td>
+            <td class="num lr-num-pending">{{ r.pending }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="lr-table-card">
+      <div class="lr-table-card-header">
+        <span class="lr-table-card-title">Yearly Breakdown</span>
+        <span class="lr-table-card-sub">Last 3 years</span>
+      </div>
+      <table class="lr-breakdown-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th class="num">Total</th>
+            <th class="num">Approved</th>
+            <th class="num">Days Off</th>
+            <th class="num">Rejected</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in yearly_rows %}
+          <tr {% if r.is_current %}class="lr-row-current"{% endif %}>
+            <td>{{ r.label }}{% if r.is_current %}<span class="lr-current-pill">now</span>{% endif %}</td>
+            <td class="num"><strong>{{ r.total }}</strong></td>
+            <td class="num lr-num-approved">{{ r.approved }}</td>
+            <td class="num lr-num-days">{{ r.days }}</td>
+            <td class="num lr-num-rejected">{{ r.rejected }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /lr-tables-row -->
+
+  <!-- ── On Leave (period) ── -->
+  {% if on_leave_today_list %}
+  <div class="lr-section">
+    <h2 class="lr-section-title">
+      <span class="lr-section-dot lr-dot-blue"></span>
+      On Leave — {{ period_label }}
+      <span class="lr-section-count">{{ kpi_on_leave_today }}</span>
+    </h2>
+    <div class="lr-emp-cards">
+      {% for lr in on_leave_today_list %}
+      <div class="lr-emp-card">
+        <div class="lr-emp-avatar-wrap">
+          {% if lr.employee.profile_photo %}
+          <img src="{{ lr.employee.profile_photo.url }}" alt="{{ lr.employee.full_name }}" class="lr-emp-avatar">
+          {% else %}
+          <div class="lr-emp-avatar lr-emp-avatar-ph">{{ lr.employee.full_name|first }}</div>
+          {% endif %}
+          <span class="lr-emp-status-dot"></span>
+        </div>
+        <div class="lr-emp-info">
+          <span class="lr-emp-name">{{ lr.employee.full_name }}</span>
+          <span class="lr-emp-code">{{ lr.employee.employee_code }}</span>
+          <span class="lr-emp-leave-type">{{ lr.leave_type.name }}</span>
+          <span class="lr-emp-dates">{{ lr.from_date|date:"d M" }} → {{ lr.to_date|date:"d M" }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Pending Requests ── -->
+  {% if pending_list %}
+  <div class="lr-section">
+    <h2 class="lr-section-title">
+      <span class="lr-section-dot lr-dot-amber"></span>
+      Pending Requests
+      <span class="lr-section-count">{{ kpi_pending }}</span>
+    </h2>
+    <div class="lr-req-cards">
+      {% for lr in pending_list %}
+      <a href="{% url 'admin:leaves_leaverequest_change' lr.pk %}" class="lr-req-card"
+         onclick="event.preventDefault(); lreOpen('{% url 'admin:leaves_leaverequest_change' lr.pk %}', 'Review — {{ lr.employee.full_name }}')">
+        <div class="lr-req-header">
+          <div class="lr-req-emp">
+            {% if lr.employee.profile_photo %}
+            <img src="{{ lr.employee.profile_photo.url }}" alt="{{ lr.employee.full_name }}" class="lr-req-avatar">
+            {% else %}
+            <div class="lr-req-avatar lr-req-avatar-ph">{{ lr.employee.full_name|first }}</div>
+            {% endif %}
+            <div>
+              <div class="lr-req-name">{{ lr.employee.full_name }}</div>
+              <div class="lr-req-code">{{ lr.employee.employee_code }}</div>
+            </div>
+          </div>
+          <span class="lr-req-days">{{ lr.number_of_days|floatformat:"-2" }}d</span>
+        </div>
+        <div class="lr-req-body">
+          <span class="lr-req-type">{{ lr.leave_type.name }}</span>
+          <span class="lr-req-range">{{ lr.from_date|date:"d M Y" }} → {{ lr.to_date|date:"d M Y" }}</span>
+        </div>
+        {% if lr.reason %}<div class="lr-req-reason">"{{ lr.reason|truncatechars:80 }}"</div>{% endif %}
+        <div class="lr-req-footer">
+          <span class="lr-req-pending-pill">Pending</span>
+          <span class="lr-req-action">Review →</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Section header above Django table ── -->
+  <div class="lr-table-section-header">
+    <div class="lr-table-section-left">
+      <span class="lr-section-dot lr-dot-gray"></span>
+      <h2 class="lr-all-requests-title">All Leave Requests</h2>
+    </div>
+  </div>
+
+</div><!-- /lr-dashboard -->

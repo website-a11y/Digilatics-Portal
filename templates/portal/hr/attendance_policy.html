@@ -1,0 +1,34 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Attendance Policy — Digilatics HR{% endblock %}
+{% block page_title %}Attendance Policy{% endblock %}
+
+{% block content %}
+<div>
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <div class="ep-card-title">Check-In / Check-Out Buffer Settings</div>
+    </div>
+    <div class="ep-card-body">
+      {% if errors.general %}<div class="ep-alert error" style="margin-bottom:16px;">{{ errors.general }}</div>{% endif %}
+      <form method="post" class="hr-form">
+        {% csrf_token %}
+        <div class="hr-form-row">
+          <div class="hr-form-group">
+            <label class="hr-form-label">Check-In Buffer (minutes)</label>
+            <input type="number" min="0" name="checkin_buffer_minutes" class="hr-form-input" value="{{ obj.checkin_buffer_minutes }}">
+            <div style="font-size:11px;color:var(--text-2);margin-top:4px;">Grace time after scheduled check-in before marking late.</div>
+          </div>
+          <div class="hr-form-group">
+            <label class="hr-form-label">Check-Out Buffer (minutes)</label>
+            <input type="number" min="0" name="checkout_buffer_minutes" class="hr-form-input" value="{{ obj.checkout_buffer_minutes }}">
+            <div style="font-size:11px;color:var(--text-2);margin-top:4px;">Grace time before scheduled check-out before marking early.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="hr-filter-btn" style="height:42px;padding:0 28px;font-size:14px;">Save Policy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
