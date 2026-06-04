@@ -120,7 +120,7 @@ LOGGING = {
         },
         "zkteco_file": {
             "class": "logging.FileHandler",
-            "filename": BASE_DIR / "zkteco_debug.log",
+            "filename": str(BASE_DIR / "zkteco_debug.log"),
             "encoding": "utf-8",
         },
     },
