@@ -2,6 +2,7 @@ from datetime import date
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
+from django.db import IntegrityError
 
 from .models import EmployeeProfile
 
@@ -130,7 +131,10 @@ def ensure_employee_profile_for_user(user) -> EmployeeProfile:
 
 def ensure_employee_profiles_for_existing_users() -> None:
     for user in User.objects.all():
-        ensure_employee_profile_for_user(user)
+        try:
+            ensure_employee_profile_for_user(user)
+        except IntegrityError:
+            pass
 
 
 def sync_user_role(user, role: str, employment_status: str) -> None:
