@@ -1,7 +1,9 @@
-cd /home/digilatics-hris/htdocs/hris.digilatics.co
+cd /home/funnelatics-hris/htdocs/hris.funnelatics.com
 git fetch origin && git reset --hard origin/main
 source venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py collectstatic --noinput
-systemctl restart digilatics-hris.service
+deactivate
+chown -R funnelatics-hris:funnelatics-hris /home/funnelatics-hris/htdocs/hris.funnelatics.com
+systemctl restart funnelatics-hris.service
