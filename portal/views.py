@@ -1253,6 +1253,7 @@ def hr_dashboard(request):
 
     # Attendance by period for pie chart
     import json as _json
+    cap = min(today, month_end)
     # Monthly
     monthly_att = AttendanceRecord.objects.filter(date__range=(month_start, cap)).aggregate(
         present=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.PRESENT)),
@@ -1295,7 +1296,6 @@ def hr_dashboard(request):
         ).select_related("employee", "leave_type").order_by("-created_at")[:8]
     )
 
-    cap = min(today, month_end)
     working_days_so_far = sum(
         1 for i in range((cap - month_start).days + 1)
         if (month_start + timedelta(days=i)).weekday() < 5
