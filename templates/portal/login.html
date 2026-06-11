@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Login — Digilatics</title>
+  <title>Employee Login — Funnelatics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}">
@@ -14,8 +14,9 @@
   <div class="ep-login-box">
 
     <div class="ep-login-logo">
-      <div class="ep-login-logo-text">Digilatics</div>
-      <div style="font-size:12px;color:#9CA3AF;margin-top:4px;font-weight:500;">HR &amp; Employee Portal</div>
+      <img src="{% static 'accounts/branding/funnelatics-logo.png' %}"
+           alt="Funnelatics" style="max-height:52px;max-width:220px;object-fit:contain;display:block;margin:0 auto;">
+      <div style="font-size:12px;color:#9CA3AF;margin-top:6px;font-weight:500;text-align:center;">HR &amp; Employee Portal</div>
     </div>
 
     <div class="ep-login-title">Welcome back</div>
@@ -37,7 +38,7 @@
           name="username"
           autocomplete="username"
           autofocus
-          placeholder="e.g. sana@digilatics.com or 10033"
+          placeholder="e.g. sana@funnelatics.com or 10033"
           required
         >
       </div>

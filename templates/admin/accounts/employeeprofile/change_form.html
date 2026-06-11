@@ -19,18 +19,18 @@
 }
 .msw-avatar {
   width:60px;height:60px;border-radius:14px;object-fit:cover;
-  border:3px solid rgba(245,132,0,.18);flex-shrink:0;
+  border:3px solid rgba(44,49,146,.18);flex-shrink:0;
 }
 .msw-avatar-ph {
   width:60px;height:60px;border-radius:14px;
-  background:linear-gradient(135deg,#F58400,#C86A00);
+  background:linear-gradient(135deg,#2c3192,#1e2268);
   color:#fff;display:flex;align-items:center;justify-content:center;
   font-size:22px;font-weight:800;flex-shrink:0;
 }
 .msw-header-name{font-size:18px;font-weight:800;color:#111827;margin:0 0 4px;}
 .msw-header-meta{font-size:12px;color:#6B7280;display:flex;gap:12px;flex-wrap:wrap;}
 .msw-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;
-  background:#FFF8EE;color:#F58400;border:1px solid rgba(245,132,0,.25);}
+  background:#eef0fb;color:#2c3192;border:1px solid rgba(44,49,146,.25);}
 
 /* ── Step indicator ───────────────────────────────────── */
 .msw-stepper {
@@ -47,7 +47,7 @@
   content:'';position:absolute;top:18px;left:calc(50% + 20px);
   right:calc(-50% + 20px);height:2px;background:#E5E7EB;z-index:0;
 }
-.msw-step.done:not(:last-child)::after { background:#F58400; }
+.msw-step.done:not(:last-child)::after { background:#2c3192; }
 .msw-step-circle {
   width:36px;height:36px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -56,17 +56,17 @@
   transition:all .2s;
 }
 .msw-step.active .msw-step-circle {
-  border-color:#F58400;background:#F58400;color:#fff;
-  box-shadow:0 0 0 4px rgba(245,132,0,.15);
+  border-color:#2c3192;background:#2c3192;color:#fff;
+  box-shadow:0 0 0 4px rgba(44,49,146,.15);
 }
 .msw-step.done .msw-step-circle {
-  border-color:#F58400;background:#FFF8EE;color:#F58400;
+  border-color:#2c3192;background:#eef0fb;color:#2c3192;
 }
 .msw-step-label {
   font-size:10.5px;font-weight:600;color:#9CA3AF;
   text-align:center;white-space:nowrap;
 }
-.msw-step.active .msw-step-label { color:#F58400; }
+.msw-step.active .msw-step-label { color:#2c3192; }
 .msw-step.done .msw-step-label { color:#374151; }
 
 /* ── Card (one per step) ──────────────────────────────── */
@@ -80,7 +80,7 @@
 }
 .msw-card-head-icon {
   width:34px;height:34px;border-radius:9px;
-  background:rgba(245,132,0,.1);color:#F58400;
+  background:rgba(44,49,146,.1);color:#2c3192;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .msw-card-title{font-size:15px;font-weight:700;color:#111827;margin:0;}
@@ -116,8 +116,8 @@
 .msw-col input:focus,.msw-col select:focus,.msw-col textarea:focus,
 .msw-col-third input:focus,.msw-col-third select:focus,
 .msw-col-full input:focus,.msw-col-full select:focus,.msw-col-full textarea:focus {
-  border-color:#F58400 !important;
-  box-shadow:0 0 0 3px rgba(245,132,0,.12) !important;
+  border-color:#2c3192 !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,.12) !important;
   background:#fff !important;
 }
 /* select2 */
@@ -141,7 +141,7 @@
 .msw-errors li{margin:0;}
 
 /* ── Salary calculator ────────────────────────────────── */
-.msw-gross-wrap{background:#FFF8EE;border:1px solid rgba(245,132,0,.2);
+.msw-gross-wrap{background:#eef0fb;border:1px solid rgba(44,49,146,.2);
   border-radius:14px;padding:22px 24px;margin-bottom:0;}
 .msw-gross-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   color:#9CA3AF;font-weight:700;margin-bottom:8px;display:block;}
@@ -151,14 +151,14 @@
   padding:12px 16px !important;font-size:22px !important;font-weight:800 !important;
   color:#111827 !important;letter-spacing:-.02em !important;
 }
-.msw-gross-input:focus{border-color:#F58400 !important;background:#fff !important;
-  box-shadow:0 0 0 3px rgba(245,132,0,.15) !important;}
+.msw-gross-input:focus{border-color:#2c3192 !important;background:#fff !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,.15) !important;}
 .msw-gross-sub{font-size:11px;color:#9CA3AF;margin-top:6px;}
 .msw-breakdown{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;}
 @media(max-width:900px){.msw-breakdown{grid-template-columns:1fr 1fr;}}
 @media(max-width:480px){.msw-breakdown{grid-template-columns:1fr;}}
 .msw-breakdown-item{background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px;}
-.msw-breakdown-pct{font-size:10px;color:#F58400;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+.msw-breakdown-pct{font-size:10px;color:#2c3192;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
 .msw-breakdown-label{font-size:12px;color:#6B7280;margin:2px 0;}
 .msw-breakdown-val{font-size:16px;font-weight:700;color:#111827;}
 .msw-breakdown-input{
@@ -167,23 +167,23 @@
   padding:6px 10px !important;font-size:13px !important;color:#111827 !important;
   font-weight:600 !important;margin-top:4px !important;
 }
-.msw-breakdown-input:focus{border-color:#F58400 !important;outline:none !important;background:#fff !important;}
+.msw-breakdown-input:focus{border-color:#2c3192 !important;outline:none !important;background:#fff !important;}
 .msw-total-bar{display:flex;justify-content:space-between;align-items:center;
-  padding:14px 16px;background:#FFF8EE;border-radius:10px;
-  margin-top:12px;border:1px solid rgba(245,132,0,.25);}
+  padding:14px 16px;background:#eef0fb;border-radius:10px;
+  margin-top:12px;border:1px solid rgba(44,49,146,.25);}
 .msw-total-label{font-size:12px;font-weight:600;color:#6B7280;}
-.msw-total-val{font-size:18px;font-weight:800;color:#F58400;}
+.msw-total-val{font-size:18px;font-weight:800;color:#2c3192;}
 
 /* ── Document card ────────────────────────────────────── */
 .msw-doc-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;
   padding:12px 16px;display:flex;align-items:center;gap:12px;}
-.msw-doc-icon{width:34px;height:34px;border-radius:9px;background:rgba(245,132,0,.1);
-  color:#F58400;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.msw-doc-icon{width:34px;height:34px;border-radius:9px;background:rgba(44,49,146,.1);
+  color:#2c3192;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .msw-doc-body{flex:1;min-width:0;}
 .msw-doc-name{font-size:13px;font-weight:600;color:#374151;margin-bottom:4px;}
 .msw-doc-status{font-size:11.5px;color:#9CA3AF;}
 .msw-doc-uploaded{font-size:11.5px;color:#16A34A;font-weight:600;}
-.msw-doc-view{font-size:12px;font-weight:600;color:#F58400;text-decoration:none;}
+.msw-doc-view{font-size:12px;font-weight:600;color:#2c3192;text-decoration:none;}
 .msw-doc-body input[type="file"]{
   border:none !important;background:transparent !important;
   padding:0 !important;font-size:12px !important;margin-top:4px !important;
@@ -204,7 +204,7 @@
   font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;
   margin-top:12px;transition:border-color .15s;font-family:inherit;
 }
-.msw-add-doc-btn:hover{border-color:#F58400;color:#F58400;}
+.msw-add-doc-btn:hover{border-color:#2c3192;color:#2c3192;}
 
 /* ── Nav buttons ──────────────────────────────────────── */
 .msw-nav{display:flex;justify-content:space-between;align-items:center;
@@ -220,10 +220,10 @@
 .msw-btn-next{
   display:inline-flex;align-items:center;gap:6px;
   padding:9px 24px;border-radius:8px;font-size:13.5px;font-weight:700;
-  border:none;background:#F58400;color:#fff;
+  border:none;background:#2c3192;color:#fff;
   cursor:pointer;font-family:inherit;transition:background .15s,box-shadow .15s;
 }
-.msw-btn-next:hover{background:#C86A00;box-shadow:0 4px 12px rgba(245,132,0,.3);}
+.msw-btn-next:hover{background:#1e2268;box-shadow:0 4px 12px rgba(44,49,146,.3);}
 .msw-step-counter{font-size:12px;color:#9CA3AF;font-weight:600;}
 
 /* ── Submit row ───────────────────────────────────────── */
@@ -232,10 +232,10 @@
   padding:14px 20px;display:flex;align-items:center;gap:10px;
   flex-wrap:wrap;margin-top:16px;
 }
-.msw-btn-save{background:#F58400;color:#fff;border:none;border-radius:8px;
+.msw-btn-save{background:#2c3192;color:#fff;border:none;border-radius:8px;
   padding:9px 22px;font-size:13.5px;font-weight:700;cursor:pointer;
   transition:background .15s,box-shadow .15s;font-family:inherit;}
-.msw-btn-save:hover{background:#C86A00;box-shadow:0 4px 12px rgba(245,132,0,.3);}
+.msw-btn-save:hover{background:#1e2268;box-shadow:0 4px 12px rgba(44,49,146,.3);}
 .msw-btn-ghost{background:#F3F4F6;color:#374151;border:1px solid #E5E7EB;
   border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;
   cursor:pointer;transition:background .15s;font-family:inherit;}
@@ -638,9 +638,9 @@
         </div>
 
         <div id="mswSlabBadge" style="display:none;margin-bottom:12px;
-             background:#FFF8EE;border:1px solid rgba(245,132,0,.25);
+             background:#eef0fb;border:1px solid rgba(44,49,146,.25);
              border-radius:8px;padding:8px 12px;font-size:12px;color:#374151;">
-          <span id="mswSlabName" style="font-weight:700;color:#F58400;"></span>
+          <span id="mswSlabName" style="font-weight:700;color:#2c3192;"></span>
           <span style="margin:0 6px;color:#D1D5DB;">·</span>
           Annual taxable (90% of gross × 12): <span id="mswAnnualIncome" style="color:#111827;font-weight:600;"></span>
         </div>
@@ -654,7 +654,7 @@
           <div class="msw-breakdown-item">
             <div class="msw-breakdown-pct">Monthly</div>
             <div class="msw-breakdown-label">Income Tax</div>
-            <div class="msw-breakdown-val" id="mswMonthlyTaxVal" style="color:#F58400;">PKR 0</div>
+            <div class="msw-breakdown-val" id="mswMonthlyTaxVal" style="color:#2c3192;">PKR 0</div>
           </div>
         </div>
       </div>

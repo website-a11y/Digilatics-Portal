@@ -1,11 +1,11 @@
 /* ================================================================
-   DIGILATICS — LEAVES MODULE
-   Primary: #F58400  |  Font: Plus Jakarta Sans
+   FUNNELATICS — LEAVES MODULE
+   Primary: #2c3192  |  Font: Plus Jakarta Sans
    ================================================================ */
 
 :root {
-  --lr-brand:      #F58400;
-  --lr-brand-dark: #C86A00;
+  --lr-brand:      #2c3192;
+  --lr-brand-dark: #1e2268;
   --lr-border:     #E5E7EB;
   --lr-surface:    #FFFFFF;
   --lr-bg:         #F9FAFB;
@@ -67,7 +67,7 @@
 .lr-filter-period-badge {
   background: #fff8ee;
   color: var(--lr-brand);
-  border: 1px solid rgba(245,132,0,0.25);
+  border: 1px solid rgba(44,49,146,0.25);
   border-radius: 999px;
   padding: 5px 14px;
   font-size: 12.5px;
@@ -162,7 +162,7 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
-.lr-chip-pending  .lr-chip-dot { background: #F58400; }
+.lr-chip-pending  .lr-chip-dot { background: #2c3192; }
 .lr-chip-approved .lr-chip-dot { background: #22c55e; }
 .lr-chip-rejected .lr-chip-dot { background: #ef4444; }
 .lr-chip-days     .lr-chip-dot { background: #6366f1; }
@@ -286,7 +286,7 @@
 .lr-emp-status-dot {
   position: absolute; bottom: 1px; right: 1px;
   width: 10px; height: 10px;
-  border-radius: 50%; background: #F58400;
+  border-radius: 50%; background: #2c3192;
   border: 2px solid #fff;
 }
 .lr-emp-info { display: flex; flex-direction: column; gap: 2px; }
@@ -313,7 +313,7 @@
   gap: 10px;
   box-shadow: var(--lr-shadow);
   transition: all 0.15s;
-  border-top: 3px solid #F58400;
+  border-top: 3px solid #2c3192;
 }
 .lr-req-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.09); transform: translateY(-2px); }
 .lr-req-header { display: flex; align-items: center; justify-content: space-between; }
@@ -329,7 +329,7 @@
 .lr-req-days {
   font-size: 13px; font-weight: 800;
   background: #fff8ee; color: var(--lr-brand);
-  border: 1px solid rgba(245,132,0,0.25);
+  border: 1px solid rgba(44,49,146,0.25);
   border-radius: 8px; padding: 3px 10px;
 }
 .lr-req-body { display: flex; flex-direction: column; gap: 3px; }
@@ -341,7 +341,7 @@
   background: #fff8ee; color: var(--lr-brand);
   font-size: 11px; font-weight: 700;
   padding: 2px 10px; border-radius: 999px;
-  border: 1px solid rgba(245,132,0,0.25);
+  border: 1px solid rgba(44,49,146,0.25);
 }
 .lr-req-action { font-size: 12px; font-weight: 600; color: var(--lr-muted); }
 
@@ -420,7 +420,7 @@
 .lrd-header-left { display: flex; align-items: center; gap: 12px; }
 .lrd-avatar-ph {
   width: 42px; height: 42px; border-radius: 50%;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 17px; font-weight: 700; flex-shrink: 0;
 }
@@ -443,7 +443,7 @@
 .lrd-status-badge {
   font-size: 12px; font-weight: 700; padding: 4px 13px; border-radius: 999px;
 }
-.lrd-status-pending   { background: #fff8ee; color: #F58400; border: 1px solid rgba(245,132,0,0.25); }
+.lrd-status-pending   { background: #fff8ee; color: #2c3192; border: 1px solid rgba(44,49,146,0.25); }
 .lrd-status-approved  { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
 .lrd-status-rejected  { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
 .lrd-status-cancelled { background: #F3F4F6; color: #6B7280; border: 1px solid #E5E7EB; }
@@ -487,7 +487,7 @@
 }
 .lrd-alloc-item:last-child { border-right: none; }
 .lrd-alloc-num  { font-size: 20px; font-weight: 800; color: #111827; line-height: 1; }
-.lrd-alloc-used { color: #F58400 !important; }
+.lrd-alloc-used { color: #2c3192 !important; }
 .lrd-alloc-rem  { color: #16a34a !important; }
 .lrd-alloc-lbl  { font-size: 11px; font-weight: 600; color: #9CA3AF; }
 

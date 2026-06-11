@@ -20,11 +20,11 @@
 }
 .ss-emp-avatar {
   width: 60px; height: 60px; border-radius: 16px;
-  object-fit: cover; border: 3px solid rgba(245,132,0,0.18); flex-shrink:0;
+  object-fit: cover; border: 3px solid rgba(44,49,146,0.18); flex-shrink:0;
 }
 .ss-emp-avatar-ph {
   width: 60px; height: 60px; border-radius: 16px; flex-shrink:0;
-  background: linear-gradient(135deg,#F58400,#C86A00);
+  background: linear-gradient(135deg,#2c3192,#1e2268);
   color:#fff; display:flex; align-items:center; justify-content:center;
   font-size:22px; font-weight:800;
 }
@@ -56,7 +56,7 @@
   content:''; position:absolute; top:0; left:0; right:0; height:3px;
   border-radius:14px 14px 0 0;
 }
-.ss-kpi-gross::before { background:#F58400; }
+.ss-kpi-gross::before { background:#2c3192; }
 .ss-kpi-net::before   { background:#16A34A; }
 .ss-kpi-tax::before   { background:#2563EB; }
 .ss-kpi-ded::before   { background:#DC2626; }
@@ -64,7 +64,7 @@
   width:36px; height:36px; border-radius:10px;
   display:flex; align-items:center; justify-content:center; margin-bottom:4px;
 }
-.ss-kpi-gross .ss-kpi-icon { background:#FFF8EE; color:#F58400; }
+.ss-kpi-gross .ss-kpi-icon { background:#eef0fb; color:#2c3192; }
 .ss-kpi-net   .ss-kpi-icon { background:#DCFCE7; color:#16A34A; }
 .ss-kpi-tax   .ss-kpi-icon { background:#DBEAFE; color:#2563EB; }
 .ss-kpi-ded   .ss-kpi-icon { background:#FEE2E2; color:#DC2626; }
@@ -161,8 +161,8 @@
   cursor:pointer; white-space:nowrap; transition:all 0.15s;
   font-family:inherit; flex-shrink:0;
 }
-.ss-tab-btn:hover { color:#F58400; background:rgba(245,132,0,0.04); }
-.ss-tab-btn.active { color:#F58400; border-bottom-color:#F58400; background:#fff; }
+.ss-tab-btn:hover { color:#2c3192; background:rgba(44,49,146,0.04); }
+.ss-tab-btn.active { color:#2c3192; border-bottom-color:#2c3192; background:#fff; }
 .ss-tab-pane { display:none; }
 .ss-tab-pane.active { display:block; }
 
@@ -205,18 +205,18 @@
 .ss-col input:focus, .ss-col select:focus, .ss-col textarea:focus,
 .ss-col-third input:focus, .ss-col-third select:focus,
 .ss-col-full input:focus, .ss-col-full select:focus {
-  border-color:#F58400 !important;
-  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  border-color:#2c3192 !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,0.12) !important;
   background:#fff !important;
 }
 /* Gross salary highlight */
 #id_gross_salary_input {
-  border-color:#F58400 !important;
+  border-color:#2c3192 !important;
   background:#FFFBF2 !important;
   font-size:16px !important; font-weight:700 !important;
 }
 #id_gross_salary_input:focus {
-  box-shadow:0 0 0 3px rgba(245,132,0,0.18) !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,0.18) !important;
 }
 /* Autocomplete */
 .ss-col .related-widget-wrapper,
@@ -254,7 +254,7 @@
 .ss-loan-chip .key { font-size:10px; font-weight:600; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.05em; }
 .ss-loan-chip.total .val { color:#2563EB; }
 .ss-loan-chip.paid  .val { color:#16A34A; }
-.ss-loan-chip.bal   .val { color:#F58400; }
+.ss-loan-chip.bal   .val { color:#2c3192; }
 
 /* ── Submit row ───────────────────────────────────── */
 .ss-submit-row {
@@ -263,11 +263,11 @@
   flex-wrap:wrap; margin-top:16px;
 }
 .ss-btn-save {
-  background:#F58400; color:#fff; border:none; border-radius:8px;
+  background:#2c3192; color:#fff; border:none; border-radius:8px;
   padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer;
   transition:background 0.15s,box-shadow 0.15s; font-family:inherit;
 }
-.ss-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.ss-btn-save:hover { background:#1e2268; box-shadow:0 4px 12px rgba(44,49,146,0.30); }
 .ss-btn-ghost {
   background:#F3F4F6; color:#374151; border:1px solid #E5E7EB;
   border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600;
@@ -336,7 +336,7 @@
   <div style="text-align:right;flex-shrink:0;">
     <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Payment Mode</div>
     <div style="font-size:14px;font-weight:700;color:#111827;display:flex;align-items:center;gap:6px;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2c3192" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       {{ original.payment_mode }}
     </div>
     {% if original.bank_name %}
@@ -387,14 +387,14 @@
 
   {# ── Earnings breakdown ── #}
   <div class="ss-breakdown-card">
-    <div class="ss-breakdown-head" style="color:#F58400;">
+    <div class="ss-breakdown-head" style="color:#2c3192;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Earnings Breakdown
     </div>
     <div class="ss-breakdown-body">
       <div class="ss-brow">
-        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#F58400;display:inline-block;"></span>Basic Salary <em style="font-size:10px;color:#9CA3AF;">(60%)</em></span>
-        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-basic" style="width:60%;background:#F58400;"></div></div>
+        <span class="ss-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#2c3192;display:inline-block;"></span>Basic Salary <em style="font-size:10px;color:#9CA3AF;">(60%)</em></span>
+        <div class="ss-brow-bar"><div class="ss-brow-bar-fill" id="bar-basic" style="width:60%;background:#2c3192;"></div></div>
         <span class="ss-brow-val" id="bv-basic">0</span>
       </div>
       <div class="ss-brow">
@@ -547,7 +547,7 @@
       <div class="ss-col">
         <label class="ss-label" for="{{ form.basic_salary.id_for_label }}">
           Basic Salary
-          <span style="background:#FFF8EE;color:#F58400;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">60%</span>
+          <span style="background:#eef0fb;color:#2c3192;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">60%</span>
         </label>
         {{ form.basic_salary }}
         {% if form.basic_salary.errors %}<ul class="ss-errors">{% for e in form.basic_salary.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
@@ -719,7 +719,7 @@
     <div class="ss-row">
       <div class="ss-col">
         <label class="ss-label" for="{{ form.payment_mode.id_for_label }}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:3px;vertical-align:middle;color:#F58400"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:3px;vertical-align:middle;color:#2c3192"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           Payment Mode
         </label>
         {{ form.payment_mode }}

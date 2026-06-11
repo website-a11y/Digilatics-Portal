@@ -1,13 +1,13 @@
 /* =============================================================
-   DIGILATICS — EMPLOYEE PUNCH PORTAL
+   FUNNELATICS — EMPLOYEE PUNCH PORTAL
    ============================================================= */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --brand:        #F58400;
-  --brand-dark:   #D97200;
-  --brand-light:  #FFF8EE;
+  --brand:        #2c3192;
+  --brand-dark:   #1e2268;
+  --brand-light:  #eef0fb;
   --bg:           #0f172a;
   --surface:      #1e293b;
   --surface2:     #334155;

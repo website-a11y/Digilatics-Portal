@@ -79,7 +79,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Asia/Karachi"  # Pakistani timezone (GMT+5)
+TIME_ZONE = "America/New_York"  # Eastern Time (ET)
 USE_I18N = True
 USE_TZ = True
 

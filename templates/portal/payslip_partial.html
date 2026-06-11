@@ -13,7 +13,7 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-si
 .ps { max-width: 100%; }
 
 /* Top accent */
-.ps::before { content: ''; display: block; height: 3px; background: #F58400; }
+.ps::before { content: ''; display: block; height: 3px; background: #2c3192; }
 
 /* Header */
 .ps-head { padding: 18px 28px 14px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
@@ -50,12 +50,12 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-si
 .ps-totals .val { font-size: 13px; font-weight: 800; font-family: monospace; color: #111827; }
 
 /* Net pay — clean, no dark bg */
-.ps-net { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; border-left: 4px solid #F58400; background: #fffbf5; gap: 12px; flex-wrap: wrap; }
+.ps-net { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; border-left: 4px solid #2c3192; background: #fffbf5; gap: 12px; flex-wrap: wrap; }
 .ps-net-words-lbl { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #9ca3af; margin-bottom: 3px; }
 .ps-net-words-val { font-size: 12px; font-weight: 600; color: #374151; }
 .ps-net-right { text-align: right; flex-shrink: 0; }
 .ps-net-fig-lbl { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #9ca3af; margin-bottom: 3px; }
-.ps-net-fig-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #F58400; }
+.ps-net-fig-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #2c3192; }
 
 /* Sub sections */
 .ps-sub-head { display: grid; grid-template-columns: 1fr 1fr; background: #f3f4f6; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
@@ -92,7 +92,7 @@ body { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-si
   <!-- Header -->
   <div class="ps-head">
     <div>
-      <img src="/media/salaryslip%20logo.png" alt="Company Logo"
+      <img src="{% static 'accounts/branding/funnelatics-logo.png' %}" alt="Funnelatics"
            style="max-height:48px;max-width:180px;object-fit:contain;display:block;">
     </div>
     <div class="ps-head-right">

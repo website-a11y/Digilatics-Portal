@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block title %}Teams — Digilatics HRIS{% endblock %}
+{% block title %}Teams — Funnelatics HRIS{% endblock %}
 {% block content_title %}{% endblock %}
 
 {% block extrastyle %}
@@ -25,14 +25,14 @@
 .tm-header::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, #F58400, #FBBF24);
+  background: linear-gradient(90deg, #2c3192, #FBBF24);
   border-radius: 20px 20px 0 0;
 }
 .tm-header-icon {
   width: 56px; height: 56px; border-radius: 16px;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+  box-shadow: 0 6px 18px rgba(44,49,146,0.3); color: #fff;
 }
 .tm-header-icon svg { width: 28px; height: 28px; }
 .tm-header-text { flex: 1; }
@@ -41,7 +41,7 @@
 .tm-header-actions { display: flex; gap: 10px; flex-shrink: 0; }
 .tm-btn-primary {
   display: inline-flex; align-items: center; gap: 7px;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   color: #fff; border: none; border-radius: 10px;
   padding: 10px 18px; font-size: 13px; font-weight: 700;
   text-decoration: none; cursor: pointer; transition: opacity 0.15s;
@@ -62,14 +62,14 @@
   position: relative; overflow: hidden;
 }
 .tm-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-.tm-kpi-total::before    { background: #F58400; }
+.tm-kpi-total::before    { background: #2c3192; }
 .tm-kpi-active::before   { background: #16A34A; }
 .tm-kpi-members::before  { background: #2563EB; }
 .tm-kpi-inactive::before { background: #9CA3AF; }
 
 .tm-kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
 .tm-kpi-icon svg { width: 17px; height: 17px; }
-.tm-kpi-total   .tm-kpi-icon { background: #FFF8EE; color: #F58400; }
+.tm-kpi-total   .tm-kpi-icon { background: #eef0fb; color: #2c3192; }
 .tm-kpi-active  .tm-kpi-icon { background: #DCFCE7; color: #16A34A; }
 .tm-kpi-members .tm-kpi-icon { background: #EFF6FF; color: #2563EB; }
 .tm-kpi-inactive .tm-kpi-icon { background: #F3F4F6; color: #6B7280; }
@@ -77,7 +77,7 @@
 .tm-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
 .tm-kpi-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; color: #111827; }
 .tm-kpi-sub   { font-size: 11px; color: #9CA3AF; }
-.tm-kpi-total    .tm-kpi-value { color: #C86A00; }
+.tm-kpi-total    .tm-kpi-value { color: #1e2268; }
 .tm-kpi-active   .tm-kpi-value { color: #16A34A; }
 .tm-kpi-members  .tm-kpi-value { color: #2563EB; }
 .tm-kpi-inactive .tm-kpi-value { color: #6B7280; }
@@ -95,7 +95,7 @@
   border: 1px solid #E5E7EB; border-radius: 10px;
   font-size: 13px; color: #374151; background: #F9FAFB; font-family: inherit; outline: none;
 }
-.tm-search-wrap input:focus { border-color: #F58400; background: #fff; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+.tm-search-wrap input:focus { border-color: #2c3192; background: #fff; box-shadow: 0 0 0 3px rgba(44,49,146,0.08); }
 
 /* ── Table ── */
 .tm-table-card {
@@ -115,8 +115,8 @@
 .tm-table-card tbody tr:last-child { border-bottom: none; }
 .tm-table-card tbody tr:hover { background: #FFFBF5; }
 .tm-table-card tbody td { padding: 14px 16px; font-size: 13px; color: #374151; }
-.tm-table-card tbody td a { color: #C86A00; text-decoration: none; font-weight: 600; }
-.tm-table-card tbody td a:hover { color: #F58400; }
+.tm-table-card tbody td a { color: #1e2268; text-decoration: none; font-weight: 600; }
+.tm-table-card tbody td a:hover { color: #2c3192; }
 
 .tm-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .tm-badge-active   { background: #DCFCE7; color: #15803D; }
@@ -125,7 +125,7 @@
 .tm-action-btn {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
-  text-decoration: none; background: #FFF8EE; color: #C86A00;
+  text-decoration: none; background: #eef0fb; color: #1e2268;
   border: 1px solid #FED7AA; transition: all 0.15s;
 }
 .tm-action-btn:hover { background: #FFEDD5; }

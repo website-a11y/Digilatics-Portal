@@ -1,7 +1,7 @@
 /* ================================================================
-   DIGILATICS HRIS — PORTAL BASE
+   FUNNELATICS HRIS — PORTAL BASE
    Global layout: sidebar, topbar, quick-actions
-   Font: Plus Jakarta Sans  |  Brand: #F58400
+   Font: Plus Jakarta Sans  |  Brand: #2c3192
    ================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&display=swap');
@@ -14,10 +14,10 @@
 
 :root {
   /* brand */
-  --p-brand:          #F58400;
-  --p-brand-dark:     #C86A00;
-  --p-brand-bg:       rgba(245, 132, 0, 0.08);
-  --p-brand-bg-mid:   rgba(245, 132, 0, 0.14);
+  --p-brand:          #2c3192;
+  --p-brand-dark:     #1e2268;
+  --p-brand-bg:       rgba(44, 49, 146, 0.08);
+  --p-brand-bg-mid:   rgba(44, 49, 146, 0.14);
 
   /* neutrals */
   --p-text:           #111827;
@@ -189,13 +189,13 @@ svg { display: block; flex-shrink: 0; }
 }
 
 .sidebar-item:hover {
-  background: rgba(245, 132, 0, 0.08);
-  color: #F58400;
+  background: rgba(44, 49, 146, 0.08);
+  color: #2c3192;
   text-decoration: none;
 }
 
 .sidebar-item.active {
-  background: #F58400;
+  background: #2c3192;
   color: #ffffff;
   font-weight: 600;
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
@@ -203,7 +203,7 @@ svg { display: block; flex-shrink: 0; }
 }
 
 .sidebar-item.active:hover {
-  background: #C86A00;
+  background: #1e2268;
   color: #ffffff;
 }
 
@@ -255,9 +255,9 @@ svg { display: block; flex-shrink: 0; }
 }
 
 .sidebar-help:hover {
-  border-color: #F58400;
-  color: #F58400;
-  background: rgba(245, 132, 0, 0.08);
+  border-color: #2c3192;
+  color: #2c3192;
+  background: rgba(44, 49, 146, 0.08);
   text-decoration: none;
 }
 
@@ -345,7 +345,7 @@ svg { display: block; flex-shrink: 0; }
 
 .topbar-search:focus-within {
   border-color: var(--p-brand);
-  box-shadow: 0 0 0 3px rgba(245, 132, 0, 0.12);
+  box-shadow: 0 0 0 3px rgba(44, 49, 146, 0.12);
 }
 
 .topbar-search svg {
@@ -471,7 +471,7 @@ svg { display: block; flex-shrink: 0; }
   font-weight: 700;
   overflow: hidden;
   flex-shrink: 0;
-  border: 2px solid rgba(245, 132, 0, 0.25);
+  border: 2px solid rgba(44, 49, 146, 0.25);
 }
 
 .topbar-avatar img {

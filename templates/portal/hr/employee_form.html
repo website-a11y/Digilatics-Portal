@@ -1,5 +1,5 @@
 {% extends "portal/hr/base.html" %}
-{% block title %}{% if emp %}Edit Employee{% else %}Add Employee{% endif %} — Digilatics HR{% endblock %}
+{% block title %}{% if emp %}Edit Employee{% else %}Add Employee{% endif %} — Funnelatics HR{% endblock %}
 {% block page_title %}{% if emp %}Edit — {{ emp.full_name }}{% else %}Add New Employee{% endif %}{% endblock %}
 
 {% block content %}
@@ -24,7 +24,7 @@
   background: var(--surface); color: var(--muted-2);
   transition: all .25s;
 }
-.msf-step.active .msf-step-circle { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 0 0 4px rgba(245,132,0,.15); }
+.msf-step.active .msf-step-circle { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 0 0 4px rgba(44,49,146,.15); }
 .msf-step.done  .msf-step-circle { background: #16a34a; border-color: #16a34a; color: #fff; }
 .msf-step-info { display: flex; flex-direction: column; }
 .msf-step-num  { font-size: 10px; font-weight: 600; color: var(--muted-2); text-transform: uppercase; letter-spacing: .5px; }
@@ -147,7 +147,7 @@
 
 /* ── Login account block ── */
 .login-account-block {
-  background: #fff7ed;
+  background: #eef0fb;
   border: 1.5px solid #fed7aa;
   border-radius: 12px;
   padding: 20px 22px;
@@ -185,7 +185,7 @@
 }
 .confirm-modal-icon {
   width: 48px; height: 48px; flex-shrink: 0;
-  background: #fff7ed; border-radius: 12px;
+  background: #eef0fb; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
 }
 .confirm-modal-body { padding: 20px 28px 0; }
@@ -298,8 +298,8 @@
       <div class="ep-card">
         <div class="ep-card-header" style="border-bottom:1px solid var(--border);padding:18px 24px;">
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:36px;height:36px;background:#fff7ed;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div style="width:36px;height:36px;background:#eef0fb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2c3192" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
             <div>
               <div class="ep-card-title">Personal Information</div>
@@ -350,8 +350,8 @@
           <!-- Basic Details -->
           <div class="form-section">
             <div class="form-section-header" style="background:#f9fafb;border:1px solid var(--border);">
-              <div class="form-section-icon" style="background:#fff7ed;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2" width="14" height="14"><circle cx="12" cy="8" r="5"/><path d="M3 21a9 9 0 0 1 18 0"/></svg>
+              <div class="form-section-icon" style="background:#eef0fb;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#2c3192" stroke-width="2" width="14" height="14"><circle cx="12" cy="8" r="5"/><path d="M3 21a9 9 0 0 1 18 0"/></svg>
               </div>
               <div>
                 <div class="form-section-title">Basic Details</div>
@@ -434,7 +434,7 @@
               <div class="hr-form-group">
                 <label class="hr-form-label">Official Work Email <span class="hr-required">*</span></label>
                 <input type="email" name="official_email" id="f-official_email" class="hr-form-input"
-                       value="{{ emp.official_email|default:'' }}" placeholder="name@digilatics.com" required>
+                       value="{{ emp.official_email|default:'' }}" placeholder="name@funnelatics.com" required>
                 <div class="field-error" id="err-official_email">Official email is required</div>
               </div>
               <div class="hr-form-group">
@@ -676,7 +676,7 @@
 
           <!-- Shift -->
           <div class="form-section" style="margin-top:28px;">
-            <div class="form-section-header" style="background:#fff7ed;border:1px solid #fed7aa;">
+            <div class="form-section-header" style="background:#eef0fb;border:1px solid #fed7aa;">
               <div class="form-section-icon" style="background:#ffedd5;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </div>
@@ -927,7 +927,7 @@
             <strong>Salary Setup exists</strong> — saving will update it automatically.
           </div>
           {% else %}
-          <div style="margin-top:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400e;line-height:1.5;">
+          <div style="margin-top:12px;background:#eef0fb;border:1px solid #fed7aa;border-radius:10px;padding:12px 14px;font-size:12px;color:#1a1d6b;line-height:1.5;">
             No salary setup yet — one will be created when you save with a gross salary entered.
           </div>
           {% endif %}
@@ -1076,7 +1076,7 @@
   <div class="confirm-modal">
     <div class="confirm-modal-header">
       <div class="confirm-modal-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#F58400" stroke-width="2" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2c3192" stroke-width="2" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
       <div>
         <div style="font-size:18px;font-weight:800;color:#111827;letter-spacing:-.3px;">Create new employee?</div>
@@ -1088,7 +1088,7 @@
         <!-- populated by JS -->
       </div>
       {% if not emp %}
-      <div style="margin-top:14px;padding:10px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#92400e;line-height:1.5;" id="confirm-email-note">
+      <div style="margin-top:14px;padding:10px 14px;background:#eef0fb;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#1a1d6b;line-height:1.5;" id="confirm-email-note">
         <!-- populated by JS -->
       </div>
       {% endif %}

@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block title %}Manual Punch — Digilatics HRIS{% endblock %}
+{% block title %}Manual Punch — Funnelatics HRIS{% endblock %}
 {% block content_title %}{% endblock %}
 
 {% block breadcrumbs %}
@@ -29,13 +29,13 @@
 }
 .mp-header::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, #F58400, #FBBF24); border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg, #2c3192, #FBBF24); border-radius: 20px 20px 0 0;
 }
 .mp-header-icon {
   width: 56px; height: 56px; border-radius: 16px;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+  box-shadow: 0 6px 18px rgba(44,49,146,0.3); color: #fff;
 }
 .mp-header-icon svg { width: 28px; height: 28px; }
 .mp-header-text { flex: 1; }
@@ -76,20 +76,20 @@
   display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden;
 }
 .mp-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-.mp-kpi-total::before { background: #F58400; }
+.mp-kpi-total::before { background: #2c3192; }
 .mp-kpi-in::before    { background: #16A34A; }
 .mp-kpi-out::before   { background: #DC2626; }
 
 .mp-kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
 .mp-kpi-icon svg { width: 17px; height: 17px; }
-.mp-kpi-total .mp-kpi-icon { background: #FFF8EE; color: #F58400; }
+.mp-kpi-total .mp-kpi-icon { background: #eef0fb; color: #2c3192; }
 .mp-kpi-in    .mp-kpi-icon { background: #DCFCE7; color: #16A34A; }
 .mp-kpi-out   .mp-kpi-icon { background: #FEF2F2; color: #DC2626; }
 
 .mp-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
 .mp-kpi-value { font-size: 32px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
 .mp-kpi-sub   { font-size: 11px; color: #9CA3AF; }
-.mp-kpi-total .mp-kpi-value { color: #C86A00; }
+.mp-kpi-total .mp-kpi-value { color: #1e2268; }
 .mp-kpi-in    .mp-kpi-value { color: #16A34A; }
 .mp-kpi-out   .mp-kpi-value { color: #DC2626; }
 
@@ -101,7 +101,7 @@
 }
 .mp-self-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, #F58400, #FBBF24); border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg, #2c3192, #FBBF24); border-radius: 20px 20px 0 0;
 }
 .mp-self-greeting { font-size: 12px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
 .mp-self-name { font-size: 20px; font-weight: 800; color: #111827; margin-bottom: 20px; }
@@ -111,7 +111,7 @@
 .mp-self-dot-in  { background: #16A34A; box-shadow: 0 0 0 3px rgba(22,163,74,0.15); }
 .mp-self-dot-out { background: #DC2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); }
 .mp-self-time-label { font-size: 13px; font-weight: 600; color: #374151; }
-.mp-self-time-val   { font-size: 13px; font-weight: 700; color: #F58400; }
+.mp-self-time-val   { font-size: 13px; font-weight: 700; color: #2c3192; }
 .mp-self-hours { margin-bottom: 24px; }
 .mp-self-hours-val { font-size: 36px; font-weight: 800; color: #111827; letter-spacing: -0.02em; display: inline; }
 .mp-self-hours-label { font-size: 14px; font-weight: 500; color: #9CA3AF; margin-left: 8px; }
@@ -123,13 +123,13 @@
   font-size: 14px; font-weight: 600; color: #374151; font-family: inherit;
   width: 110px; outline: none; transition: border-color 0.15s;
 }
-.mp-time-field input:focus { border-color: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+.mp-time-field input:focus { border-color: #2c3192; box-shadow: 0 0 0 3px rgba(44,49,146,0.08); }
 .mp-punch-in-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 24px; background: linear-gradient(135deg, #F58400, #C86A00);
+  padding: 11px 24px; background: linear-gradient(135deg, #2c3192, #1e2268);
   color: #fff; border: none; border-radius: 12px;
   font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
-  box-shadow: 0 4px 12px rgba(245,132,0,0.3); transition: opacity 0.15s;
+  box-shadow: 0 4px 12px rgba(44,49,146,0.3); transition: opacity 0.15s;
 }
 .mp-punch-in-btn:hover { opacity: 0.9; }
 .mp-punch-in-btn svg { width: 16px; height: 16px; }
@@ -155,7 +155,7 @@
   font-size: 13px; font-weight: 600; color: #374151; font-family: inherit;
   width: 90px; outline: none;
 }
-.mp-bulk-time:focus { border-color: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+.mp-bulk-time:focus { border-color: #2c3192; box-shadow: 0 0 0 3px rgba(44,49,146,0.08); }
 .mp-bulk-btn {
   padding: 8px 14px; border: 1px solid #E5E7EB; border-radius: 9px;
   font-size: 12px; font-weight: 700; color: #374151; background: #F9FAFB;
@@ -164,7 +164,7 @@
 .mp-bulk-btn:hover { background: #F3F4F6; }
 .mp-bulk-submit {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 16px; background: linear-gradient(135deg, #F58400, #C86A00);
+  padding: 8px 16px; background: linear-gradient(135deg, #2c3192, #1e2268);
   color: #fff; border: none; border-radius: 9px;
   font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
   margin-left: auto;
@@ -183,7 +183,7 @@
 }
 .mp-table-head-title { font-size: 13px; font-weight: 800; color: #374151; }
 .mp-auto-refresh { font-size: 12px; color: #9CA3AF; }
-.mp-auto-refresh strong { color: #F58400; }
+.mp-auto-refresh strong { color: #2c3192; }
 
 .mp-table { width: 100%; border-collapse: collapse; }
 .mp-table thead th {
@@ -208,7 +208,7 @@
 }
 .mp-emp-avatar-ph {
   width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; font-weight: 800; color: #fff;
 }
@@ -221,7 +221,7 @@
 .mp-sched    { font-size: 12px; color: #6B7280; }
 .mp-muted    { font-size: 12px; color: #D1D5DB; }
 .mp-flag { display: inline-block; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-left: 4px; }
-.mp-flag-late  { background: #FEF3C7; color: #92400E; }
+.mp-flag-late  { background: #e8eaf6; color: #92400E; }
 .mp-flag-early { background: #FEE2E2; color: #991B1B; }
 
 .mp-status-badge {
@@ -236,7 +236,7 @@
   font-size: 12px; font-weight: 600; color: #374151; font-family: inherit; outline: none;
   text-align: center;
 }
-.mp-punch-cell input[type=text]:focus { border-color: #F58400; box-shadow: 0 0 0 2px rgba(245,132,0,0.1); }
+.mp-punch-cell input[type=text]:focus { border-color: #2c3192; box-shadow: 0 0 0 2px rgba(44,49,146,0.1); }
 .mp-punch-btn-in {
   padding: 6px 12px; background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0;
   border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
@@ -434,7 +434,7 @@
           <tr class="{% if row.check_in %}mp-tr-in{% endif %}" data-checked-in="{% if row.check_in %}1{% else %}0{% endif %}">
             {% if user.is_superuser %}
             <td style="text-align:center;">
-              <input type="checkbox" name="selected_employees" value="{{ row.employee.pk }}" class="bulk-cb" style="width:15px;height:15px;cursor:pointer;accent-color:#F58400;">
+              <input type="checkbox" name="selected_employees" value="{{ row.employee.pk }}" class="bulk-cb" style="width:15px;height:15px;cursor:pointer;accent-color:#2c3192;">
             </td>
             {% endif %}
             <td>
@@ -472,10 +472,10 @@
               {% if row.status %}
                 {% if row.status == "present" %}<span class="mp-status-badge" style="background:#DCFCE7;color:#15803D;">Present</span>
                 {% elif row.status == "absent" %}<span class="mp-status-badge" style="background:#FEE2E2;color:#DC2626;">Absent</span>
-                {% elif row.status == "on_leave_paid" %}<span class="mp-status-badge" style="background:#FFF8EE;color:#C86A00;">Leave (Paid)</span>
+                {% elif row.status == "on_leave_paid" %}<span class="mp-status-badge" style="background:#eef0fb;color:#1e2268;">Leave (Paid)</span>
                 {% elif row.status == "on_leave_unpaid" %}<span class="mp-status-badge" style="background:#DCFCE7;color:#15803D;">Leave (Unpaid)</span>
                 {% elif row.status == "on_hourly_leave" %}<span class="mp-status-badge" style="background:#F3F4F6;color:#374151;">Hourly Leave</span>
-                {% elif row.status == "half_day" %}<span class="mp-status-badge" style="background:#FEF3C7;color:#92400E;">Half Day</span>
+                {% elif row.status == "half_day" %}<span class="mp-status-badge" style="background:#e8eaf6;color:#92400E;">Half Day</span>
                 {% elif row.status == "public_holiday" %}<span class="mp-status-badge" style="background:#EFF6FF;color:#2563EB;">Holiday</span>
                 {% elif row.status == "work_from_home" %}<span class="mp-status-badge" style="background:#F3E8FF;color:#7C3AED;">WFH</span>
                 {% else %}<span class="mp-status-badge" style="background:#F3F4F6;color:#6B7280;">{{ row.status }}</span>{% endif %}

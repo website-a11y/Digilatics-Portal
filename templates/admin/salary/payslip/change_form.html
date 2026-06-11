@@ -26,7 +26,7 @@
 .sl-paid-pill   { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#DCFCE7; color:#16A34A; border:1px solid #BBF7D0; }
 .sl-unpaid-pill { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB; }
 .sl-final-pill  { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#DBEAFE; color:#2563EB; border:1px solid #BFDBFE; }
-.sl-draft-pill  { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#FFF8EE; color:#F58400; border:1px solid #FDE68A; }
+.sl-draft-pill  { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#eef0fb; color:#2c3192; border:1px solid #FDE68A; }
 
 .sl-kpi-row {
   display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;
@@ -37,13 +37,13 @@
   display:flex; flex-direction:column; gap:6px; position:relative; overflow:hidden;
 }
 .sl-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
-.sl-kpi-gross::before { background:#F58400; }
+.sl-kpi-gross::before { background:#2c3192; }
 .sl-kpi-net::before   { background:#16A34A; }
 .sl-kpi-tax::before   { background:#2563EB; }
 .sl-kpi-ded::before   { background:#DC2626; }
 .sl-kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
 .sl-kpi-icon svg { width:16px; height:16px; }
-.sl-kpi-gross .sl-kpi-icon { background:#FFF8EE; color:#F58400; }
+.sl-kpi-gross .sl-kpi-icon { background:#eef0fb; color:#2c3192; }
 .sl-kpi-net   .sl-kpi-icon { background:#DCFCE7; color:#16A34A; }
 .sl-kpi-tax   .sl-kpi-icon { background:#DBEAFE; color:#2563EB; }
 .sl-kpi-ded   .sl-kpi-icon { background:#FEE2E2; color:#DC2626; }
@@ -80,7 +80,7 @@
 }
 .sl-btotal-val { font-size:15px; font-weight:800; }
 .sl-btotal-val.net { color:#16A34A; }
-.sl-btotal-val.gross { color:#C86A00; }
+.sl-btotal-val.gross { color:#1e2268; }
 
 /* Annual strip */
 .sl-annual-strip {
@@ -105,8 +105,8 @@
   background:none; border:none; border-bottom:2px solid transparent;
   cursor:pointer; white-space:nowrap; transition:all 0.15s; font-family:inherit; flex-shrink:0;
 }
-.sl-tab-btn:hover { color:#F58400; background:rgba(245,132,0,0.04); }
-.sl-tab-btn.active { color:#F58400; border-bottom-color:#F58400; background:#fff; }
+.sl-tab-btn:hover { color:#2c3192; background:rgba(44,49,146,0.04); }
+.sl-tab-btn.active { color:#2c3192; border-bottom-color:#2c3192; background:#fff; }
 .sl-tab-pane { display:none; }
 .sl-tab-pane.active { display:block; }
 
@@ -131,8 +131,8 @@
 .sl-col input:focus, .sl-col select:focus, .sl-col textarea:focus,
 .sl-col-third input:focus, .sl-col-third select:focus,
 .sl-col-full input:focus, .sl-col-full select:focus {
-  border-color:#F58400 !important;
-  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  border-color:#2c3192 !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,0.12) !important;
   background:#fff !important;
 }
 .sl-help   { font-size:11.5px; color:#9CA3AF; line-height:1.5; }
@@ -152,8 +152,8 @@
   background:#fff; border:1px solid #E5E7EB; border-radius:14px;
   padding:14px 20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px;
 }
-.sl-btn-save { background:#F58400; color:#fff; border:none; border-radius:8px; padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; font-family:inherit; }
-.sl-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.sl-btn-save { background:#2c3192; color:#fff; border:none; border-radius:8px; padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; font-family:inherit; }
+.sl-btn-save:hover { background:#1e2268; box-shadow:0 4px 12px rgba(44,49,146,0.30); }
 .sl-btn-ghost { background:#F3F4F6; color:#374151; border:1px solid #E5E7EB; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.15s; font-family:inherit; }
 .sl-btn-ghost:hover { background:#E5E7EB; }
 .sl-btn-delete { margin-left:auto; color:#DC2626; font-size:13px; font-weight:500; padding:9px 16px; border:1px solid #FECDD3; border-radius:8px; background:#FFF1F2; text-decoration:none; transition:background 0.15s; }
@@ -249,7 +249,7 @@
 <!-- Breakdown panels -->
 <div class="sl-breakdown-row">
   <div class="sl-breakdown-card">
-    <div class="sl-breakdown-head" style="color:#F58400;">
+    <div class="sl-breakdown-head" style="color:#2c3192;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Earnings Breakdown
     </div>
@@ -257,8 +257,8 @@
       {% if original.gross_salary %}
       {% with g=original.gross_salary %}
       <div class="sl-brow">
-        <span class="sl-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#F58400;display:inline-block;"></span>Gross Salary</span>
-        <div class="sl-brow-bar"><div class="sl-brow-bar-fill" style="width:100%;background:#F58400;"></div></div>
+        <span class="sl-brow-label"><span style="width:8px;height:8px;border-radius:50%;background:#2c3192;display:inline-block;"></span>Gross Salary</span>
+        <div class="sl-brow-bar"><div class="sl-brow-bar-fill" style="width:100%;background:#2c3192;"></div></div>
         <span class="sl-brow-val">PKR {{ original.gross_salary|floatformat:0 }}</span>
       </div>
       {% if original.overtime_hours %}
@@ -412,7 +412,7 @@
       <div class="sl-col">
         <label class="sl-label" for="{{ form.gross_salary.id_for_label }}">
           Gross Salary
-          <span style="background:#FFF8EE;color:#F58400;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">CTC</span>
+          <span style="background:#eef0fb;color:#2c3192;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">CTC</span>
         </label>
         {{ form.gross_salary }}
         {% if form.gross_salary.errors %}<ul class="sl-errors">{% for e in form.gross_salary.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}

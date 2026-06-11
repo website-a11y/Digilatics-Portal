@@ -1,13 +1,13 @@
 /* ================================================================
    EMPLOYEE REGISTRATION FORM — Stripe/Vercel aesthetic
-   Primary: #F58400  |  Only font-weight 400 & 500
+   Primary: #2c3192  |  Only font-weight 400 & 500
    ================================================================ */
 
 :root {
-  --ef-brand:       #F58400;
+  --ef-brand:       #2c3192;
   --ef-brand-dark:  #B85E00;
   --ef-brand-light: #FFF3E0;
-  --ef-brand-ring:  rgba(245, 132, 0, 0.18);
+  --ef-brand-ring:  rgba(44, 49, 146, 0.18);
   --ef-border:      rgba(0,0,0,0.08);
   --ef-border-w:    0.5px;
   --ef-radius:      8px;
@@ -416,7 +416,7 @@ textarea.ef-verified {
   align-items: flex-start;
   gap: 10px;
   background: var(--ef-brand-light);
-  border: 0.5px solid rgba(245, 132, 0, 0.35);
+  border: 0.5px solid rgba(44, 49, 146, 0.35);
   border-radius: var(--ef-radius);
   padding: 10px 14px;
   margin-top: 10px;

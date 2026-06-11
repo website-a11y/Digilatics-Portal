@@ -337,11 +337,14 @@ class PayrollRun(models.Model):
 
     @property
     def period_start(self) -> date:
-        return date(self.year, self.month, 1)
+        # Pay cycle runs 23rd of previous month → 22nd of current month
+        if self.month == 1:
+            return date(self.year - 1, 12, 23)
+        return date(self.year, self.month - 1, 23)
 
     @property
     def period_end(self) -> date:
-        return date(self.year, self.month, monthrange(self.year, self.month)[1])
+        return date(self.year, self.month, 22)
 
 
 class Payslip(models.Model):

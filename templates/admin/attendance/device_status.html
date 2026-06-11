@@ -17,7 +17,7 @@
 *,body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;box-sizing:border-box;}
 .ds-wrap{max-width:960px;margin:0 auto;padding:24px 0;}
 .ds-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#6B7280;text-decoration:none;margin-bottom:20px;transition:color .12s;}
-.ds-back:hover{color:#F58400;}
+.ds-back:hover{color:#2c3192;}
 .ds-back svg{width:14px;height:14px;}
 
 /* Hero */
@@ -27,7 +27,7 @@
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
 }
 .ds-hero-left{display:flex;align-items:center;gap:16px;}
-.ds-hero-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#F58400,#C86A00);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(245,132,0,.4);}
+.ds-hero-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#2c3192,#1e2268);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(44,49,146,.4);}
 .ds-hero-icon svg{width:26px;height:26px;color:#fff;}
 .ds-hero-title{font-size:22px;font-weight:900;color:#fff;margin:0 0 3px;letter-spacing:-.02em;}
 .ds-hero-sub{font-size:13px;color:rgba(255,255,255,.5);margin:0;}
@@ -55,7 +55,7 @@
 /* Config box */
 .ds-config-wrap{background:#F8F9FA;border:1.5px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:20px;}
 .ds-config-title{font-size:13px;font-weight:700;color:#374151;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-.ds-config-title svg{width:15px;height:15px;color:#F58400;}
+.ds-config-title svg{width:15px;height:15px;color:#2c3192;}
 .ds-config-table{width:100%;border-collapse:collapse;font-size:13px;}
 .ds-config-table td{padding:8px 12px;border-bottom:1px solid #E5E7EB;}
 .ds-config-table tr:last-child td{border-bottom:none;}
@@ -66,12 +66,12 @@
   padding:4px 12px;font-size:12px;font-weight:700;color:#374151;cursor:pointer;
   font-family:'Courier New',monospace;letter-spacing:.02em;transition:all .12s;
 }
-.ds-config-table .ds-copy:hover{border-color:#F58400;color:#F58400;}
+.ds-config-table .ds-copy:hover{border-color:#2c3192;color:#2c3192;}
 
 /* Steps */
 .ds-steps{counter-reset:step;display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
 .ds-step{display:flex;gap:12px;align-items:flex-start;}
-.ds-step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#F58400,#C86A00);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.ds-step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2c3192,#1e2268);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
 .ds-step-body{flex:1;}
 .ds-step-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:3px;}
 .ds-step-desc{font-size:12.5px;color:#6B7280;line-height:1.5;}
@@ -241,7 +241,7 @@
       <div class="ds-step-num">4</div>
       <div class="ds-step-body">
         <div class="ds-step-title">Check Device Employee Mappings</div>
-        <div class="ds-step-desc">The numeric user IDs enrolled on the ZKTeco device must match the <strong>Device User ID</strong> values in <a href="{% url 'admin:attendance_deviceemployee_changelist' %}" style="color:#F58400;font-weight:600;">Device Employee Mappings</a>. All 75 employees have already been auto-mapped from their employee codes.</div>
+        <div class="ds-step-desc">The numeric user IDs enrolled on the ZKTeco device must match the <strong>Device User ID</strong> values in <a href="{% url 'admin:attendance_deviceemployee_changelist' %}" style="color:#2c3192;font-weight:600;">Device Employee Mappings</a>. All 75 employees have already been auto-mapped from their employee codes.</div>
       </div>
     </div>
   </div>

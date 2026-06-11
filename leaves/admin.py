@@ -183,7 +183,7 @@ class LeaveAllocationAdmin(admin.ModelAdmin):
             track_color = "#fee2e2"
         elif pct >= 60:
             bar_color = "#f59e0b"
-            track_color = "#fef3c7"
+            track_color = "#e8eaf6"
         else:
             bar_color = "#22c55e"
             track_color = "#dcfce7"
@@ -722,7 +722,7 @@ class LeaveRequestAdmin(admin.ModelAdmin):
         if pct >= 90:
             bar_color, track_color = "#ef4444", "#fee2e2"
         elif pct >= 60:
-            bar_color, track_color = "#f59e0b", "#fef3c7"
+            bar_color, track_color = "#f59e0b", "#e8eaf6"
         else:
             bar_color, track_color = "#22c55e", "#dcfce7"
 

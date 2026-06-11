@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static %}
 
-{% block title %}Sync Schedule — Digilatics HRIS{% endblock %}
+{% block title %}Sync Schedule — Funnelatics HRIS{% endblock %}
 {% block content_title %}{% endblock %}
 
 {% block extrastyle %}
@@ -19,13 +19,13 @@
 }
 .ssf-header::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, #F58400, #FBBF24); border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg, #2c3192, #FBBF24); border-radius: 20px 20px 0 0;
 }
 .ssf-header-icon {
   width: 56px; height: 56px; border-radius: 16px;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+  box-shadow: 0 6px 18px rgba(44,49,146,0.3); color: #fff;
 }
 .ssf-header-icon svg { width: 28px; height: 28px; }
 .ssf-header-text { flex: 1; }
@@ -35,7 +35,7 @@
 .ssf-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
 .ssf-badge-active   { background: #DCFCE7; color: #15803D; }
 .ssf-badge-inactive { background: #F3F4F6; color: #6B7280; }
-.ssf-badge-new      { background: #FFF8EE; color: #C86A00; }
+.ssf-badge-new      { background: #eef0fb; color: #1e2268; }
 
 /* ── KPI grid ── */
 .ssf-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
@@ -47,18 +47,18 @@
   display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden;
 }
 .ssf-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-.ssf-kpi-1::before { background: #F58400; }
+.ssf-kpi-1::before { background: #2c3192; }
 .ssf-kpi-2::before { background: #2563EB; }
 .ssf-kpi-s::before { background: #16A34A; }
 .ssf-kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
 .ssf-kpi-icon svg { width: 17px; height: 17px; }
-.ssf-kpi-1 .ssf-kpi-icon { background: #FFF8EE; color: #F58400; }
+.ssf-kpi-1 .ssf-kpi-icon { background: #eef0fb; color: #2c3192; }
 .ssf-kpi-2 .ssf-kpi-icon { background: #EFF6FF; color: #2563EB; }
 .ssf-kpi-s .ssf-kpi-icon { background: #DCFCE7; color: #16A34A; }
 .ssf-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
 .ssf-kpi-value { font-size: 22px; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; }
 .ssf-kpi-sub   { font-size: 11px; color: #9CA3AF; }
-.ssf-kpi-1 .ssf-kpi-value { color: #C86A00; }
+.ssf-kpi-1 .ssf-kpi-value { color: #1e2268; }
 .ssf-kpi-2 .ssf-kpi-value { color: #2563EB; }
 .ssf-kpi-s .ssf-kpi-value { color: #16A34A; font-size: 16px; }
 
@@ -73,7 +73,7 @@
   cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit;
 }
 .ssf-tab-btn:hover { color: #374151; }
-.ssf-tab-btn.active { color: #F58400; border-bottom-color: #F58400; }
+.ssf-tab-btn.active { color: #2c3192; border-bottom-color: #2c3192; }
 .ssf-tab-pane { display: none; }
 .ssf-tab-pane.active { display: block; }
 
@@ -99,9 +99,9 @@
 .ssf-time-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
 }
-.ssf-time-card-1::before { background: #F58400; }
+.ssf-time-card-1::before { background: #2c3192; }
 .ssf-time-card-2::before { background: #2563EB; }
-.ssf-time-card:focus-within { box-shadow: 0 0 0 3px rgba(245,132,0,0.1); border-color: #F58400; }
+.ssf-time-card:focus-within { box-shadow: 0 0 0 3px rgba(44,49,146,0.1); border-color: #2c3192; }
 .ssf-time-card-2:focus-within { box-shadow: 0 0 0 3px rgba(37,99,235,0.1); border-color: #2563EB; }
 
 .ssf-time-card-label {
@@ -109,7 +109,7 @@
   text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
   display: flex; align-items: center; gap: 6px;
 }
-.ssf-time-card-1 .ssf-time-card-label { color: #C86A00; }
+.ssf-time-card-1 .ssf-time-card-label { color: #1e2268; }
 .ssf-time-card-2 .ssf-time-card-label { color: #2563EB; }
 .ssf-time-card-label svg { width: 13px; height: 13px; }
 
@@ -123,7 +123,7 @@
   font-variant-numeric: tabular-nums;
   transition: border-color 0.15s;
 }
-.ssf-time-card-1 input:focus { border-color: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.1); }
+.ssf-time-card-1 input:focus { border-color: #2c3192; box-shadow: 0 0 0 3px rgba(44,49,146,0.1); }
 .ssf-time-card-2 input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 .ssf-time-card-hint { font-size: 11px; color: #9CA3AF; margin-top: 8px; }
 
@@ -132,7 +132,7 @@
   display: flex; align-items: center; gap: 12px; padding: 14px 16px;
   background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px;
 }
-.ssf-checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: #F58400; flex-shrink: 0; cursor: pointer; }
+.ssf-checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: #2c3192; flex-shrink: 0; cursor: pointer; }
 .ssf-cb-text { flex: 1; }
 .ssf-cb-label { font-size: 13px; font-weight: 700; color: #374151; }
 .ssf-cb-sub   { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
@@ -153,7 +153,7 @@
 }
 .ssf-btn-primary {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 22px; background: linear-gradient(135deg, #F58400, #C86A00);
+  padding: 10px 22px; background: linear-gradient(135deg, #2c3192, #1e2268);
   color: #fff; border: none; border-radius: 10px;
   font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.15s;
 }

@@ -1,5 +1,5 @@
 {% extends "portal/hr/base.html" %}
-{% block title %}Leave Requests — Digilatics HR{% endblock %}
+{% block title %}Leave Requests — Funnelatics HR{% endblock %}
 {% block page_title %}Leave Requests{% endblock %}
 
 {% block content %}
@@ -165,7 +165,7 @@
   </div>
   <div class="lv-stat-card">
     <div class="lv-stat-label">Pending</div>
-    <div class="lv-stat-value" style="color:#d97706;">{{ status_summary.Pending|default:0 }}d</div>
+    <div class="lv-stat-value" style="color:#1e2268;">{{ status_summary.Pending|default:0 }}d</div>
     <div class="lv-stat-sub">awaiting approval</div>
   </div>
 </div>
@@ -237,7 +237,7 @@
             {% if lr.status == 'Approved' %}
               <span class="ep-badge" style="background:#dcfce7;color:#15803d;">Approved</span>
             {% elif lr.status == 'Pending' %}
-              <span class="ep-badge" style="background:#fef9c3;color:#92400e;">Pending</span>
+              <span class="ep-badge" style="background:#fef9c3;color:#1a1d6b;">Pending</span>
             {% elif lr.status == 'Rejected' %}
               <span class="ep-badge" style="background:#fee2e2;color:#b91c1c;">Rejected</span>
             {% elif lr.status == 'Manager Approved' %}

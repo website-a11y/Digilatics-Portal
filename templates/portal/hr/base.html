@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}HR Panel — Digilatics{% endblock %}</title>
+  <title>{% block title %}HR Panel — Funnelatics{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}?v=3">
@@ -18,19 +18,11 @@
   <!-- ══ HR SIDEBAR ══ -->
   <aside class="ep-sidebar hr-sidebar" id="sidebar">
 
-    <div class="ep-logo hr-logo">
-      <div class="hr-logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      </div>
-      <div>
-        <span class="ep-logo-text">Digilatics</span>
-        <div class="hr-logo-sub">HR Admin Panel</div>
-      </div>
+    <div class="ep-logo hr-logo" style="flex-direction:column;align-items:flex-start;gap:4px;">
+      <img src="{% static 'accounts/branding/funnelatics-logo.png' %}"
+           alt="Funnelatics" class="ep-logo-img"
+           style="max-height:32px;max-width:150px;object-fit:contain;">
+      <div class="hr-logo-sub" style="font-size:10px;color:#9ca3af;font-weight:600;letter-spacing:.4px;text-transform:uppercase;">HR Admin Panel</div>
     </div>
 
     <nav class="ep-nav">

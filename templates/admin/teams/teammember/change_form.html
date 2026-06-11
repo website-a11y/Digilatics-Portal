@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static %}
 
-{% block title %}{% if original %}{{ original.employee.full_name }}{% else %}Add Team Member{% endif %} — Digilatics HRIS{% endblock %}
+{% block title %}{% if original %}{{ original.employee.full_name }}{% else %}Add Team Member{% endif %} — Funnelatics HRIS{% endblock %}
 {% block content_title %}{% endblock %}
 
 {% block extrastyle %}
@@ -23,7 +23,7 @@
 }
 .mp-profile-banner {
   height: 80px;
-  background: linear-gradient(135deg, #111827 0%, #1F2937 60%, #F58400 200%);
+  background: linear-gradient(135deg, #111827 0%, #1F2937 60%, #2c3192 200%);
 }
 .mp-profile-photo-wrap {
   padding: 0 20px;
@@ -40,9 +40,9 @@
 .mp-profile-photo-placeholder {
   width: 72px; height: 72px; border-radius: 18px;
   border: 3px solid #fff;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px rgba(245,132,0,0.3);
+  box-shadow: 0 4px 16px rgba(44,49,146,0.3);
   font-size: 28px; font-weight: 800; color: #fff;
 }
 .mp-profile-body { padding: 0 20px 20px; }
@@ -61,7 +61,7 @@
 .mp-badge-lead        { background: #EFF6FF; color: #2563EB; }
 .mp-badge-coordinator { background: #F3E8FF; color: #7C3AED; }
 .mp-badge-member      { background: #F3F4F6; color: #374151; }
-.mp-badge-primary     { background: #FFF8EE; color: #C86A00; }
+.mp-badge-primary     { background: #eef0fb; color: #1e2268; }
 
 .mp-divider { height: 1px; background: #F3F4F6; margin: 16px 0; }
 
@@ -94,7 +94,7 @@
   cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit;
 }
 .mp-tab-btn:hover { color: #374151; }
-.mp-tab-btn.active { color: #F58400; border-bottom-color: #F58400; }
+.mp-tab-btn.active { color: #2c3192; border-bottom-color: #2c3192; }
 .mp-tab-pane { display: none; }
 .mp-tab-pane.active { display: block; }
 
@@ -143,7 +143,7 @@
 .mp-leave-bar-track {
   height: 6px; background: #E5E7EB; border-radius: 99px; overflow: hidden;
 }
-.mp-leave-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,#F58400,#FBBF24); }
+.mp-leave-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,#2c3192,#FBBF24); }
 .mp-leave-meta { display: flex; justify-content: space-between; font-size: 11px; color: #9CA3AF; font-weight: 600; }
 
 /* ── Attendance table ── */
@@ -162,7 +162,7 @@
 .mp-att-present  { background: #DCFCE7; color: #15803D; }
 .mp-att-absent   { background: #FEE2E2; color: #DC2626; }
 .mp-att-leave    { background: #FEF9C3; color: #854D0E; }
-.mp-att-late     { background: #FFF8EE; color: #C86A00; }
+.mp-att-late     { background: #eef0fb; color: #1e2268; }
 .mp-att-holiday  { background: #EFF6FF; color: #1D4ED8; }
 .mp-att-default  { background: #F3F4F6; color: #374151; }
 .mp-empty { padding: 32px; text-align: center; color: #9CA3AF; font-size: 13px; }
@@ -178,7 +178,7 @@
   font-size: 13px; color: #374151; background: #fff; font-family: inherit;
   outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
 }
-.mp-field input:focus, .mp-field select:focus { border-color: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+.mp-field input:focus, .mp-field select:focus { border-color: #2c3192; box-shadow: 0 0 0 3px rgba(44,49,146,0.08); }
 .mp-field input[readonly] { background: #F9FAFB; color: #6B7280; cursor: default; }
 .mp-field .help { font-size: 11px; color: #9CA3AF; margin-top: 3px; }
 .mp-field .errorlist { list-style: none; padding: 0; margin: 3px 0 0; }
@@ -187,7 +187,7 @@
   display: flex; align-items: center; gap: 10px; padding: 12px 14px;
   background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px;
 }
-.mp-checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: #F58400; flex-shrink: 0; }
+.mp-checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: #2c3192; flex-shrink: 0; }
 .mp-checkbox-row .mp-cb-label { font-size: 13px; font-weight: 600; color: #374151; }
 .mp-checkbox-row .mp-cb-sub   { font-size: 12px; color: #9CA3AF; margin-top: 1px; }
 
@@ -203,7 +203,7 @@
   padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: all 0.15s; border: none; font-family: inherit; text-decoration: none;
 }
-.mp-btn-primary   { background: linear-gradient(135deg, #F58400, #C86A00); color: #fff; }
+.mp-btn-primary   { background: linear-gradient(135deg, #2c3192, #1e2268); color: #fff; }
 .mp-btn-primary:hover { opacity: 0.9; color: #fff; }
 .mp-btn-secondary { background: #F9FAFB; color: #374151; border: 1px solid #E5E7EB; }
 .mp-btn-secondary:hover { background: #F3F4F6; }
@@ -411,7 +411,7 @@
               </div>
               <div class="mp-kpi">
                 <div class="mp-kpi-label">Role in Team</div>
-                <div class="mp-kpi-value" style="font-size:15px;color:#C86A00;">{{ original.role_in_team }}</div>
+                <div class="mp-kpi-value" style="font-size:15px;color:#1e2268;">{{ original.role_in_team }}</div>
                 <div class="mp-kpi-sub">Team role</div>
               </div>
               <div class="mp-kpi">
@@ -594,7 +594,7 @@
         .sal-amount {
           font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.02em;
         }
-        .sal-item.sal-primary .sal-amount { color: #C86A00; font-size: 24px; }
+        .sal-item.sal-primary .sal-amount { color: #1e2268; font-size: 24px; }
         .sal-item.sal-gross  .sal-amount { color: #1D4ED8; }
         .sal-item.sal-net    .sal-amount { color: #15803D; }
 

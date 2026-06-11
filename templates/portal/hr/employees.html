@@ -1,5 +1,5 @@
 {% extends "portal/hr/base.html" %}
-{% block title %}Employees — Digilatics HR{% endblock %}
+{% block title %}Employees — Funnelatics HR{% endblock %}
 {% block page_title %}Employees{% endblock %}
 
 {% block content %}
@@ -112,7 +112,7 @@
       <!-- Active filter chips -->
       {% if q or dept or status_f or role_f %}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-        {% if q %}<span style="display:inline-flex;align-items:center;gap:5px;background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Search: "{{ q }}"</span>{% endif %}
+        {% if q %}<span style="display:inline-flex;align-items:center;gap:5px;background:#eef0fb;color:#ea580c;border:1px solid #fed7aa;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Search: "{{ q }}"</span>{% endif %}
         {% if dept %}<span style="display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Dept: {{ dept }}</span>{% endif %}
         {% if status_f %}<span style="display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Status: {{ status_f }}</span>{% endif %}
         {% if role_f %}<span style="display:inline-flex;align-items:center;gap:5px;background:#faf5ff;color:#7c3aed;border:1px solid #e9d5ff;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Role: {{ role_f }}</span>{% endif %}
@@ -174,7 +174,7 @@
           <td style="font-size:12px;color:var(--text-2);">{{ row.emp.joining_date|date:"M j, Y" }}</td>
           <td style="white-space:nowrap;">
             <a href="{% url 'portal:hr_employee_detail' row.emp.pk %}" class="ep-btn-sm" style="text-decoration:none;">View</a>
-            <a href="{% url 'portal:hr_employee_edit' row.emp.pk %}" class="ep-btn-sm" style="text-decoration:none;background:#fff7ed;color:#ea580c;margin-left:4px;">Edit</a>
+            <a href="{% url 'portal:hr_employee_edit' row.emp.pk %}" class="ep-btn-sm" style="text-decoration:none;background:#eef0fb;color:#ea580c;margin-left:4px;">Edit</a>
           </td>
         </tr>
         {% empty %}

@@ -1,7 +1,7 @@
 import calendar
 from decimal import Decimal
 from datetime import date, datetime, timedelta
-from django.db.models import Count, Case, When, IntegerField
+from django.db.models import Count, Case, When, IntegerField, Q
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -543,6 +543,24 @@ def portal_short_leave_apply(request):
 
             if to_time <= from_time:
                 raise ValueError("To time must be after from time.")
+
+            # Duration checks
+            from datetime import datetime as _dt2, date as _d2
+            _start_dt = _dt2.combine(_d2.today(), from_time)
+            _end_dt   = _dt2.combine(_d2.today(), to_time)
+            _duration_hours = (_end_dt - _start_dt).total_seconds() / 3600
+            if _duration_hours > 4:
+                raise ValueError(
+                    "HALF_DAY_ESCALATION: This request exceeds the 4-hour limit and will be "
+                    "calculated as a half-day leave. Please resubmit your application using "
+                    "the Half-Day Leave option."
+                )
+            if _duration_hours > 2:
+                raise ValueError(
+                    f"Short leave cannot exceed 2 hours. Your selected duration is "
+                    f"{int(_duration_hours)}h {int((_duration_hours % 1) * 60)}m. "
+                    "Please adjust your times."
+                )
 
             # Check monthly quota
             used = SLR.objects.filter(
@@ -1186,12 +1204,86 @@ def hr_dashboard(request):
     manager_approved_leaves = LeaveRequest.objects.filter(status=LeaveRequest.StatusChoices.MANAGER_APPROVED).count()
 
     from django.db.models import Count as DjCount
-    dept_counts = list(
+    dept_counts_raw = list(
         EmployeeProfile.objects
         .filter(employment_status=EmployeeProfile.EmploymentStatusChoices.ACTIVE)
         .values("department")
         .annotate(count=DjCount("id"))
         .order_by("-count")[:8]
+    )
+
+    # Present count per department for today
+    today_present_ids = set(
+        AttendanceRecord.objects.filter(date=today, status=AttendanceRecord.StatusChoices.PRESENT)
+        .values_list("employee_id", flat=True)
+    )
+    dept_present_map = {}
+    for emp_row in (
+        EmployeeProfile.objects.filter(
+            employment_status=EmployeeProfile.EmploymentStatusChoices.ACTIVE,
+            department__in=[d["department"] for d in dept_counts_raw],
+        ).values("id", "department")
+    ):
+        dept = emp_row["department"]
+        dept_present_map.setdefault(dept, 0)
+        if emp_row["id"] in today_present_ids:
+            dept_present_map[dept] += 1
+
+    dept_counts = [
+        {
+            "department": d["department"],
+            "count": d["count"],
+            "present": dept_present_map.get(d["department"], 0),
+        }
+        for d in dept_counts_raw
+    ]
+
+    # Annual salary + tax chart data (current year)
+    from salary.models import PayrollRun, Payslip as _Payslip
+    from django.db.models import Sum as DjSum
+    annual_salary = []
+    annual_tax = []
+    MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    for m in range(1, 13):
+        agg = _Payslip.objects.filter(
+            payroll_run__year=year, payroll_run__month=m
+        ).aggregate(gs=DjSum("gross_salary"), it=DjSum("income_tax"))
+        annual_salary.append(float(agg["gs"] or 0))
+        annual_tax.append(float(agg["it"] or 0))
+
+    # Attendance by period for pie chart
+    import json as _json
+    # Monthly
+    monthly_att = AttendanceRecord.objects.filter(date__range=(month_start, cap)).aggregate(
+        present=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.PRESENT)),
+        absent=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.ABSENT)),
+        leave=DjCount("id", filter=Q(status__in=[
+            AttendanceRecord.StatusChoices.ON_LEAVE_PAID,
+            AttendanceRecord.StatusChoices.ON_LEAVE_UNPAID,
+        ])),
+        wfh=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.WORK_FROM_HOME)),
+    )
+    # Quarterly (last 3 months)
+    q_start = date(year, max(1, month - 2), 1)
+    quarterly_att = AttendanceRecord.objects.filter(date__range=(q_start, cap)).aggregate(
+        present=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.PRESENT)),
+        absent=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.ABSENT)),
+        leave=DjCount("id", filter=Q(status__in=[
+            AttendanceRecord.StatusChoices.ON_LEAVE_PAID,
+            AttendanceRecord.StatusChoices.ON_LEAVE_UNPAID,
+        ])),
+        wfh=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.WORK_FROM_HOME)),
+    )
+    # Half-yearly (last 6 months)
+    h_start = date(year, max(1, month - 5), 1)
+    halfyearly_att = AttendanceRecord.objects.filter(date__range=(h_start, cap)).aggregate(
+        present=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.PRESENT)),
+        absent=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.ABSENT)),
+        leave=DjCount("id", filter=Q(status__in=[
+            AttendanceRecord.StatusChoices.ON_LEAVE_PAID,
+            AttendanceRecord.StatusChoices.ON_LEAVE_UNPAID,
+        ])),
+        wfh=DjCount("id", filter=Q(status=AttendanceRecord.StatusChoices.WORK_FROM_HOME)),
     )
 
     from salary.models import PayrollRun
@@ -1217,6 +1309,7 @@ def hr_dashboard(request):
 
     new_hires = EmployeeProfile.objects.filter(joining_date__range=(month_start, month_end)).count()
 
+    import json as _json
     return render(request, "portal/hr/dashboard.html", {
         "total_employees": total_employees,
         "present_today": present_today,
@@ -1231,6 +1324,22 @@ def hr_dashboard(request):
         "new_hires": new_hires,
         "today": today,
         "month_label": today.strftime("%B %Y"),
+        # Charts
+        "chart_months_json": _json.dumps(MONTHS),
+        "chart_salary_json": _json.dumps(annual_salary),
+        "chart_tax_json": _json.dumps(annual_tax),
+        "pie_monthly_json": _json.dumps([
+            monthly_att["present"] or 0, monthly_att["absent"] or 0,
+            monthly_att["leave"] or 0, monthly_att["wfh"] or 0,
+        ]),
+        "pie_quarterly_json": _json.dumps([
+            quarterly_att["present"] or 0, quarterly_att["absent"] or 0,
+            quarterly_att["leave"] or 0, quarterly_att["wfh"] or 0,
+        ]),
+        "pie_halfyearly_json": _json.dumps([
+            halfyearly_att["present"] or 0, halfyearly_att["absent"] or 0,
+            halfyearly_att["leave"] or 0, halfyearly_att["wfh"] or 0,
+        ]),
     })
 
 

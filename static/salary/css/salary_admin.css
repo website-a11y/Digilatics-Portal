@@ -1,13 +1,13 @@
 /* =============================================================
-   DIGILATICS — SALARY / PAYROLL ADMIN
-   Primary: #F58400
+   FUNNELATICS — SALARY / PAYROLL ADMIN
+   Primary: #2c3192
    ============================================================= */
 
 :root {
-  --sl-brand:       #F58400;
-  --sl-brand-dark:  #D97200;
-  --sl-brand-light: #FFF8EE;
-  --sl-brand-ring:  rgba(245,132,0,0.18);
+  --sl-brand:       #2c3192;
+  --sl-brand-dark:  #1e2268;
+  --sl-brand-light: #eef0fb;
+  --sl-brand-ring:  rgba(44,49,146,0.18);
   --sl-green:       #22C55E;
   --sl-green-bg:    #F0FDF4;
   --sl-red:         #EF4444;
@@ -52,7 +52,7 @@
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(245,132,0,0.30);
+  box-shadow: 0 4px 12px rgba(44,49,146,0.30);
 }
 .sl-dash-icon svg {
   width: 24px; height: 24px;
@@ -176,7 +176,7 @@
   box-shadow: var(--sl-shadow);
 }
 .sl-stat-chip strong { font-weight: 800; }
-.sl-stat-avg    { background: var(--sl-brand-light); color: #92400E; border-color: rgba(245,132,0,0.25); }
+.sl-stat-avg    { background: var(--sl-brand-light); color: #92400E; border-color: rgba(44,49,146,0.25); }
 .sl-stat-ded    { background: var(--sl-red-bg);      color: #991B1B; border-color: #FECACA; }
 .sl-stat-annual { background: var(--sl-green-bg);    color: #14532D; border-color: #BBF7D0; }
 
@@ -837,7 +837,7 @@
 .ps-profile-left { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 0; }
 .ps-profile-avatar {
   width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
-  flex-shrink: 0; border: 3px solid rgba(245,132,0,0.18);
+  flex-shrink: 0; border: 3px solid rgba(44,49,146,0.18);
 }
 .ps-profile-avatar-ph {
   width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
@@ -851,14 +851,14 @@
   background: #F3F4F6; color: var(--sl-muted); border: 1px solid var(--sl-border);
   border-radius: 999px; padding: 3px 10px; font-size: 11.5px; font-weight: 600;
 }
-.ps-meta-code { background: var(--sl-brand-light); color: var(--sl-brand-dark); border-color: rgba(245,132,0,0.20); }
+.ps-meta-code { background: var(--sl-brand-light); color: var(--sl-brand-dark); border-color: rgba(44,49,146,0.20); }
 .ps-bank-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .ps-bank-item { font-size: 12px; color: var(--sl-muted); font-weight: 500; }
 .ps-profile-right { flex-shrink: 0; }
 .ps-ytd-badge {
   background: linear-gradient(135deg, var(--sl-brand) 0%, var(--sl-brand-dark) 100%);
   border-radius: 14px; padding: 18px 24px; text-align: center;
-  box-shadow: 0 4px 16px rgba(245,132,0,0.28); min-width: 160px;
+  box-shadow: 0 4px 16px rgba(44,49,146,0.28); min-width: 160px;
 }
 .ps-ytd-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
 .ps-ytd-value { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
@@ -873,7 +873,7 @@
 .ps-year-tab:hover { border-color: var(--sl-brand); color: var(--sl-brand-dark); background: var(--sl-brand-light); }
 .ps-year-tab--active {
   background: linear-gradient(135deg, var(--sl-brand) 0%, var(--sl-brand-dark) 100%);
-  border-color: var(--sl-brand-dark); color: #fff; box-shadow: 0 2px 8px rgba(245,132,0,0.30);
+  border-color: var(--sl-brand-dark); color: #fff; box-shadow: 0 2px 8px rgba(44,49,146,0.30);
 }
 
 /* KPI grid */
@@ -937,7 +937,7 @@
   width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
   background: linear-gradient(135deg, var(--sl-brand) 0%, var(--sl-brand-dark) 100%);
   color: #fff; display: flex; align-items: center; justify-content: center;
-  font-size: 15px; font-weight: 800; box-shadow: 0 2px 8px rgba(245,132,0,0.25);
+  font-size: 15px; font-weight: 800; box-shadow: 0 2px 8px rgba(44,49,146,0.25);
 }
 .ps-month-name { font-size: 14px; font-weight: 700; color: var(--sl-text); }
 .ps-run-ref { font-size: 11px; color: var(--sl-muted); margin-top: 1px; }
@@ -1015,7 +1015,7 @@
 }
 
 /* Top-border accent per section */
-.salary-setup-form #content fieldset:nth-of-type(1) { border-top-color: #F58400 !important; }
+.salary-setup-form #content fieldset:nth-of-type(1) { border-top-color: #2c3192 !important; }
 .salary-setup-form #content fieldset:nth-of-type(2) { border-top-color: #3B82F6 !important; }
 .salary-setup-form #content fieldset:nth-of-type(3) { border-top-color: #EF4444 !important; }
 .salary-setup-form #content fieldset:nth-of-type(4) { border-top-color: #22C55E !important; }
@@ -1049,7 +1049,7 @@
   flex-shrink: 0 !important;
 }
 
-.salary-setup-form #content fieldset:nth-of-type(1) h2::before { background: #F58400 !important; }
+.salary-setup-form #content fieldset:nth-of-type(1) h2::before { background: #2c3192 !important; }
 .salary-setup-form #content fieldset:nth-of-type(2) h2::before { background: #3B82F6 !important; }
 .salary-setup-form #content fieldset:nth-of-type(3) h2::before { background: #EF4444 !important; }
 .salary-setup-form #content fieldset:nth-of-type(4) h2::before { background: #22C55E !important; }
@@ -1139,8 +1139,8 @@
 .salary-setup-form #content fieldset input:focus,
 .salary-setup-form #content fieldset select:focus,
 .salary-setup-form #content fieldset textarea:focus {
-  border-color: #F58400 !important;
-  box-shadow: 0 0 0 3px rgba(245,132,0,0.12) !important;
+  border-color: #2c3192 !important;
+  box-shadow: 0 0 0 3px rgba(44,49,146,0.12) !important;
   background: #fff !important;
 }
 
@@ -1157,7 +1157,7 @@
   width: 18px !important;
   height: 18px !important;
   margin: 4px 0 0 !important;
-  accent-color: #F58400 !important;
+  accent-color: #2c3192 !important;
   cursor: pointer !important;
   flex-shrink: 0 !important;
 }
@@ -1210,7 +1210,7 @@
 .salary-setup-form .inline-group {
   background: #fff !important;
   border: 1px solid #E5E7EB !important;
-  border-top: 3px solid #F58400 !important;
+  border-top: 3px solid #2c3192 !important;
   border-radius: 14px !important;
   margin-bottom: 20px !important;
   overflow: hidden !important;
@@ -1237,7 +1237,7 @@
   width: 7px !important;
   height: 7px !important;
   border-radius: 50% !important;
-  background: #F58400 !important;
+  background: #2c3192 !important;
   display: inline-block !important;
   flex-shrink: 0 !important;
 }
@@ -1269,7 +1269,7 @@
 }
 
 .salary-setup-form .inline-group .add-row a {
-  color: #F58400 !important;
+  color: #2c3192 !important;
   font-size: 13px !important;
   font-weight: 600 !important;
   text-decoration: none !important;
@@ -1282,7 +1282,7 @@
 }
 
 .salary-setup-form .inline-group .add-row a:hover {
-  color: #C86A00 !important;
+  color: #1e2268 !important;
 }
 
 /* ── Responsive ── */
@@ -1347,12 +1347,12 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #F58400 0%, #C86A00 100%);
+  background: linear-gradient(135deg, #2c3192 0%, #1e2268 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(245,132,0,0.30);
+  box-shadow: 0 4px 12px rgba(44,49,146,0.30);
 }
 
 .ssm-header-icon svg { width: 20px; height: 20px; stroke: #fff; }
@@ -1437,8 +1437,8 @@
   letter-spacing: 0.06em;
 }
 
-.ssm-kpi-gross { background: #FFF8EE; }
-.ssm-kpi-gross .ssm-kv { color: #C86A00; }
+.ssm-kpi-gross { background: #eef0fb; }
+.ssm-kpi-gross .ssm-kv { color: #1e2268; }
 .ssm-kpi-net   { background: #F0FDF4; }
 .ssm-kpi-net   .ssm-kv { color: #16A34A; }
 .ssm-kpi-tax   { background: #FEF2F2; }
@@ -1492,8 +1492,8 @@
   padding: 10px 16px;
   border-bottom: 1px solid #E5E7EB;
 }
-.ssm-head-earn { background: #FFF8EE; color: #C86A00; }
-.ssm-head-earn svg { stroke: #C86A00; }
+.ssm-head-earn { background: #eef0fb; color: #1e2268; }
+.ssm-head-earn svg { stroke: #1e2268; }
 .ssm-head-ded  { background: #FEF2F2; color: #991B1B; }
 .ssm-head-ded svg { stroke: #DC2626; }
 
@@ -1538,7 +1538,7 @@
   color: #374151;
 }
 
-.ssm-tv { font-size: 14px; font-weight: 800; color: #C86A00; letter-spacing: -0.01em; }
+.ssm-tv { font-size: 14px; font-weight: 800; color: #1e2268; letter-spacing: -0.01em; }
 
 .ssm-total-net { background: #F0FDF4; border-top-color: #BBF7D0; }
 .ssm-tv-net { color: #15803D !important; }

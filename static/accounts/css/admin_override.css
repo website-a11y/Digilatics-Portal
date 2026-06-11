@@ -1,8 +1,8 @@
 /* ================================================================
-   ADMIN OVERRIDE — Digilatics HRIS
+   ADMIN OVERRIDE — Funnelatics HRIS
    Neutralises Django admin's default layout CSS so our portal
    layout takes over, then re-skins every admin UI element to
-   match the Plus Jakarta Sans / #F58400 design system.
+   match the Plus Jakarta Sans / #2c3192 design system.
    ================================================================ */
 
 /* ── 0. Force font everywhere ─────────────────── */
@@ -167,7 +167,7 @@ body {
 }
 
 .admin-breadcrumbs__link  { color: #6B7280 !important; text-decoration: none !important; transition: color 0.15s; }
-.admin-breadcrumbs__link:hover { color: #F58400 !important; }
+.admin-breadcrumbs__link:hover { color: #2c3192 !important; }
 .admin-breadcrumbs__sep   { color: #9CA3AF !important; }
 .admin-breadcrumbs__current { color: #374151 !important; }
 
@@ -193,7 +193,7 @@ body {
 }
 
 .admin-page-header-left .breadcrumbs a:hover {
-  color: #F58400 !important;
+  color: #2c3192 !important;
 }
 
 
@@ -214,7 +214,7 @@ ul.object-tools a {
   display: inline-flex !important;
   align-items: center !important;
   gap: 7px !important;
-  background: #F58400 !important;
+  background: #2c3192 !important;
   color: #ffffff !important;
   font-size: 13.5px !important;
   font-weight: 600 !important;
@@ -229,9 +229,9 @@ ul.object-tools a {
 
 ul.object-tools a:hover,
 ul.object-tools a:focus {
-  background: #C86A00 !important;
+  background: #1e2268 !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(245, 132, 0, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(44, 49, 146, 0.35) !important;
   text-decoration: none !important;
 }
 
@@ -277,7 +277,7 @@ ul.object-tools a.addlink::before { content: '+ '; }
 
 #changelist-search input:focus {
   border-color: var(--p-brand) !important;
-  box-shadow: 0 0 0 3px rgba(245,132,0,0.12) !important;
+  box-shadow: 0 0 0 3px rgba(44,49,146,0.12) !important;
   background: #fff !important;
 }
 
@@ -641,7 +641,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--p-brand) !important;
-  box-shadow: 0 0 0 3px rgba(245,132,0,0.12) !important;
+  box-shadow: 0 0 0 3px rgba(44,49,146,0.12) !important;
   background: #fff !important;
 }
 
@@ -743,7 +743,7 @@ textarea:focus {
 
 .submit-row input[type="submit"]:hover {
   background: var(--p-brand-dark) !important;
-  box-shadow: 0 4px 12px rgba(245,132,0,0.30) !important;
+  box-shadow: 0 4px 12px rgba(44,49,146,0.30) !important;
 }
 
 .submit-row a.deletelink {
@@ -925,8 +925,8 @@ body.login .portal-content { overflow: auto !important; display: flex !important
 }
 
 .sidebar-item:hover {
-  color: #F58400 !important;
-  background: rgba(245, 132, 0, 0.08) !important;
+  color: #2c3192 !important;
+  background: rgba(44, 49, 146, 0.08) !important;
   text-decoration: none !important;
 }
 
@@ -934,22 +934,22 @@ body.login .portal-content { overflow: auto !important; display: flex !important
 .sidebar-item.active:link,
 .sidebar-item.active:visited {
   color: #ffffff !important;
-  background: #F58400 !important;
+  background: #2c3192 !important;
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2) !important;
   text-decoration: none !important;
 }
 
 .sidebar-item.active:hover {
-  background: #C86A00 !important;
+  background: #1e2268 !important;
   color: #ffffff !important;
 }
 
 .sidebar-section {
-  color: #F58400 !important;
+  color: #2c3192 !important;
 }
 
 .sidebar-logo-name {
-  color: #F58400 !important;
+  color: #2c3192 !important;
 }
 
 .sidebar-help,
@@ -960,9 +960,9 @@ body.login .portal-content { overflow: auto !important; display: flex !important
 }
 
 .sidebar-help:hover {
-  color: #F58400 !important;
-  background: rgba(245, 132, 0, 0.08) !important;
-  border-color: #F58400 !important;
+  color: #2c3192 !important;
+  background: rgba(44, 49, 146, 0.08) !important;
+  border-color: #2c3192 !important;
 }
 
 

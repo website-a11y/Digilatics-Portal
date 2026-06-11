@@ -1,4 +1,5 @@
 {% extends "portal/base.html" %}
+{% load static %}
 {% block title %}Payslip — {{ payslip.payroll_run.get_month_display }} {{ payslip.payroll_run.year }}{% endblock %}
 {% block page_title %}Payslip{% endblock %}
 
@@ -21,7 +22,7 @@
   content: '';
   display: block;
   height: 3px;
-  background: #F58400;
+  background: #2c3192;
 }
 
 /* ─ Header ─ */
@@ -118,7 +119,7 @@
 .ps-net-words-val { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); }
 .ps-net-right { text-align: right; flex-shrink: 0; }
 .ps-net-fig-lbl { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 3px; }
-.ps-net-fig-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #F58400; }
+.ps-net-fig-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #2c3192; }
 
 /* ─ Sub sections (Loan / PF) ─ */
 .ps-sub-head {
@@ -213,7 +214,7 @@
   <!-- Header -->
   <div class="ps-head">
     <div>
-      <img src="/media/salaryslip%20logo.png" alt="Company Logo"
+      <img src="{% static 'accounts/branding/funnelatics-logo.png' %}" alt="Funnelatics"
            style="max-height:56px;max-width:220px;object-fit:contain;display:block;">
     </div>
     <div class="ps-head-right">
@@ -237,7 +238,6 @@
     <div class="ps-info-cell"><span class="ps-info-lbl">Working Days</span><span class="ps-info-val">{{ period_days }}</span></div>
     <div class="ps-info-cell"><span class="ps-info-lbl">NTN No.</span><span class="ps-info-val">{% with rev=payslip.salary_revision %}{% if rev and rev.ntn_no %}{{ rev.ntn_no }}{% else %}—{% endif %}{% endwith %}</span></div>
 
-    <div class="ps-info-cell"><span class="ps-info-lbl">Work Location</span><span class="ps-info-val">{{ emp.work_location|default:"—" }}</span></div>
     <div class="ps-info-cell"><span class="ps-info-lbl">CNIC</span><span class="ps-info-val">{{ emp.cnic|default:"—" }}</span></div>
 
     <div class="ps-info-cell"><span class="ps-info-lbl">Designation</span><span class="ps-info-val">{{ emp.designation|default:"—" }}</span></div>

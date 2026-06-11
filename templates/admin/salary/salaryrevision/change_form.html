@@ -26,11 +26,11 @@
 .sr-header-icon svg { width:26px; height:26px; stroke:#fff; }
 .sr-header-avatar {
   width:56px; height:56px; border-radius:16px; flex-shrink:0;
-  object-fit:cover; border:3px solid rgba(245,132,0,0.18);
+  object-fit:cover; border:3px solid rgba(44,49,146,0.18);
 }
 .sr-header-avatar-ph {
   width:56px; height:56px; border-radius:16px; flex-shrink:0;
-  background:linear-gradient(135deg,#F58400,#C86A00);
+  background:linear-gradient(135deg,#2c3192,#1e2268);
   color:#fff; display:flex; align-items:center; justify-content:center;
   font-size:22px; font-weight:800;
 }
@@ -48,7 +48,7 @@
   padding:7px 14px; font-size:12.5px; font-weight:600; color:#6B7280;
   text-decoration:none; transition:all 0.15s;
 }
-.sr-back-link:hover { border-color:#F58400; color:#C86A00; background:#FFF8EE; }
+.sr-back-link:hover { border-color:#2c3192; color:#1e2268; background:#eef0fb; }
 
 /* ── KPI strip ── */
 .sr-kpi-row {
@@ -65,7 +65,7 @@
 .sr-kpi::before {
   content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0;
 }
-.sr-kpi-gross::before { background:#F58400; }
+.sr-kpi-gross::before { background:#2c3192; }
 .sr-kpi-basic::before { background:#2563EB; }
 .sr-kpi-hra::before   { background:#16A34A; }
 .sr-kpi-med::before   { background:#7C3AED; }
@@ -75,7 +75,7 @@
   display:flex; align-items:center; justify-content:center; margin-bottom:4px;
 }
 .sr-kpi-icon svg { width:15px; height:15px; }
-.sr-kpi-gross .sr-kpi-icon { background:#FFF8EE; color:#F58400; }
+.sr-kpi-gross .sr-kpi-icon { background:#eef0fb; color:#2c3192; }
 .sr-kpi-basic .sr-kpi-icon { background:#DBEAFE; color:#2563EB; }
 .sr-kpi-hra   .sr-kpi-icon { background:#DCFCE7; color:#16A34A; }
 .sr-kpi-med   .sr-kpi-icon { background:#F3E8FF; color:#7C3AED; }
@@ -83,7 +83,7 @@
 .sr-kpi-label { font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
 .sr-kpi-value { font-size:20px; font-weight:800; color:#111827; line-height:1; letter-spacing:-0.02em; }
 .sr-kpi-sub   { font-size:11px; color:#9CA3AF; }
-.sr-kpi-gross .sr-kpi-value { color:#C86A00; }
+.sr-kpi-gross .sr-kpi-value { color:#1e2268; }
 .sr-kpi-basic .sr-kpi-value { color:#1D4ED8; }
 .sr-kpi-hra   .sr-kpi-value { color:#16A34A; }
 .sr-kpi-med   .sr-kpi-value { color:#7C3AED; }
@@ -114,7 +114,7 @@
   padding:10px 0 2px; border-top:2px solid #E5E7EB; margin-top:4px;
   font-size:13px; font-weight:700; color:#111827;
 }
-.sr-btotal-val { font-size:15px; font-weight:800; color:#C86A00; }
+.sr-btotal-val { font-size:15px; font-weight:800; color:#1e2268; }
 
 /* ── Card wrapper ── */
 .sr-card {
@@ -158,8 +158,8 @@
 }
 .sr-col input:focus, .sr-col select:focus, .sr-col textarea:focus,
 .sr-col-full input:focus, .sr-col-full select:focus, .sr-col-full textarea:focus {
-  border-color:#F58400 !important;
-  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  border-color:#2c3192 !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,0.12) !important;
   background:#fff !important;
 }
 /* FK widget */
@@ -198,11 +198,11 @@
   flex-wrap:wrap; margin-top:16px;
 }
 .sr-btn-save {
-  background:#F58400; color:#fff; border:none; border-radius:8px;
+  background:#2c3192; color:#fff; border:none; border-radius:8px;
   padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer;
   transition:background 0.15s,box-shadow 0.15s; font-family:inherit;
 }
-.sr-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.sr-btn-save:hover { background:#1e2268; box-shadow:0 4px 12px rgba(44,49,146,0.30); }
 .sr-btn-ghost {
   background:#F3F4F6; color:#374151; border:1px solid #E5E7EB;
   border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600;
@@ -319,14 +319,14 @@
 <!-- COMPONENT BREAKDOWN BAR -->
 {% if original %}
 <div class="sr-comp-strip">
-  <div class="sr-comp-head" style="color:#F58400;">
+  <div class="sr-comp-head" style="color:#2c3192;">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     Revised Component Breakdown
   </div>
   <div class="sr-comp-body">
     <div class="sr-brow">
-      <span class="sr-brow-label"><span class="sr-dot" style="background:#F58400;"></span>Basic Salary</span>
-      <div class="sr-brow-bar"><div class="sr-brow-fill" id="sr-bar-basic" style="background:#F58400;width:0%;"></div></div>
+      <span class="sr-brow-label"><span class="sr-dot" style="background:#2c3192;"></span>Basic Salary</span>
+      <div class="sr-brow-bar"><div class="sr-brow-fill" id="sr-bar-basic" style="background:#2c3192;width:0%;"></div></div>
       <span class="sr-brow-val" id="sr-bv-basic">—</span>
     </div>
     <div class="sr-brow">
@@ -410,7 +410,7 @@
 
 <!-- Card 2: Salary Components -->
 <div class="sr-card">
-  <div class="sr-card-head" style="color:#F58400;">
+  <div class="sr-card-head" style="color:#2c3192;">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     Revised Salary Components
   </div>
@@ -420,7 +420,7 @@
       <div class="sr-col">
         <label class="sr-label" for="{{ form.basic_salary.id_for_label }}">
           Basic Salary *
-          <span style="background:#FFF8EE;color:#F58400;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">60%</span>
+          <span style="background:#eef0fb;color:#2c3192;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">60%</span>
         </label>
         {{ form.basic_salary }}
         {% if form.basic_salary.errors %}<ul class="sr-errors">{% for e in form.basic_salary.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}

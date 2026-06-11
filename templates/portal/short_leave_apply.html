@@ -21,11 +21,47 @@
 }
 .sl-period-card:hover { border-color:var(--brand);background:var(--brand-bg); }
 .sl-period-card.selected { border-color:var(--brand);background:var(--brand-bg);color:var(--brand); }
+
+/* Duration popup overlay */
+#sl-duration-modal {
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:9999;align-items:center;justify-content:center;
+}
+#sl-duration-modal.active { display:flex; }
+.sl-modal-box {
+  background:#fff;border-radius:14px;padding:32px 28px;max-width:440px;width:90%;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;
+}
+.sl-modal-icon { color:#f59e0b;margin-bottom:14px; }
+.sl-modal-title { font-size:16px;font-weight:800;color:#111827;margin-bottom:10px; }
+.sl-modal-body  { font-size:13px;color:#374151;line-height:1.6;margin-bottom:20px; }
+.sl-modal-btn   { background:#f59e0b;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer; }
+.sl-modal-btn:hover { background:#1e2268; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div>
+
+  <!-- Half-day escalation modal -->
+  <div id="sl-duration-modal">
+    <div class="sl-modal-box">
+      <div class="sl-modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="sl-modal-title">Request Exceeds 4-Hour Limit</div>
+      <div class="sl-modal-body">
+        This request exceeds the 4-hour limit and will be calculated as a half-day leave.
+        Please resubmit your application using the <strong>Half-Day Leave</strong> option.
+      </div>
+      <button class="sl-modal-btn" onclick="document.getElementById('sl-duration-modal').classList.remove('active')">
+        Understood — Go Back
+      </button>
+    </div>
+  </div>
 
   <div style="margin-bottom:20px;">
     <a href="{% url 'portal:leave' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Leave</a>
@@ -45,7 +81,7 @@
       </div>
     </div>
     {% if policy.min_hours_before_afternoon %}
-    <div style="background:#fff7ed;border-radius:10px;padding:10px 18px;font-size:12px;color:#92400e;">
+    <div style="background:#eef0fb;border-radius:10px;padding:10px 18px;font-size:12px;color:#1a1d6b;">
       Afternoon: min <strong>{{ policy.min_hours_before_afternoon|floatformat:"-2" }} hrs</strong> worked required
     </div>
     {% endif %}
@@ -176,5 +212,28 @@ function updateTimes() {
 
 // Default selection
 selectPeriod('Afternoon');
+
+// Duration validation on submit
+document.getElementById('sl-form').addEventListener('submit', function(e) {
+  var fromVal = document.getElementById('sl-from').value;
+  var toVal   = document.getElementById('sl-to').value;
+  if (!fromVal || !toVal) return;
+
+  var fromParts = fromVal.split(':'), toParts = toVal.split(':');
+  var fromMins = parseInt(fromParts[0]) * 60 + parseInt(fromParts[1]);
+  var toMins   = parseInt(toParts[0])   * 60 + parseInt(toParts[1]);
+  var diffMins = toMins - fromMins;
+
+  if (diffMins > 4 * 60) {
+    e.preventDefault();
+    document.getElementById('sl-duration-modal').classList.add('active');
+    return;
+  }
+  if (diffMins > 2 * 60) {
+    e.preventDefault();
+    alert('Short leave cannot exceed 2 hours. Please adjust your selected times.');
+    return;
+  }
+});
 </script>
 {% endblock %}

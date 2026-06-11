@@ -1,13 +1,13 @@
 /* =============================================================
-   DIGILATICS — ATTENDANCE MODULE
-   Primary: #F58400
+   FUNNELATICS — ATTENDANCE MODULE
+   Primary: #2c3192
    ============================================================= */
 
 :root {
-  --att-brand:        #F58400;
-  --att-brand-dark:   #D97200;
-  --att-brand-light:  #FFF8EE;
-  --att-brand-ring:   rgba(245,132,0,0.20);
+  --att-brand:        #2c3192;
+  --att-brand-dark:   #1e2268;
+  --att-brand-light:  #eef0fb;
+  --att-brand-ring:   rgba(44,49,146,0.20);
   --att-bg:           #F4F6F9;
   --att-surface:      #FFFFFF;
   --att-border:       #E5E7EB;
@@ -90,11 +90,11 @@
 .att-btn-primary:visited {
   background: linear-gradient(135deg, var(--att-brand) 0%, var(--att-brand-dark) 100%) !important;
   color: #fff !important;
-  box-shadow: 0 2px 8px rgba(245,132,0,0.35);
+  box-shadow: 0 2px 8px rgba(44,49,146,0.35);
 }
 .att-btn-primary:hover,
 .att-btn-primary:focus {
-  box-shadow: 0 4px 14px rgba(245,132,0,0.45) !important;
+  box-shadow: 0 4px 14px rgba(44,49,146,0.45) !important;
   transform: translateY(-1px);
   color: #fff !important;
   background: linear-gradient(135deg, var(--att-brand-dark) 0%, #a85800 100%) !important;
@@ -228,11 +228,11 @@
   background: linear-gradient(135deg, var(--att-brand) 0%, var(--att-brand-dark) 100%);
   border-color: var(--att-brand-dark);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(245,132,0,0.30);
+  box-shadow: 0 2px 8px rgba(44,49,146,0.30);
 }
 .att-dept-tab--active:hover {
   color: #fff;
-  box-shadow: 0 4px 12px rgba(245,132,0,0.40);
+  box-shadow: 0 4px 12px rgba(44,49,146,0.40);
 }
 
 /* ── Stats strip ─────────────────────────────────────────── */
@@ -318,7 +318,7 @@
   font-size: 11px;
   background: var(--att-brand-light);
   color: var(--att-brand-dark);
-  border: 1px solid rgba(245,132,0,0.20);
+  border: 1px solid rgba(44,49,146,0.20);
   border-radius: 999px;
   padding: 2px 9px;
   font-weight: 700;
@@ -507,7 +507,7 @@ thead .att-col-name {
 }
 .att-cell-today { background: var(--att-brand-light) !important; }
 .att-cell-leave-synced {
-  border-bottom: 2px solid rgba(245,132,0,0.40) !important;
+  border-bottom: 2px solid rgba(44,49,146,0.40) !important;
 }
 
 /* Employee info */
@@ -848,7 +848,7 @@ a.att-badge:hover {
   padding: 3px 10px;
 }
 .att-pct-green { background: #DCFCE7; color: #15803D; }
-.att-pct-amber { background: #FEF3C7; color: #B45309; }
+.att-pct-amber { background: #e8eaf6; color: #B45309; }
 .att-pct-red   { background: #FEE2E2; color: #B91C1C; }
 
 .att-dept-sum-bar-track {
@@ -877,7 +877,7 @@ a.att-badge:hover {
 }
 .att-ds-present { background: #DCFCE7; color: #15803D; }
 .att-ds-absent  { background: #FEE2E2; color: #B91C1C; }
-.att-ds-leave   { background: #FFF8EE; color: #C2410C; }
+.att-ds-leave   { background: #eef0fb; color: #C2410C; }
 
 /* ── Employee summary page ───────────────────────────────── */
 
@@ -948,7 +948,7 @@ a.att-badge:hover {
 .emp-meta-code {
   background: var(--att-brand-light);
   color: var(--att-brand-dark);
-  border-color: rgba(245,132,0,0.20);
+  border-color: rgba(44,49,146,0.20);
 }
 .emp-meta-shift {
   background: #EFF6FF;
@@ -1127,7 +1127,7 @@ a.att-badge:hover {
   padding: 4px 14px;
   background: var(--att-brand-light);
   border-radius: var(--att-radius-sm);
-  border: 1px solid rgba(245,132,0,0.2);
+  border: 1px solid rgba(44,49,146,0.2);
 }
 
 /* Flash messages */
@@ -1352,7 +1352,7 @@ a.att-badge:hover {
   margin-right: 4px;
 }
 .att-cleg-present { background: #22c55e; }
-.att-cleg-late    { background: #F58400; }
+.att-cleg-late    { background: #2c3192; }
 .att-cleg-absent  { background: #e5e7eb; border: 1px solid #d1d5db; }
 .att-chart-body { position: relative; }
 .att-chart-body-donut {
@@ -1452,7 +1452,7 @@ a.att-icon:hover { transform: scale(1.18); box-shadow: 0 2px 8px rgba(0,0,0,0.18
   top: 0; right: 0;
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: #F58400;
+  background: #2c3192;
   border: 1.5px solid #fff;
 }
 
@@ -1488,7 +1488,7 @@ a.att-icon:hover { transform: scale(1.18); box-shadow: 0 2px 8px rgba(0,0,0,0.18
 .att-leave-count.att-leave-count-has {
   font-size: 11.5px;
   font-weight: 800;
-  color: #F58400;
+  color: #2c3192;
 }
 
 /* ── Employee dept label in grid ─────────────────────────── */

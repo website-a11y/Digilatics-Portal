@@ -556,7 +556,7 @@ class EmployeeProfileAdmin(admin.ModelAdmin):
             photo_html = format_html(
                 '<img src="{}" alt="{}" style="height:36px;width:36px;'
                 "border-radius:12px;object-fit:cover;border:2px solid "
-                'rgba(245, 132, 0, 0.2);margin-right:12px;" />',
+                'rgba(44, 49, 146, 0.2);margin-right:12px;" />',
                 obj.profile_photo.url,
                 obj.full_name,
             )
@@ -624,7 +624,7 @@ class EmployeeProfileAdmin(admin.ModelAdmin):
         return format_html(
             '<img src="{}" alt="{}" style="height:88px;width:88px;'
             "border-radius:24px;object-fit:cover;border:4px solid "
-            'rgba(245, 132, 0, 0.16);box-shadow:0 22px 48px rgba(17, 17, 17, 0.18);" />',
+            'rgba(44, 49, 146, 0.16);box-shadow:0 22px 48px rgba(17, 17, 17, 0.18);" />',
             obj.profile_photo.url,
             obj.full_name,
         )

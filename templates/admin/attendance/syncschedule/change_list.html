@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block title %}Sync Schedule — Digilatics HRIS{% endblock %}
+{% block title %}Sync Schedule — Funnelatics HRIS{% endblock %}
 {% block content_title %}{% endblock %}
 
 {% block extrastyle %}
@@ -19,13 +19,13 @@
 }
 .ss-header::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, #F58400, #FBBF24); border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg, #2c3192, #FBBF24); border-radius: 20px 20px 0 0;
 }
 .ss-header-icon {
   width: 56px; height: 56px; border-radius: 16px;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+  box-shadow: 0 6px 18px rgba(44,49,146,0.3); color: #fff;
 }
 .ss-header-icon svg { width: 28px; height: 28px; }
 .ss-header-text { flex: 1; }
@@ -34,7 +34,7 @@
 .ss-header-right { flex-shrink: 0; }
 .ss-btn-add {
   display: inline-flex; align-items: center; gap: 7px;
-  background: linear-gradient(135deg, #F58400, #C86A00); color: #fff;
+  background: linear-gradient(135deg, #2c3192, #1e2268); color: #fff;
   border: none; border-radius: 10px; padding: 10px 18px;
   font-size: 13px; font-weight: 700; text-decoration: none; transition: opacity 0.15s;
 }
@@ -69,18 +69,18 @@
   display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden;
 }
 .ss-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-.ss-kpi-sync1::before  { background: #F58400; }
+.ss-kpi-sync1::before  { background: #2c3192; }
 .ss-kpi-sync2::before  { background: #2563EB; }
 .ss-kpi-status::before { background: #16A34A; }
 .ss-kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
 .ss-kpi-icon svg { width: 17px; height: 17px; }
-.ss-kpi-sync1  .ss-kpi-icon { background: #FFF8EE; color: #F58400; }
+.ss-kpi-sync1  .ss-kpi-icon { background: #eef0fb; color: #2c3192; }
 .ss-kpi-sync2  .ss-kpi-icon { background: #EFF6FF; color: #2563EB; }
 .ss-kpi-status .ss-kpi-icon { background: #DCFCE7; color: #16A34A; }
 .ss-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
 .ss-kpi-value { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; color: #111827; }
 .ss-kpi-sub   { font-size: 11px; color: #9CA3AF; }
-.ss-kpi-sync1  .ss-kpi-value { color: #C86A00; font-size: 22px; }
+.ss-kpi-sync1  .ss-kpi-value { color: #1e2268; font-size: 22px; }
 .ss-kpi-sync2  .ss-kpi-value { color: #2563EB; font-size: 22px; }
 .ss-kpi-status .ss-kpi-value { color: #16A34A; }
 
@@ -102,7 +102,7 @@
 }
 .ss-timeline::before {
   content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px;
-  width: 2px; background: linear-gradient(180deg, #F58400, #2563EB);
+  width: 2px; background: linear-gradient(180deg, #2c3192, #2563EB);
   border-radius: 2px;
 }
 .ss-timeline-item {
@@ -114,13 +114,13 @@
   position: absolute; left: -25px; width: 14px; height: 14px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.ss-timeline-dot-1 { background: #F58400; box-shadow: 0 0 0 3px rgba(245,132,0,0.2); }
+.ss-timeline-dot-1 { background: #2c3192; box-shadow: 0 0 0 3px rgba(44,49,146,0.2); }
 .ss-timeline-dot-2 { background: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
 .ss-timeline-time {
   font-size: 28px; font-weight: 800; letter-spacing: -0.02em; min-width: 100px;
   font-variant-numeric: tabular-nums;
 }
-.ss-timeline-dot-1 ~ .ss-timeline-time { color: #C86A00; }
+.ss-timeline-dot-1 ~ .ss-timeline-time { color: #1e2268; }
 .ss-timeline-dot-2 ~ .ss-timeline-time { color: #2563EB; }
 .ss-timeline-meta { flex: 1; }
 .ss-timeline-label { font-size: 13px; font-weight: 700; color: #111827; }
@@ -137,8 +137,8 @@
 .ss-table tbody tr:last-child { border-bottom: none; }
 .ss-table tbody tr:hover { background: #FFFBF5; }
 .ss-table tbody td { padding: 14px 16px; font-size: 13px; color: #374151; vertical-align: middle; }
-.ss-table tbody td a { color: #C86A00; text-decoration: none; font-weight: 700; }
-.ss-table tbody td a:hover { color: #F58400; }
+.ss-table tbody td a { color: #1e2268; text-decoration: none; font-weight: 700; }
+.ss-table tbody td a:hover { color: #2c3192; }
 
 .ss-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .ss-badge-active   { background: #DCFCE7; color: #15803D; }
@@ -147,7 +147,7 @@
 .ss-action-btn {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;
-  text-decoration: none; background: #FFF8EE; color: #C86A00;
+  text-decoration: none; background: #eef0fb; color: #1e2268;
   border: 1px solid #FED7AA; transition: all 0.15s;
 }
 .ss-action-btn:hover { background: #FFEDD5; }
@@ -250,7 +250,7 @@
   {% else %}
   <!-- Empty state -->
   <div style="background:#fff; border:1px solid #E5E7EB; border-radius:16px; padding:60px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-    <div style="width:64px; height:64px; background:#FFF8EE; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#F58400;">
+    <div style="width:64px; height:64px; background:#eef0fb; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#2c3192;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
       </svg>

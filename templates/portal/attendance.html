@@ -141,7 +141,7 @@
             <td>
               {% if cell.record and cell.record.check_in %}
                 <span style="font-weight:600;font-variant-numeric:tabular-nums;">{{ cell.record.check_in|time:"H:i" }}</span>
-                {% if cell.record.is_late %}<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#fef9c3;color:#92400e;">Late</span>{% endif %}
+                {% if cell.record.is_late %}<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#fef9c3;color:#1a1d6b;">Late</span>{% endif %}
               {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
             </td>
             <td>

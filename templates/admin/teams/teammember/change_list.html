@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block title %}Team Members — Digilatics HRIS{% endblock %}
+{% block title %}Team Members — Funnelatics HRIS{% endblock %}
 {% block content_title %}{% endblock %}
 
 {% block extrastyle %}
@@ -25,14 +25,14 @@
 .tmm-header::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, #F58400, #FBBF24);
+  background: linear-gradient(90deg, #2c3192, #FBBF24);
   border-radius: 20px 20px 0 0;
 }
 .tmm-header-icon {
   width: 56px; height: 56px; border-radius: 16px;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  box-shadow: 0 6px 18px rgba(245,132,0,0.3); color: #fff;
+  box-shadow: 0 6px 18px rgba(44,49,146,0.3); color: #fff;
 }
 .tmm-header-icon svg { width: 28px; height: 28px; }
 .tmm-header-text { flex: 1; }
@@ -41,7 +41,7 @@
 .tmm-header-actions { display: flex; gap: 10px; flex-shrink: 0; }
 .tmm-btn-primary {
   display: inline-flex; align-items: center; gap: 7px;
-  background: linear-gradient(135deg, #F58400, #C86A00);
+  background: linear-gradient(135deg, #2c3192, #1e2268);
   color: #fff; border: none; border-radius: 10px;
   padding: 10px 18px; font-size: 13px; font-weight: 700;
   text-decoration: none; cursor: pointer; transition: opacity 0.15s;
@@ -67,7 +67,7 @@
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   border-radius: 16px 16px 0 0;
 }
-.tmm-kpi-total::before   { background: #F58400; }
+.tmm-kpi-total::before   { background: #2c3192; }
 .tmm-kpi-lead::before    { background: #2563EB; }
 .tmm-kpi-coord::before   { background: #7C3AED; }
 .tmm-kpi-primary::before { background: #16A34A; }
@@ -77,7 +77,7 @@
   display: flex; align-items: center; justify-content: center; margin-bottom: 2px;
 }
 .tmm-kpi-icon svg { width: 17px; height: 17px; }
-.tmm-kpi-total  .tmm-kpi-icon { background: #FFF8EE; color: #F58400; }
+.tmm-kpi-total  .tmm-kpi-icon { background: #eef0fb; color: #2c3192; }
 .tmm-kpi-lead   .tmm-kpi-icon { background: #EFF6FF; color: #2563EB; }
 .tmm-kpi-coord  .tmm-kpi-icon { background: #F3E8FF; color: #7C3AED; }
 .tmm-kpi-primary .tmm-kpi-icon { background: #DCFCE7; color: #16A34A; }
@@ -85,7 +85,7 @@
 .tmm-kpi-label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
 .tmm-kpi-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
 .tmm-kpi-sub   { font-size: 11px; color: #9CA3AF; }
-.tmm-kpi-total   .tmm-kpi-value { color: #C86A00; }
+.tmm-kpi-total   .tmm-kpi-value { color: #1e2268; }
 .tmm-kpi-lead    .tmm-kpi-value { color: #2563EB; }
 .tmm-kpi-coord   .tmm-kpi-value { color: #7C3AED; }
 .tmm-kpi-primary .tmm-kpi-value { color: #16A34A; }
@@ -104,7 +104,7 @@
   font-size: 13px; color: #374151; background: #F9FAFB;
   font-family: inherit; outline: none;
 }
-.tmm-search-wrap input:focus { border-color: #F58400; background: #fff; box-shadow: 0 0 0 3px rgba(245,132,0,0.08); }
+.tmm-search-wrap input:focus { border-color: #2c3192; background: #fff; box-shadow: 0 0 0 3px rgba(44,49,146,0.08); }
 
 /* ── Table ── */
 .tmm-table-card {
@@ -124,8 +124,8 @@
 .tmm-table-card tbody tr:last-child { border-bottom: none; }
 .tmm-table-card tbody tr:hover { background: #FFFBF5; }
 .tmm-table-card tbody td { padding: 14px 16px; font-size: 13px; color: #374151; }
-.tmm-table-card tbody td a { color: #C86A00; text-decoration: none; font-weight: 600; }
-.tmm-table-card tbody td a:hover { color: #F58400; }
+.tmm-table-card tbody td a { color: #1e2268; text-decoration: none; font-weight: 600; }
+.tmm-table-card tbody td a:hover { color: #2c3192; }
 
 .tmm-role-badge {
   display: inline-flex; align-items: center;
@@ -141,7 +141,7 @@
 .tmm-action-btn {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
-  text-decoration: none; background: #FFF8EE; color: #C86A00;
+  text-decoration: none; background: #eef0fb; color: #1e2268;
   border: 1px solid #FED7AA; transition: all 0.15s;
 }
 .tmm-action-btn:hover { background: #FFEDD5; }

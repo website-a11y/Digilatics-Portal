@@ -16,9 +16,9 @@
 }
 .pr-run-icon {
   width:60px; height:60px; border-radius:16px; flex-shrink:0;
-  background:linear-gradient(135deg,#F58400,#C86A00);
+  background:linear-gradient(135deg,#2c3192,#1e2268);
   color:#fff; display:flex; align-items:center; justify-content:center;
-  box-shadow:0 4px 12px rgba(245,132,0,0.25);
+  box-shadow:0 4px 12px rgba(44,49,146,0.25);
 }
 .pr-run-icon svg { width:28px; height:28px; stroke:#fff; }
 .pr-run-title { font-size:18px; font-weight:800; color:#111827; line-height:1.2; }
@@ -29,7 +29,7 @@
   font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;
 }
 .pr-status-draft    { background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB; }
-.pr-status-pending  { background:#FFF8EE; color:#F58400; border:1px solid #FDE68A; }
+.pr-status-pending  { background:#eef0fb; color:#2c3192; border:1px solid #FDE68A; }
 .pr-status-approved { background:#DCFCE7; color:#16A34A; border:1px solid #BBF7D0; }
 .pr-status-posted   { background:#DBEAFE; color:#2563EB; border:1px solid #BFDBFE; }
 .pr-status-locked   { background:#F3E8FF; color:#7C3AED; border:1px solid #DDD6FE; }
@@ -45,13 +45,13 @@
 }
 .pr-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
 .pr-kpi-emp::before   { background:#3B82F6; }
-.pr-kpi-gross::before { background:#F58400; }
+.pr-kpi-gross::before { background:#2c3192; }
 .pr-kpi-net::before   { background:#16A34A; }
 .pr-kpi-tax::before   { background:#2563EB; }
 .pr-kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
 .pr-kpi-icon svg { width:16px; height:16px; }
 .pr-kpi-emp   .pr-kpi-icon { background:#EFF6FF; color:#3B82F6; }
-.pr-kpi-gross .pr-kpi-icon { background:#FFF8EE; color:#F58400; }
+.pr-kpi-gross .pr-kpi-icon { background:#eef0fb; color:#2c3192; }
 .pr-kpi-net   .pr-kpi-icon { background:#DCFCE7; color:#16A34A; }
 .pr-kpi-tax   .pr-kpi-icon { background:#DBEAFE; color:#2563EB; }
 .pr-kpi-label { font-size:11.5px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; }
@@ -98,8 +98,8 @@
   cursor:pointer; white-space:nowrap; transition:all 0.15s;
   font-family:inherit; flex-shrink:0;
 }
-.pr-tab-btn:hover { color:#F58400; background:rgba(245,132,0,0.04); }
-.pr-tab-btn.active { color:#F58400; border-bottom-color:#F58400; background:#fff; }
+.pr-tab-btn:hover { color:#2c3192; background:rgba(44,49,146,0.04); }
+.pr-tab-btn.active { color:#2c3192; border-bottom-color:#2c3192; background:#fff; }
 .pr-tab-pane { display:none; }
 .pr-tab-pane.active { display:block; }
 
@@ -140,8 +140,8 @@
 .pr-col input:focus, .pr-col select:focus, .pr-col textarea:focus,
 .pr-col-third input:focus, .pr-col-third select:focus,
 .pr-col-full input:focus, .pr-col-full select:focus {
-  border-color:#F58400 !important;
-  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  border-color:#2c3192 !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,0.12) !important;
   background:#fff !important;
 }
 .pr-help   { font-size:11.5px; color:#9CA3AF; line-height:1.5; }
@@ -158,11 +158,11 @@
   flex-wrap:wrap; margin-top:16px;
 }
 .pr-btn-save {
-  background:#F58400; color:#fff; border:none; border-radius:8px;
+  background:#2c3192; color:#fff; border:none; border-radius:8px;
   padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer;
   transition:background 0.15s,box-shadow 0.15s; font-family:inherit;
 }
-.pr-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.pr-btn-save:hover { background:#1e2268; box-shadow:0 4px 12px rgba(44,49,146,0.30); }
 .pr-btn-ghost {
   background:#F3F4F6; color:#374151; border:1px solid #E5E7EB;
   border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600;
@@ -344,7 +344,7 @@
         </div>
         <div style="margin-top:12px;">
           <a href="{% url 'admin:salary_payslip_changelist' %}?payroll_run__id__exact={{ original.pk }}"
-             style="display:inline-flex;align-items:center;gap:6px;background:#FFF8EE;border:1.5px solid #FDE68A;border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:600;color:#C86A00;text-decoration:none;">
+             style="display:inline-flex;align-items:center;gap:6px;background:#eef0fb;border:1.5px solid #FDE68A;border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:600;color:#1e2268;text-decoration:none;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
             View All Payslips for this Run →
           </a>
@@ -402,7 +402,7 @@
   {% if original %}
     {% if not run_is_locked %}
     <a href="{{ generate_url }}"
-       style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:linear-gradient(135deg,#F58400,#C86A00);color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;"
+       style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:linear-gradient(135deg,#2c3192,#1e2268);color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;"
        onclick="return confirm('Regenerate payslips for this run? Existing payslip values will be recalculated.')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       Generate Payslips

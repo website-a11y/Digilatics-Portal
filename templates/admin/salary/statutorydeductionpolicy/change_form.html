@@ -35,13 +35,13 @@
   display:flex; flex-direction:column; gap:6px; position:relative; overflow:hidden;
 }
 .sdp-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
-.sdp-kpi-eobi::before { background:#F58400; }
+.sdp-kpi-eobi::before { background:#2c3192; }
 .sdp-kpi-pfe::before  { background:#16A34A; }
 .sdp-kpi-pfr::before  { background:#7C3AED; }
 .sdp-kpi-ss::before   { background:#2563EB; }
 .sdp-kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
 .sdp-kpi-icon svg { width:16px; height:16px; }
-.sdp-kpi-eobi .sdp-kpi-icon { background:#FFF8EE; color:#F58400; }
+.sdp-kpi-eobi .sdp-kpi-icon { background:#eef0fb; color:#2c3192; }
 .sdp-kpi-pfe  .sdp-kpi-icon { background:#DCFCE7; color:#16A34A; }
 .sdp-kpi-pfr  .sdp-kpi-icon { background:#F3E8FF; color:#7C3AED; }
 .sdp-kpi-ss   .sdp-kpi-icon { background:#DBEAFE; color:#2563EB; }
@@ -88,8 +88,8 @@
   background:none; border:none; border-bottom:2px solid transparent;
   cursor:pointer; white-space:nowrap; transition:all 0.15s; font-family:inherit; flex-shrink:0;
 }
-.sdp-tab-btn:hover { color:#F58400; background:rgba(245,132,0,0.04); }
-.sdp-tab-btn.active { color:#F58400; border-bottom-color:#F58400; background:#fff; }
+.sdp-tab-btn:hover { color:#2c3192; background:rgba(44,49,146,0.04); }
+.sdp-tab-btn.active { color:#2c3192; border-bottom-color:#2c3192; background:#fff; }
 .sdp-tab-pane { display:none; }
 .sdp-tab-pane.active { display:block; }
 
@@ -111,8 +111,8 @@
 }
 .sdp-col input:focus, .sdp-col select:focus, .sdp-col textarea:focus,
 .sdp-col-full input:focus, .sdp-col-full select:focus {
-  border-color:#F58400 !important;
-  box-shadow:0 0 0 3px rgba(245,132,0,0.12) !important;
+  border-color:#2c3192 !important;
+  box-shadow:0 0 0 3px rgba(44,49,146,0.12) !important;
   background:#fff !important;
 }
 .sdp-help   { font-size:11.5px; color:#9CA3AF; line-height:1.5; }
@@ -124,8 +124,8 @@
   background:#fff; border:1px solid #E5E7EB; border-radius:14px;
   padding:14px 20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px;
 }
-.sdp-btn-save { background:#F58400; color:#fff; border:none; border-radius:8px; padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; font-family:inherit; }
-.sdp-btn-save:hover { background:#C86A00; box-shadow:0 4px 12px rgba(245,132,0,0.30); }
+.sdp-btn-save { background:#2c3192; color:#fff; border:none; border-radius:8px; padding:9px 22px; font-size:13.5px; font-weight:700; cursor:pointer; transition:background 0.15s,box-shadow 0.15s; font-family:inherit; }
+.sdp-btn-save:hover { background:#1e2268; box-shadow:0 4px 12px rgba(44,49,146,0.30); }
 .sdp-btn-ghost { background:#F3F4F6; color:#374151; border:1px solid #E5E7EB; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.15s; font-family:inherit; }
 .sdp-btn-ghost:hover { background:#E5E7EB; }
 .sdp-btn-delete { margin-left:auto; color:#DC2626; font-size:13px; font-weight:500; padding:9px 16px; border:1px solid #FECDD3; border-radius:8px; background:#FFF1F2; text-decoration:none; transition:background 0.15s; }
@@ -304,7 +304,7 @@
       <div class="sdp-col">
         <label class="sdp-label" for="{{ form.eobi_employee_fixed.id_for_label }}">
           EOBI Contribution (Employee)
-          <span style="background:#FFF8EE;color:#F58400;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">Fixed</span>
+          <span style="background:#eef0fb;color:#2c3192;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;">Fixed</span>
         </label>
         {{ form.eobi_employee_fixed }}
         {% if form.eobi_employee_fixed.errors %}<ul class="sdp-errors">{% for e in form.eobi_employee_fixed.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}

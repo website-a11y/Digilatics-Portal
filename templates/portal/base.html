@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}My Portal — Digilatics{% endblock %}</title>
+  <title>{% block title %}My Portal — Funnelatics{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}?v=3">
@@ -20,7 +20,9 @@
 
     <div class="ep-logo">
       {% load static %}
-      <span class="ep-logo-text">Digilatics</span>
+      <img src="{% static 'accounts/branding/funnelatics-logo.png' %}"
+           alt="Funnelatics" class="ep-logo-img"
+           style="max-height:36px;max-width:160px;object-fit:contain;">
     </div>
 
     <nav class="ep-nav">

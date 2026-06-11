@@ -64,7 +64,7 @@
 
 .ed-btn-add:hover {
   background: var(--p-brand-dark);
-  box-shadow: 0 4px 14px rgba(245, 132, 0, 0.35);
+  box-shadow: 0 4px 14px rgba(44, 49, 146, 0.35);
 }
 
 
@@ -154,7 +154,7 @@
 
 .ed-search-wrap:focus-within {
   border-color: var(--p-brand);
-  box-shadow: 0 0 0 3px rgba(245, 132, 0, 0.12);
+  box-shadow: 0 0 0 3px rgba(44, 49, 146, 0.12);
 }
 
 .ed-search-icon { width: 15px; height: 15px; color: var(--p-muted-2); }
@@ -381,12 +381,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(245, 132, 0, 0.18);
+  border: 2px solid rgba(44, 49, 146, 0.18);
 }
 
 /* Alternate placeholder colors by initial */
 .ed-card-photo-placeholder[data-initials="A"],.ed-card-photo-placeholder[data-initials="B"],.ed-card-photo-placeholder[data-initials="C"] {
-  background: #FEF3C7; color: #D97706; border-color: rgba(217,119,6,.18);
+  background: #e8eaf6; color: #D97706; border-color: rgba(217,119,6,.18);
 }
 .ed-card-photo-placeholder[data-initials="D"],.ed-card-photo-placeholder[data-initials="E"],.ed-card-photo-placeholder[data-initials="F"] {
   background: #D1FAE5; color: #059669; border-color: rgba(5,150,105,.18);

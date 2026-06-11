@@ -297,7 +297,7 @@
         labels: annData.labels,
         datasets: [
           { label: 'On Time',  data: annData.present, backgroundColor: '#22c55e', borderRadius: 3, stack: 'a' },
-          { label: 'Late',     data: annData.late,    backgroundColor: '#F58400', borderRadius: 3, stack: 'a' },
+          { label: 'Late',     data: annData.late,    backgroundColor: '#2c3192', borderRadius: 3, stack: 'a' },
           { label: 'Absent',   data: annData.absent,  backgroundColor: '#e5e7eb', borderRadius: 3, stack: 'a' },
         ],
       },
@@ -315,7 +315,7 @@
 
   /* ── Employee Type donut ── */
   var ctx2 = document.getElementById('empTypeChart');
-  var DONUT_COLORS = ['#3b82f6', '#F58400', '#22c55e', '#8b5cf6', '#ec4899', '#14b8a6'];
+  var DONUT_COLORS = ['#3b82f6', '#2c3192', '#22c55e', '#8b5cf6', '#ec4899', '#14b8a6'];
   if (ctx2 && empData.data.length > 0) {
     var total = empData.data.reduce(function(a, b) { return a + b; }, 0);
     var tc = document.getElementById('empTypeTotal');

@@ -1,6 +1,6 @@
 /* ================================================================
-   DIGILATICS — EMPLOYEE SELF-SERVICE PORTAL
-   Font: Plus Jakarta Sans  |  Brand: #F58400
+   FUNNELATICS — EMPLOYEE SELF-SERVICE PORTAL
+   Font: Plus Jakarta Sans  |  Brand: #2c3192
    ================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -8,9 +8,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --brand:        #F58400;
-  --brand-dark:   #C86A00;
-  --brand-bg:     rgba(245,132,0,.08);
+  --brand:        #2c3192;
+  --brand-dark:   #1e2268;
+  --brand-bg:     rgba(44,49,146,.08);
   --text:         #111827;
   --text-2:       #374151;
   --muted:        #6B7280;
@@ -374,7 +374,7 @@ img { display: block; }
 .ep-att-chip.present strong { color: #16a34a; }
 .ep-att-chip.absent  strong { color: #dc2626; }
 .ep-att-chip.leave   strong { color: #2563eb; }
-.ep-att-chip.late    strong { color: #d97706; }
+.ep-att-chip.late    strong { color: #1e2268; }
 .ep-att-chip.wfh     strong { color: #7c3aed; }
 .ep-att-chip.holiday strong { color: #db2777; }
 
@@ -397,7 +397,7 @@ img { display: block; }
 }
 .ep-input:focus, .ep-select:focus, .ep-textarea:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(245,132,0,.12);
+  box-shadow: 0 0 0 3px rgba(44,49,146,.12);
 }
 .ep-textarea { resize: vertical; min-height: 80px; }
 
@@ -505,7 +505,7 @@ img { display: block; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fff7ed 0%, #fffbf5 60%, #f0f9ff 100%);
+  background: linear-gradient(135deg, #eef0fb 0%, #fffbf5 60%, #f0f9ff 100%);
   padding: 24px;
 }
 .ep-login-box {
@@ -544,7 +544,7 @@ img { display: block; }
   outline: none;
   transition: border-color .15s, box-shadow .15s;
 }
-.ep-login-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(245,132,0,.12); }
+.ep-login-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(44,49,146,.12); }
 .ep-login-btn {
   width: 100%;
   padding: 12px;
@@ -744,7 +744,7 @@ img { display: block; }
   gap: 4px;
   transition: border-color .15s, box-shadow .15s;
 }
-.ep-balance-card:hover { border-color: var(--brand); box-shadow: 0 4px 16px rgba(245,132,0,.1); }
+.ep-balance-card:hover { border-color: var(--brand); box-shadow: 0 4px 16px rgba(44,49,146,.1); }
 .ep-balance-icon { color: var(--brand); margin-bottom: 4px; }
 .ep-balance-icon svg { width: 22px; height: 22px; }
 .ep-balance-name { font-size: 12px; font-weight: 600; color: var(--muted); }
@@ -758,7 +758,7 @@ img { display: block; }
   align-items: center;
   gap: 6px;
   background: var(--brand-bg);
-  border: 1px solid rgba(245,132,0,.3);
+  border: 1px solid rgba(44,49,146,.3);
   color: var(--brand);
   border-radius: 20px;
   padding: 8px 16px;
@@ -847,7 +847,7 @@ img { display: block; }
   color: inherit;
   text-decoration: none;
 }
-.ep-ps-item:hover { border-color: var(--brand); box-shadow: 0 4px 20px rgba(245,132,0,.1); transform: translateY(-1px); }
+.ep-ps-item:hover { border-color: var(--brand); box-shadow: 0 4px 20px rgba(44,49,146,.1); transform: translateY(-1px); }
 .ep-ps-item-icon {
   width: 44px; height: 44px;
   background: var(--brand-bg); color: var(--brand);
@@ -904,7 +904,7 @@ img { display: block; }
   padding: 5px 12px; border-radius: 8px;
   background: var(--brand-bg); color: var(--brand);
   font-size: 12px; font-weight: 700;
-  border: 1px solid rgba(245,132,0,.3);
+  border: 1px solid rgba(44,49,146,.3);
   transition: background .15s, border-color .15s;
   cursor: pointer;
 }
@@ -978,8 +978,8 @@ thead .ep-team-att-summary-col { background: var(--surface) !important; z-index:
 .ep-team-att-table tbody tr:hover .ep-team-att-summary-col { background: var(--brand-bg); }
 .ep-team-att-cell-td { padding: 6px 1px; text-align: center; }
 .ep-day-weekend { opacity: .5; }
-.ep-day-today { background: rgba(245,132,0,.04); }
-.ep-team-att-table thead .ep-day-today { background: rgba(245,132,0,.1); }
+.ep-day-today { background: rgba(44,49,146,.04); }
+.ep-team-att-table thead .ep-day-today { background: rgba(44,49,146,.1); }
 
 .is-today-num {
   background: var(--brand); color: white;
@@ -1021,8 +1021,8 @@ thead .ep-team-att-summary-col { background: var(--surface) !important; z-index:
 ════════════════════════════════════════════════════════════ */
 
 /* HR sidebar accent */
-.hr-sidebar { border-right-color: rgba(245,132,0,.15); }
-.hr-sidebar .ep-logo { border-bottom: 1px solid rgba(245,132,0,.15); }
+.hr-sidebar { border-right-color: rgba(44,49,146,.15); }
+.hr-sidebar .ep-logo { border-bottom: 1px solid rgba(44,49,146,.15); }
 .hr-logo { display: flex; align-items: center; gap: 10px; }
 .hr-logo-icon {
   width: 34px; height: 34px; border-radius: 9px;
@@ -1031,7 +1031,7 @@ thead .ep-team-att-summary-col { background: var(--surface) !important; z-index:
   flex-shrink: 0;
 }
 .hr-logo-sub { font-size: 10px; color: var(--brand); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; line-height: 1.2; }
-.hr-topbar { border-bottom-color: rgba(245,132,0,.15); }
+.hr-topbar { border-bottom-color: rgba(44,49,146,.15); }
 
 /* ── HR Stat Cards ── */
 .hr-stat-grid {
