@@ -2967,13 +2967,16 @@ def hr_sync_schedule_fetch(request):
         except Exception as exc:
             messages.error(request, f"Unexpected error during sync: {exc}")
     else:
-        # Push mode: signal the device to resend its logs on next ADMS poll
+        # Push mode: signal the device to resend its logs on next ADMS poll.
+        # This is the normal path for cloud-hosted servers — the device IP is
+        # a private LAN address not reachable from the internet.
         force_adms_data_query()
-        messages.warning(
+        messages.success(
             request,
-            f"Device at {host}:{port} is not reachable via TCP (ZK pull mode). "
-            "An ADMS DATA QUERY command has been queued — the device will push its "
-            "logs on its next heartbeat poll (usually within 1 minute)."
+            "✓ DATA QUERY queued. The biometric device will push its latest logs "
+            "on its next heartbeat poll (within 1 minute). "
+            "This is normal — the device is on your office LAN and pushes to the server, "
+            "not the other way around."
         )
 
     return redirect("portal:hr_sync_schedules")

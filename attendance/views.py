@@ -88,17 +88,20 @@ def iclock_cdata(request):
     GET  → device heartbeat / initial registration
     POST → device uploads attendance log (ATTLOG)
     """
-    # Debug: log every request from device to a file
+    # Debug: log to /tmp so the web-server process always has write access
     import os
-    log_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "zkteco_debug.log")
-    with open(log_path, "a", encoding="utf-8") as f:
-        f.write(f"\n{'='*60}\n")
-        f.write(f"METHOD: {request.method}\n")
-        f.write(f"PATH: {request.get_full_path()}\n")
-        f.write(f"FROM: {request.META.get('REMOTE_ADDR')}\n")
-        f.write(f"CONTENT-TYPE: {request.content_type}\n")
-        body = request.body.decode("utf-8", errors="replace")
-        f.write(f"BODY ({len(body)} bytes):\n{body[:3000]}\n")
+    log_path = "/tmp/funnelatics_zkteco_debug.log"
+    try:
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"\n{'='*60}\n")
+            f.write(f"METHOD: {request.method}\n")
+            f.write(f"PATH: {request.get_full_path()}\n")
+            f.write(f"FROM: {request.META.get('REMOTE_ADDR')}\n")
+            f.write(f"CONTENT-TYPE: {request.content_type}\n")
+            body = request.body.decode("utf-8", errors="replace")
+            f.write(f"BODY ({len(body)} bytes):\n{body[:3000]}\n")
+    except OSError:
+        pass
 
     if request.method == "GET":
         return _adms_handshake(request)
@@ -113,6 +116,8 @@ def _adms_handshake(request):
     ATTLOGStamp=9999 prevents the device from bulk-uploading old records on
     every handshake — new punches arrive via the DATA QUERY command in getrequest.
     TransInterval=1 keeps the device polling every minute for new commands.
+    TimeZone=0 instructs the device to send timestamps in UTC so we can
+    reliably convert to Eastern Time on the server side.
     """
     sn = request.GET.get("SN", "unknown")
     logger.info("ADMS handshake from device SN=%s", sn)
@@ -127,7 +132,7 @@ def _adms_handshake(request):
         "TransTimes=00:00;23:59\n"
         "TransInterval=1\n"
         "TransFlag=TransData AttLog\n"
-        "TimeZone=5\n"
+        "TimeZone=0\n"
         "Realtime=1\n"
         "Encrypt=None\n"
     )
@@ -207,7 +212,13 @@ def _adms_receive_logs(request):
             logger.warning("ADMS: unrecognised timestamp %r", att_time_str)
             continue
 
-        punches[(employee.pk, punch_dt.date())].append((punch_dt.time(), status_code))
+        # Device sends UTC (TimeZone=0 in handshake).
+        # Convert to local time (America/New_York) so date and clock time
+        # match what employees see on the portal.
+        punch_dt_utc = timezone.make_aware(punch_dt, timezone.utc)
+        punch_dt_local = timezone.localtime(punch_dt_utc)
+
+        punches[(employee.pk, punch_dt_local.date())].append((punch_dt_local.time(), status_code))
 
     if unknown_ids:
         logger.warning("ADMS: unmapped device IDs %s — add them in Device Employee Mappings", unknown_ids)
