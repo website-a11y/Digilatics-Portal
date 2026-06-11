@@ -8,11 +8,10 @@ Usage:
     python manage.py sync_if_scheduled
     python manage.py sync_if_scheduled --force
 """
-from datetime import datetime
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from attendance.models import SyncSchedule
-from attendance.management.commands.sync_device_attendance import Command as SyncCommand
 
 
 class Command(BaseCommand):
@@ -41,36 +40,40 @@ class Command(BaseCommand):
             self.stdout.write("Could not load sync schedule.")
             return
 
-        # Get current time in Pakistan timezone
-        now = timezone.now()
-        current_time = now.time()
+        # Use local time so schedule times (stored as local clock times) match correctly
+        current_time = timezone.localtime(timezone.now()).time()
 
-        # Check if current time matches either sync time
-        def time_match(target_time, tolerance_minutes=5):
+        def time_match(target_time, tolerance_minutes):
             diff = abs(
                 (current_time.hour * 60 + current_time.minute)
                 - (target_time.hour * 60 + target_time.minute)
             )
             return diff <= tolerance_minutes
 
-        tolerance = options.get("tolerance_minutes", 5)
-        if not options.get("force"):
-            if not (
-                time_match(schedule.sync_time_1, tolerance)
-                or time_match(schedule.sync_time_2, tolerance)
-            ):
+        tolerance = options["tolerance_minutes"]
+        if not options["force"]:
+            t1_match = time_match(schedule.sync_time_1, tolerance)
+            t2_match = (
+                time_match(schedule.sync_time_2, tolerance)
+                if schedule.sync_time_2
+                else False
+            )
+            if not (t1_match or t2_match):
                 self.stdout.write(
                     f"Not sync time yet. Current: {current_time.strftime('%H:%M')}, "
-                    f"Next syncs: {schedule.sync_time_1.strftime('%H:%M')} & {schedule.sync_time_2.strftime('%H:%M')}"
+                    f"Sync 1: {schedule.sync_time_1.strftime('%H:%M')}"
+                    + (
+                        f", Sync 2: {schedule.sync_time_2.strftime('%H:%M')}"
+                        if schedule.sync_time_2
+                        else ""
+                    )
                 )
                 return
 
-        # Run the sync
         self.stdout.write(
-            f"Running sync at {current_time.strftime('%H:%M')} (Pakistan time)..."
+            f"Running scheduled sync at {current_time.strftime('%H:%M')}..."
         )
         try:
-            sync_cmd = SyncCommand()
-            sync_cmd.handle()
+            call_command("sync_device_attendance", stdout=self.stdout)
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Sync failed: {e}"))

@@ -4,9 +4,32 @@
 
 {% block content %}
 <div style="display:flex;justify-content:flex-end;margin-bottom:20px;gap:10px;">
-  <a href="{% url 'portal:hr_sync_schedule_fetch' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 16px;background:#2563EB;color:#fff;">Fetch records now</a>
+  <a href="{% url 'portal:hr_sync_schedule_fetch' %}" id="fetch-btn"
+     class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;background:#2c3192;color:#fff;border-radius:8px;"
+     onclick="startFetch(this)">
+    <svg id="fetch-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+      <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.67"/>
+    </svg>
+    <svg id="fetch-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"
+         style="display:none;animation:spin .8s linear infinite;">
+      <circle cx="12" cy="12" r="10" stroke-opacity=".25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>
+    </svg>
+    <span id="fetch-label">Fetch records now</span>
+  </a>
   <a href="{% url 'portal:hr_sync_schedule_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:36px;padding:0 16px;">+ Add Schedule</a>
 </div>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+<script>
+function startFetch(el) {
+  document.getElementById('fetch-icon').style.display = 'none';
+  document.getElementById('fetch-spinner').style.display = 'block';
+  document.getElementById('fetch-label').textContent = 'Fetching…';
+  el.style.pointerEvents = 'none';
+  el.style.opacity = '.75';
+}
+</script>
 <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:14px;padding:14px 18px;margin-bottom:20px;color:#14532d;font-size:13px;line-height:1.6;display:flex;align-items:flex-start;gap:12px;">
   <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" width="18" height="18" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
   <div>

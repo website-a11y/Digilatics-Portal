@@ -2939,30 +2939,41 @@ def hr_sync_schedule_fetch(request):
     host = cfg.get("host")
     port = cfg.get("port", 4370)
 
+    if not host:
+        messages.error(
+            request,
+            "No biometric device configured. Set ZK_DEVICE['host'] in settings.py."
+        )
+        return redirect("portal:hr_sync_schedules")
+
+    # Quick TCP probe (3 s) to decide pull-mode vs push-mode
     tcp_reachable = False
-    if host:
-        try:
-            with socket.create_connection((host, port), timeout=5):
-                tcp_reachable = True
-        except Exception:
-            tcp_reachable = False
+    try:
+        with socket.create_connection((host, port), timeout=3):
+            tcp_reachable = True
+    except Exception:
+        tcp_reachable = False
 
     if tcp_reachable:
+        # Pull mode: connect with pyzk and fetch logs directly
         output = StringIO()
         try:
             call_command("sync_device_attendance", stdout=output)
-            message = output.getvalue().strip().splitlines()[-1] if output.getvalue().strip() else "Attendance fetch completed successfully."
-            messages.success(request, message)
+            raw_out = output.getvalue().strip()
+            last_line = raw_out.splitlines()[-1] if raw_out else "Attendance sync completed."
+            messages.success(request, f"✓ {last_line}")
         except CommandError as exc:
-            messages.error(request, str(exc))
+            messages.error(request, f"Sync error: {exc}")
         except Exception as exc:
-            messages.error(request, f"Attendance fetch failed: {exc}")
+            messages.error(request, f"Unexpected error during sync: {exc}")
     else:
+        # Push mode: signal the device to resend its logs on next ADMS poll
         force_adms_data_query()
-        messages.success(
+        messages.warning(
             request,
-            "Device is not reachable via TCP. A push-mode ADMS query has been scheduled; "
-            "the device will resend logs on its next poll."
+            f"Device at {host}:{port} is not reachable via TCP (ZK pull mode). "
+            "An ADMS DATA QUERY command has been queued — the device will push its "
+            "logs on its next heartbeat poll (usually within 1 minute)."
         )
 
     return redirect("portal:hr_sync_schedules")
