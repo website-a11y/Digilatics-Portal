@@ -19,9 +19,21 @@ logger = logging.getLogger("attendance.zkteco")
 
 
 def _adms_flag_dir():
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "adms_flags")
-    os.makedirs(path, exist_ok=True)
-    return path
+    # Use /tmp so the web-server process always has write permission.
+    # Fall back to the project-local directory only if /tmp is unavailable.
+    tmp = "/tmp/funnelatics_adms_flags"
+    try:
+        os.makedirs(tmp, exist_ok=True)
+        # Quick write test
+        test = os.path.join(tmp, ".write_test")
+        with open(test, "w") as f:
+            f.write("ok")
+        os.remove(test)
+        return tmp
+    except OSError:
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "adms_flags")
+        os.makedirs(path, exist_ok=True)
+        return path
 
 
 def _adms_force_path(sn="all"):
