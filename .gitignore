@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtualenv
+venv/
+
+# Django collected static
+staticfiles/
+
+# Logs
+*.log
+
+# Local/production data — never commit or overwrite
+db.sqlite3
+media/
