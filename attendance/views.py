@@ -3,7 +3,7 @@ Attendance views:
   - ZKTeco ADMS push protocol  (/iclock/*)
   - Employee self-punch portal  (/punch/)
 """
-from datetime import datetime
+from datetime import datetime, timezone as dt_timezone
 import logging
 import os
 
@@ -231,7 +231,7 @@ def _adms_receive_logs(request):
         # Device sends UTC (TimeZone=0 in handshake).
         # Convert to local time (America/New_York) so date and clock time
         # match what employees see on the portal.
-        punch_dt_utc = timezone.make_aware(punch_dt, timezone.utc)
+        punch_dt_utc = timezone.make_aware(punch_dt, dt_timezone.utc)
         punch_dt_local = timezone.localtime(punch_dt_utc)
 
         punches[(employee.pk, punch_dt_local.date())].append((punch_dt_local.time(), status_code))
