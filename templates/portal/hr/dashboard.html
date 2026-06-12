@@ -2,66 +2,239 @@
 {% block title %}HR Dashboard — Funnelatics{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── 6-card stat row ── */
+.hr-stat-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.hr-kpi {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.hr-kpi::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 12px 12px 0 0;
+}
+.hr-kpi.kpi-blue::before   { background: #3b82f6; }
+.hr-kpi.kpi-green::before  { background: #22c55e; }
+.hr-kpi.kpi-orange::before { background: #f97316; }
+.hr-kpi.kpi-red::before    { background: #ef4444; }
+.hr-kpi.kpi-yellow::before { background: #eab308; }
+.hr-kpi.kpi-purple::before { background: #a855f7; }
+.hr-kpi-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.kpi-blue   .hr-kpi-icon { background: #eff6ff; color: #3b82f6; }
+.kpi-green  .hr-kpi-icon { background: #f0fdf4; color: #22c55e; }
+.kpi-orange .hr-kpi-icon { background: #fff7ed; color: #f97316; }
+.kpi-red    .hr-kpi-icon { background: #fef2f2; color: #ef4444; }
+.kpi-yellow .hr-kpi-icon { background: #fefce8; color: #ca8a04; }
+.kpi-purple .hr-kpi-icon { background: #faf5ff; color: #a855f7; }
+.hr-kpi-top { display: flex; align-items: center; justify-content: space-between; }
+.hr-kpi-val { font-size: 28px; font-weight: 800; color: var(--text-1); line-height: 1.1; }
+.hr-kpi-lbl { font-size: 12px; color: var(--text-2); font-weight: 500; }
+.hr-kpi-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+
+/* ── chart cards ── */
+.hr-charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.hr-chart-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.hr-chart-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+}
+.hr-chart-title { font-size: 15px; font-weight: 700; color: var(--text-1); }
+.hr-chart-sub   { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+/* ── bottom row ── */
+.hr-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* ── dept list ── */
+.hr-dept-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 4px 12px; align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-light, #f3f4f6);
+}
+.hr-dept-row:last-child { border-bottom: none; }
+.hr-dept-bar {
+  height: 5px; background: #f3f4f6; border-radius: 3px; margin-top: 4px;
+}
+.hr-dept-bar-fill {
+  height: 5px; background: #2c3192; border-radius: 3px;
+}
+
+/* ── period toggle ── */
+.pie-period-btn {
+  background: var(--surface, #f9fafb);
+  border: 1px solid var(--border, #e5e7eb);
+  color: var(--text-2, #6b7280);
+  cursor: pointer; border-radius: 6px;
+  padding: 4px 10px; font-size: 11px;
+}
+.pie-period-btn.active-period { background: #2c3192; border-color: #2c3192; color: #fff; }
+
+@media (max-width: 1200px) {
+  .hr-stat-grid-6 { grid-template-columns: repeat(3, 1fr); }
+  .hr-charts-row  { grid-template-columns: 1fr; }
+  .hr-bottom-row  { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .hr-stat-grid-6 { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
-<!-- ══ HERO STATS ══ -->
-<div class="hr-stat-grid">
+<!-- ══ 6 KPI CARDS ══ -->
+<div class="hr-stat-grid-6">
 
-  <div class="hr-stat-card blue">
-    <div class="hr-stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  <div class="hr-kpi kpi-blue">
+    <div class="hr-kpi-top">
+      <div class="hr-kpi-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:var(--text-2);">{{ month_label }}</span>
     </div>
-    <div class="hr-stat-body">
-      <div class="hr-stat-val">{{ total_employees }}</div>
-      <div class="hr-stat-lbl">Active Employees</div>
-    </div>
-    {% if new_hires > 0 %}
-    <div class="hr-stat-badge green">+{{ new_hires }} this month</div>
-    {% endif %}
+    <div class="hr-kpi-val">{{ total_employees }}</div>
+    <div class="hr-kpi-lbl">Active Employees</div>
+    {% if new_hires > 0 %}<div class="hr-kpi-sub" style="color:#16a34a;">+{{ new_hires }} new this month</div>{% endif %}
   </div>
 
-  <div class="hr-stat-card green">
-    <div class="hr-stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+  <div class="hr-kpi kpi-green">
+    <div class="hr-kpi-top">
+      <div class="hr-kpi-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:#16a34a;">Today</span>
     </div>
-    <div class="hr-stat-body">
-      <div class="hr-stat-val">{{ checked_in_today }}</div>
-      <div class="hr-stat-lbl">Checked In Today</div>
-    </div>
-    <div class="hr-stat-badge {% if present_today > 0 %}green{% else %}gray{% endif %}">{{ present_today }} present</div>
+    <div class="hr-kpi-val">{{ checked_in_today }}</div>
+    <div class="hr-kpi-lbl">Checked In Today</div>
+    <div class="hr-kpi-sub">{{ present_today }} marked present</div>
   </div>
 
-  <div class="hr-stat-card orange">
-    <div class="hr-stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  <div class="hr-kpi kpi-orange">
+    <div class="hr-kpi-top">
+      <div class="hr-kpi-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:#f97316;">Today</span>
     </div>
-    <div class="hr-stat-body">
-      <div class="hr-stat-val">{{ pending_leaves }}</div>
-      <div class="hr-stat-lbl">Pending Leaves</div>
-    </div>
-    {% if manager_approved_leaves > 0 %}
-    <div class="hr-stat-badge blue">{{ manager_approved_leaves }} mgr approved</div>
-    {% endif %}
+    <div class="hr-kpi-val">{{ late_today }}</div>
+    <div class="hr-kpi-lbl">Late Arrivals</div>
+    <div class="hr-kpi-sub">checked in after shift</div>
   </div>
 
-  <div class="hr-stat-card purple">
-    <div class="hr-stat-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+  <div class="hr-kpi kpi-red">
+    <div class="hr-kpi-top">
+      <div class="hr-kpi-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:#ef4444;">Today</span>
     </div>
-    <div class="hr-stat-body">
-      <div class="hr-stat-val">{{ att_rate }}%</div>
-      <div class="hr-stat-lbl">Attendance Rate</div>
+    <div class="hr-kpi-val">{{ on_leave_today }}</div>
+    <div class="hr-kpi-lbl">On Leave Today</div>
+    <div class="hr-kpi-sub">approved leave records</div>
+  </div>
+
+  <div class="hr-kpi kpi-yellow">
+    <div class="hr-kpi-top">
+      <div class="hr-kpi-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      {% if manager_approved_leaves > 0 %}
+      <span style="font-size:11px;font-weight:600;color:#ca8a04;">+{{ manager_approved_leaves }} mgr</span>
+      {% endif %}
     </div>
-    <div class="hr-stat-badge gray">{{ month_label }}</div>
+    <div class="hr-kpi-val">{{ pending_leaves }}</div>
+    <div class="hr-kpi-lbl">Pending Leaves</div>
+    <div class="hr-kpi-sub">awaiting HR approval</div>
+  </div>
+
+  <div class="hr-kpi kpi-purple">
+    <div class="hr-kpi-top">
+      <div class="hr-kpi-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:var(--text-2);">{{ working_days_so_far }}d worked</span>
+    </div>
+    <div class="hr-kpi-val">{{ att_rate }}%</div>
+    <div class="hr-kpi-lbl">Attendance Rate</div>
+    <div class="hr-kpi-sub">{{ month_label }}</div>
   </div>
 
 </div>
 
-<!-- ══ TWO-COLUMN ROW ══ -->
-<div class="hr-two-col">
+<!-- ══ CHARTS ROW ══ -->
+<div class="hr-charts-row">
+
+  <!-- Annual Salary & Tax Bar Chart -->
+  <div class="hr-chart-card">
+    <div class="hr-chart-header">
+      <div>
+        <div class="hr-chart-title">Payroll Overview — {{ today.year }}</div>
+        <div class="hr-chart-sub">Monthly gross salary vs income tax deductions</div>
+      </div>
+    </div>
+    <canvas id="annualSalaryChart" height="160"></canvas>
+  </div>
+
+  <!-- Attendance Distribution Donut -->
+  <div class="hr-chart-card">
+    <div class="hr-chart-header" style="flex-wrap:wrap;gap:8px;">
+      <div>
+        <div class="hr-chart-title">Attendance Mix</div>
+        <div class="hr-chart-sub" id="pie-period-label">This Month</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <button onclick="setPiePeriod('monthly')"    id="btn-monthly"    class="pie-period-btn active-period">Month</button>
+        <button onclick="setPiePeriod('quarterly')"  id="btn-quarterly"  class="pie-period-btn">Quarter</button>
+        <button onclick="setPiePeriod('halfyearly')" id="btn-halfyearly" class="pie-period-btn">6 Months</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;align-items:center;padding:8px 0;">
+      <canvas id="attPieChart" height="200" style="max-width:220px;"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ BOTTOM ROW: Leaves + Dept ══ -->
+<div class="hr-bottom-row">
 
   <!-- Leave Requests Needing Action -->
-  <div class="ep-card">
+  <div class="ep-card" style="margin:0;">
     <div class="ep-card-header">
       <div>
         <div class="ep-card-title">Leaves Needing Action</div>
@@ -75,7 +248,7 @@
         <thead>
           <tr>
             <th>Employee</th>
-            <th>Leave Type</th>
+            <th>Type</th>
             <th>Dates</th>
             <th>Days</th>
             <th>Status</th>
@@ -97,9 +270,7 @@
             <td style="font-size:13px;">{{ lr.leave_type.name }}</td>
             <td style="font-size:12px;color:var(--text-2);">{{ lr.from_date|date:"M j" }} – {{ lr.to_date|date:"M j" }}</td>
             <td style="font-weight:700;font-size:13px;">{{ lr.number_of_days|floatformat:"-2" }}d</td>
-            <td>
-              <span class="ep-badge {{ lr.status|slugify }}">{{ lr.status }}</span>
-            </td>
+            <td><span class="ep-badge {{ lr.status|slugify }}">{{ lr.status }}</span></td>
             <td>
               {% if lr.status == 'Pending' or lr.status == 'Manager Approved' %}
               <div style="display:flex;gap:6px;">
@@ -131,102 +302,39 @@
     </div>
   </div>
 
-  <!-- Right column: Dept breakdown + Payroll -->
-  <div style="display:flex;flex-direction:column;gap:20px;">
-
-    <!-- Department Breakdown: Total Strength vs Present -->
-    <div class="ep-card">
-      <div class="ep-card-header">
-        <div>
-          <div class="ep-card-title">Department Attendance</div>
-          <div class="ep-card-sub">Total Strength vs Present today</div>
-        </div>
-        <a href="{% url 'portal:hr_employees' %}" class="ep-btn-sm" style="text-decoration:none;">All Employees →</a>
-      </div>
-      <div class="ep-card-body">
-        <div style="display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center;margin-bottom:6px;">
-          <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;">Department</div>
-          <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;text-align:right;">Strength</div>
-          <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.4px;text-align:right;">Present</div>
-        </div>
-        {% for dept in dept_counts %}
-        <div style="display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border-light,#f3f4f6);">
-          <div>
-            <div style="font-size:13px;font-weight:600;color:var(--text-1);">{{ dept.department|default:"Unassigned" }}</div>
-            <div style="height:5px;background:#f3f4f6;border-radius:3px;margin-top:4px;">
-              <div style="height:5px;background:#2c3192;border-radius:3px;width:{% widthratio dept.present dept.count 100 %}%;"></div>
-            </div>
-          </div>
-          <div style="font-size:13px;font-weight:700;color:var(--text-1);text-align:right;min-width:36px;">{{ dept.count }}</div>
-          <div style="font-size:13px;font-weight:700;color:#16a34a;text-align:right;min-width:36px;">{{ dept.present }}</div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Latest Payroll Run -->
-    <div class="ep-card">
-      <div class="ep-card-header">
-        <div class="ep-card-title">Latest Payroll</div>
-        <a href="{% url 'portal:hr_payroll' %}" class="ep-btn-sm" style="text-decoration:none;">All Runs →</a>
-      </div>
-      <div class="ep-card-body">
-        {% if latest_run %}
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div>
-            <div style="font-size:22px;font-weight:800;color:var(--text-1);">
-              {{ latest_run.get_month_display }} {{ latest_run.year }}
-            </div>
-            <div style="font-size:12px;color:var(--text-2);margin-top:2px;">Payroll Run</div>
-          </div>
-          <span class="ep-badge {{ latest_run.status|slugify }}" style="font-size:13px;padding:6px 14px;">{{ latest_run.status }}</span>
-          <a href="{% url 'portal:hr_payroll_detail' latest_run.pk %}" class="ep-btn-sm" style="text-decoration:none;margin-left:auto;">View →</a>
-        </div>
-        {% else %}
-        <div style="color:var(--text-2);font-size:13px;">No payroll runs yet.</div>
-        {% endif %}
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ══ CHARTS ROW ══ -->
-<div class="hr-two-col" style="margin-top:24px;">
-
-  <!-- Annual Salary & Tax Bar Chart -->
-  <div class="ep-card">
+  <!-- Department Attendance -->
+  <div class="ep-card" style="margin:0;">
     <div class="ep-card-header">
       <div>
-        <div class="ep-card-title">Annual Salary &amp; Tax ({{ today.year }})</div>
-        <div class="ep-card-sub">Month-wise gross salary and income tax deductions</div>
+        <div class="ep-card-title">Department Attendance</div>
+        <div class="ep-card-sub">Strength vs present today</div>
       </div>
+      <a href="{% url 'portal:hr_employees' %}" class="ep-btn-sm" style="text-decoration:none;">All →</a>
     </div>
     <div class="ep-card-body">
-      <canvas id="annualSalaryChart" height="220"></canvas>
-    </div>
-  </div>
-
-  <!-- Attendance Distribution Pie Chart with period toggle -->
-  <div class="ep-card">
-    <div class="ep-card-header" style="flex-wrap:wrap;gap:8px;">
-      <div>
-        <div class="ep-card-title">Attendance Distribution</div>
-        <div class="ep-card-sub" id="pie-period-label">This Month</div>
+      <div style="display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;margin-bottom:6px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;">Dept</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;text-align:right;">Total</div>
+        <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.4px;text-align:right;">In</div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;">
-        <button onclick="setPiePeriod('monthly')"    id="btn-monthly"     class="ep-btn-sm pie-period-btn active-period">Monthly</button>
-        <button onclick="setPiePeriod('quarterly')"  id="btn-quarterly"   class="ep-btn-sm pie-period-btn">Quarterly</button>
-        <button onclick="setPiePeriod('halfyearly')" id="btn-halfyearly"  class="ep-btn-sm pie-period-btn">Half-Yearly</button>
+      {% for dept in dept_counts %}
+      <div class="hr-dept-row">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-1);">{{ dept.department|default:"Unassigned" }}</div>
+          <div class="hr-dept-bar">
+            <div class="hr-dept-bar-fill" style="width:{% widthratio dept.present dept.count 100 %}%;"></div>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-1);text-align:right;min-width:30px;">{{ dept.count }}</div>
+        <div style="font-size:13px;font-weight:700;color:#16a34a;text-align:right;min-width:30px;">{{ dept.present }}</div>
       </div>
-    </div>
-    <div class="ep-card-body" style="display:flex;justify-content:center;">
-      <canvas id="attPieChart" height="240" style="max-width:260px;"></canvas>
+      {% endfor %}
     </div>
   </div>
 
 </div>
 
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 var MONTHS  = {{ chart_months_json|safe }};
@@ -238,16 +346,55 @@ new Chart(document.getElementById('annualSalaryChart'), {
   data: {
     labels: MONTHS,
     datasets: [
-      { label: 'Gross Salary', data: SALARY, backgroundColor: '#2c3192', borderRadius: 4 },
-      { label: 'Income Tax',   data: TAX,    backgroundColor: '#6366f1', borderRadius: 4 },
+      {
+        label: 'Gross Salary',
+        data: SALARY,
+        backgroundColor: 'rgba(44,49,146,0.85)',
+        borderRadius: { topLeft: 5, topRight: 5 },
+        borderSkipped: false,
+        barPercentage: 0.6,
+      },
+      {
+        label: 'Income Tax',
+        data: TAX,
+        backgroundColor: 'rgba(99,102,241,0.7)',
+        borderRadius: { topLeft: 5, topRight: 5 },
+        borderSkipped: false,
+        barPercentage: 0.6,
+      },
     ],
   },
   options: {
     responsive: true,
-    plugins: { legend: { position: 'bottom' } },
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'top',
+        align: 'end',
+        labels: { boxWidth: 12, boxHeight: 12, borderRadius: 3, useBorderRadius: true, font: { size: 12 } },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            var v = ctx.parsed.y;
+            return ' ' + ctx.dataset.label + ': ' + (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v);
+          }
+        }
+      }
+    },
     scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true, ticks: { callback: function(v){ return v >= 1000 ? (v/1000).toFixed(0)+'k' : v; } } },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 11 } },
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: {
+          font: { size: 11 },
+          callback: function(v) { return v >= 1000 ? (v/1000).toFixed(0) + 'k' : v; }
+        },
+      },
     },
   },
 });
@@ -257,28 +404,51 @@ var PIE_DATA = {
   quarterly:  {{ pie_quarterly_json|safe }},
   halfyearly: {{ pie_halfyearly_json|safe }},
 };
-var PIE_LABELS = { monthly:'This Month', quarterly:'Last 3 Months', halfyearly:'Last 6 Months' };
+var PIE_LABELS = { monthly: 'This Month', quarterly: 'Last 3 Months', halfyearly: 'Last 6 Months' };
 
 var pieChart = new Chart(document.getElementById('attPieChart'), {
-  type: 'pie',
+  type: 'doughnut',
   data: {
     labels: ['Present', 'Absent', 'On Leave', 'WFH'],
-    datasets: [{ data: PIE_DATA.monthly, backgroundColor: ['#22c55e','#ef4444','#f59e0b','#6366f1'], borderWidth: 2, borderColor: '#fff' }],
+    datasets: [{
+      data: PIE_DATA.monthly,
+      backgroundColor: ['#22c55e', '#ef4444', '#f59e0b', '#6366f1'],
+      borderWidth: 3,
+      borderColor: '#fff',
+      hoverOffset: 6,
+    }],
   },
-  options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } } },
+  options: {
+    responsive: true,
+    cutout: '68%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          boxWidth: 12, boxHeight: 12, borderRadius: 3, useBorderRadius: true,
+          font: { size: 12 }, padding: 14,
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            var total = ctx.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+            var pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+            return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+          }
+        }
+      }
+    },
+  },
 });
 
 function setPiePeriod(period) {
   pieChart.data.datasets[0].data = PIE_DATA[period];
   pieChart.update();
   document.getElementById('pie-period-label').textContent = PIE_LABELS[period];
-  document.querySelectorAll('.pie-period-btn').forEach(function(b){ b.classList.remove('active-period'); });
+  document.querySelectorAll('.pie-period-btn').forEach(function(b) { b.classList.remove('active-period'); });
   document.getElementById('btn-' + period).classList.add('active-period');
 }
 </script>
-<style>
-.pie-period-btn { background:var(--surface,#f9fafb);border:1px solid var(--border,#e5e7eb);color:var(--text-2,#6b7280);cursor:pointer;border-radius:6px;padding:4px 10px;font-size:12px; }
-.pie-period-btn.active-period { background:#2c3192;border-color:#2c3192;color:#fff; }
-</style>
 
 {% endblock %}

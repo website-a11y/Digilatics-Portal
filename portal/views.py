@@ -1199,6 +1199,11 @@ def hr_dashboard(request):
     today_records = AttendanceRecord.objects.filter(date=today)
     present_today = today_records.filter(status=AttendanceRecord.StatusChoices.PRESENT).count()
     checked_in_today = today_records.filter(check_in__isnull=False).count()
+    late_today = today_records.filter(is_late=True).count()
+    on_leave_today = today_records.filter(status__in=[
+        AttendanceRecord.StatusChoices.ON_LEAVE_PAID,
+        AttendanceRecord.StatusChoices.ON_LEAVE_UNPAID,
+    ]).count()
 
     pending_leaves = LeaveRequest.objects.filter(status=LeaveRequest.StatusChoices.PENDING).count()
     manager_approved_leaves = LeaveRequest.objects.filter(status=LeaveRequest.StatusChoices.MANAGER_APPROVED).count()
@@ -1314,6 +1319,8 @@ def hr_dashboard(request):
         "total_employees": total_employees,
         "present_today": present_today,
         "checked_in_today": checked_in_today,
+        "late_today": late_today,
+        "on_leave_today": on_leave_today,
         "pending_leaves": pending_leaves,
         "manager_approved_leaves": manager_approved_leaves,
         "dept_counts": dept_counts,

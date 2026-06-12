@@ -954,12 +954,14 @@ img { display: block; }
   position: sticky; top: 0; z-index: 2;
 }
 .ep-team-att-name-col {
-  min-width: 200px; max-width: 220px;
+  width: 230px; min-width: 230px; max-width: 230px;
   text-align: left !important;
-  padding-left: 20px !important;
+  padding-left: 16px !important;
+  padding-right: 8px !important;
   position: sticky; left: 0; z-index: 3;
   background: var(--white);
-  border-right: 1px solid var(--border);
+  border-right: 2px solid var(--border);
+  overflow: hidden;
 }
 thead .ep-team-att-name-col { background: var(--surface) !important; z-index: 5; }
 .ep-team-att-summary-col {
@@ -995,6 +997,7 @@ thead .ep-team-att-summary-col { background: var(--surface) !important; z-index:
 .ep-team-att-member {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 0;
+  overflow: hidden;
 }
 .ep-avatar-sm {
   width: 32px; height: 32px; border-radius: 50%;
@@ -1003,8 +1006,9 @@ thead .ep-team-att-summary-col { background: var(--surface) !important; z-index:
   font-size: 13px; font-weight: 800;
   flex-shrink: 0;
 }
-.ep-team-att-empname { font-size: 13px; font-weight: 700; color: var(--text-1); white-space: nowrap; }
-.ep-team-att-dept { font-size: 11px; color: var(--text-2); white-space: nowrap; }
+.ep-team-att-member > div:last-child { min-width: 0; overflow: hidden; }
+.ep-team-att-empname { font-size: 13px; font-weight: 700; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ep-team-att-dept { font-size: 11px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .ep-team-att-summary { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
 .ep-summ-badge {
