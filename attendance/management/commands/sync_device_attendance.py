@@ -13,8 +13,11 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date, datetime
 
+import pytz
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 
 from attendance.models import AttendanceRecord, DeviceEmployee
 from attendance.services import compute_attendance_flags
@@ -105,9 +108,18 @@ class Command(BaseCommand):
                 except Exception:
                     pass
 
-        self._process_logs(raw_logs, filter_date)
+        device_tz_name = device_cfg.get("device_timezone", "UTC")
+        self._process_logs(raw_logs, filter_date, device_tz_name)
 
-    def _process_logs(self, raw_logs, filter_date: date | None):
+    def _process_logs(self, raw_logs, filter_date: date | None, device_tz_name: str = "UTC"):
+        try:
+            device_tz = pytz.timezone(device_tz_name)
+        except pytz.UnknownTimeZoneError:
+            self.stdout.write(self.style.WARNING(
+                f"Unknown device_timezone '{device_tz_name}', defaulting to UTC"
+            ))
+            device_tz = pytz.utc
+
         # Build lookup: device_user_id → EmployeeProfile
         mappings = {
             dm.device_user_id: dm.employee
@@ -139,12 +151,19 @@ class Command(BaseCommand):
                 continue
 
             ts: datetime = log.timestamp
-            punch_date = ts.date() if isinstance(ts, datetime) else ts
+            if not isinstance(ts, datetime):
+                continue
+
+            # pyzk returns naive datetimes in the device's local clock timezone.
+            # Localise to device_tz, then convert to the portal's local time (EST).
+            ts_device = device_tz.localize(ts.replace(tzinfo=None))
+            ts_local = timezone.localtime(ts_device)
+            punch_date = ts_local.date()
 
             if filter_date and punch_date != filter_date:
                 continue
 
-            punches[(employee.pk, punch_date)].append(ts)
+            punches[(employee.pk, punch_date)].append(ts_local)
 
         if skipped_unknown:
             self.stdout.write(self.style.WARNING(
@@ -165,8 +184,10 @@ class Command(BaseCommand):
                 continue
 
             timestamps.sort()
-            check_in = timestamps[0].time()
-            check_out = timestamps[-1].time() if len(timestamps) > 1 else None
+            # .replace(tzinfo=None) strips the tz-awareness to get a naive time
+            # suitable for storing in a naive TimeField.
+            check_in = timestamps[0].time().replace(tzinfo=None)
+            check_out = timestamps[-1].time().replace(tzinfo=None) if len(timestamps) > 1 else None
 
             # Don't overwrite leave-linked or public holiday records
             existing = AttendanceRecord.objects.filter(
