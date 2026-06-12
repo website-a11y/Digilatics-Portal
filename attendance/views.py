@@ -335,22 +335,34 @@ def _adms_receive_logs(request):
 def iclock_getrequest(request):
     """
     Device polls this endpoint every TransInterval minutes.
-    We respond with a DATA QUERY command every poll so the device
-    immediately uploads any new punches it has buffered.
+    We respond with a DATA QUERY command so the device uploads punches.
+    Normally covers the last 2 days.  When a full-sync flag file exists
+    (written by reset_and_resync management command) it covers from that
+    date forward so the device re-uploads its full stored history.
     """
-    import time as _time
-
     sn = request.GET.get("SN", "unknown")
     logger.debug("ADMS getrequest SN=%s", sn)
 
-    # Build a time-windowed query: from 2 days ago to now, covering today's punches
-    # without asking the device to re-upload the entire history every time.
     from django.utils import timezone as _tz
     from datetime import timedelta
-    now = _tz.localtime(_tz.now())
-    start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
-    end   = now.strftime("%Y-%m-%d 23:59:59")
 
+    now = _tz.localtime(_tz.now())
+
+    # Check for a full-sync flag (written by reset_and_resync command)
+    full_sync_path = os.path.join(_adms_flag_dir(), "full_sync_from")
+    if os.path.exists(full_sync_path):
+        try:
+            with open(full_sync_path) as f:
+                from_date_str = f.read().strip()
+            start = f"{from_date_str} 00:00:00"
+            os.remove(full_sync_path)
+            logger.info("ADMS: full-sync requested from %s for SN=%s", from_date_str, sn)
+        except OSError:
+            start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
+    else:
+        start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
+
+    end = now.strftime("%Y-%m-%d 23:59:59")
     cmd = f"C:1:DATA QUERY ATTLOG StartTime={start} EndTime={end}"
     logger.info("ADMS: sending DATA QUERY ATTLOG to SN=%s (%s → %s)", sn, start, end)
     return HttpResponse(cmd, content_type="text/plain")
