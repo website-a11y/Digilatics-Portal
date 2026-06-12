@@ -38,22 +38,24 @@ def convert_shifts(apps, schema_editor):
     if not shifts:
         return
 
-    # Guard: if every shift already starts before noon assume already converted.
-    if all(s.start_time.hour < 12 for s in shifts):
-        return
+    # Only convert shifts that still look like PKT times (start >= 12:00 noon).
+    # Shifts already converted to EST will have morning start times and are skipped.
+    needs_conversion = [s for s in shifts if s.start_time.hour >= 12]
 
-    for shift in shifts:
+    for shift in needs_conversion:
         shift.start_time = _pkt_to_est(shift.start_time)
         shift.end_time = _pkt_to_est(shift.end_time)
         shift.save(update_fields=["start_time", "end_time"])
 
-    # Re-sync employees whose scheduled times come from a shift master.
+    # ALWAYS re-sync shift-linked employees so scheduled times match the
+    # (possibly just-converted) shift master times.
     for emp in EmployeeProfile.objects.filter(shift_master__isnull=False).select_related("shift_master"):
         emp.scheduled_checkin = emp.shift_master.start_time
         emp.scheduled_checkout = emp.shift_master.end_time
         emp.save(update_fields=["scheduled_checkin", "scheduled_checkout"])
 
-    # Also convert employees with manually-overridden times (no shift master).
+    # Convert employees with manually-overridden times (no shift master)
+    # that still have PKT-looking times.
     for emp in EmployeeProfile.objects.filter(
         shift_master__isnull=True,
         scheduled_checkin__isnull=False,

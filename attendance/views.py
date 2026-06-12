@@ -273,6 +273,15 @@ def _adms_receive_logs(request):
                     "ADMS: overnight checkout %s reassigned to %s check_out=%s",
                     employee, prev_date, times[0],
                 )
+                # Remove any ABSENT placeholder that may have been created for
+                # punch_date before the overnight checkout arrived.
+                AttendanceRecord.objects.filter(
+                    employee=employee,
+                    date=punch_date,
+                    status=AttendanceRecord.StatusChoices.ABSENT,
+                    check_in__isnull=True,
+                    leave_request__isnull=True,
+                ).delete()
                 updated += 1
                 continue  # do NOT create a new record for punch_date
 
