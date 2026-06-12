@@ -1,4 +1,4 @@
-import calendar
+﻿import calendar
 from decimal import Decimal
 from datetime import date, datetime, timedelta
 from django.db.models import Count, Case, When, IntegerField, Q
@@ -125,9 +125,9 @@ def _month_stats(emp, year, month):
     return stats, record_map
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Auth
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def portal_login(request):
     if request.user.is_authenticated:
@@ -164,13 +164,13 @@ def portal_login(request):
                 return redirect(next_url)
             # Role-based redirect
             emp_profile = getattr(user, "employee_profile", None)
-            # HR-level: superuser or Super Admin role → HR panel
+            # HR-level: superuser or Super Admin role â†’ HR panel
             if user.is_superuser or (emp_profile and emp_profile.role == EmployeeProfile.RoleChoices.SUPER_ADMIN):
                 return redirect("portal:hr_dashboard")
-            # No employee profile (plain staff) → Django admin
+            # No employee profile (plain staff) â†’ Django admin
             if not emp_profile:
                 return redirect("/admin/")
-            # Manager / Approver → manager dashboard
+            # Manager / Approver â†’ manager dashboard
             if emp_profile.role in [EmployeeProfile.RoleChoices.MANAGER, EmployeeProfile.RoleChoices.APPROVER]:
                 return redirect("portal:manager_dashboard")
             return redirect("portal:dashboard")
@@ -184,9 +184,9 @@ def portal_logout(request):
     return redirect("portal:login")
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Dashboard
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def portal_dashboard(request):
@@ -234,9 +234,9 @@ def portal_dashboard(request):
     })
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Attendance
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def portal_attendance(request):
@@ -347,9 +347,9 @@ def portal_attendance(request):
     })
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Leave
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def portal_leave(request):
@@ -496,9 +496,9 @@ def portal_leave(request):
     })
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Short Leave
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def portal_short_leave_apply(request):
@@ -686,9 +686,9 @@ def portal_manager_short_leave_action(request, pk):
     return redirect("portal:manager_dashboard")
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Profile
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def portal_profile(request):
@@ -698,9 +698,9 @@ def portal_profile(request):
     return render(request, "portal/profile.html", {"emp": emp})
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Payslips
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def portal_payslips(request):
@@ -783,9 +783,9 @@ def portal_payslip_detail(request, pk):
     })
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Punch (check-in / check-out from dashboard)
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def portal_punch(request):
@@ -843,9 +843,9 @@ def portal_punch(request):
     return redirect("portal:dashboard")
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Manager Dashboard
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _MANAGER_ROLES = [EmployeeProfile.RoleChoices.MANAGER, EmployeeProfile.RoleChoices.APPROVER]
 
@@ -954,10 +954,10 @@ def portal_manager_dashboard(request):
     )
     # Tag each so the template knows which type it is
     for lr in pending_leaves:
-        lr._is_short_leave = False
+        lr.is_short_leave = False
     for sl in pending_short_leaves:
-        sl._is_short_leave = True
-        sl.leave_type = type("FakeLT", (), {"name": f"Short Leave — {sl.period}"})()
+        sl.is_short_leave = True
+        sl.leave_type = type("FakeLT", (), {"name": f"Short Leave â€” {sl.period}"})()
         sl.allocation = None
         sl.number_of_days = 0.5
     # Merge and sort by created_at
@@ -971,7 +971,7 @@ def portal_manager_dashboard(request):
         ).select_related("employee", "leave_type").order_by("-created_at")[:10]
     )
     for lr in awaiting_admin_leaves:
-        lr._is_short_leave = False
+        lr.is_short_leave = False
 
     # Manager's own leave / payslip data
     own_allocations = (
@@ -1167,9 +1167,9 @@ def portal_manager_leave_action(request, pk):
     return redirect("portal:manager_dashboard")
 
 
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # HR Admin Panel
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _hr_check(request):
     """Return True if the user has HR-level access."""
@@ -1493,7 +1493,7 @@ def hr_employee_edit(request, pk=None):
                 except EmployeeProfile.DoesNotExist:
                     emp = EmployeeProfile(user=user)
 
-            # ── Step 1: Personal ──
+            # â”€â”€ Step 1: Personal â”€â”€
             emp.full_name = p.get("full_name", emp.full_name if emp.pk else "").strip()
             emp.gender = p.get("gender", emp.gender if emp.pk else "")
             from datetime import date as _date
@@ -1519,7 +1519,7 @@ def hr_employee_edit(request, pk=None):
             emp.city = p.get("city", emp.city if emp.pk else "").strip()
             emp.country = p.get("country", emp.country if emp.pk else "Pakistan").strip()
             emp.cnic = p.get("cnic", emp.cnic if emp.pk else "").strip()
-            # Blank or auto/import placeholder → store "-"
+            # Blank or auto/import placeholder â†’ store "-"
             if not emp.cnic or emp.cnic.startswith("IMPORT-") or emp.cnic.startswith("AUTO-"):
                 emp.cnic = "-"
             emp.passport_number = p.get("passport_number", emp.passport_number if emp.pk else "").strip() or "-"
@@ -1533,7 +1533,7 @@ def hr_employee_edit(request, pk=None):
             if request.FILES.get("cnic_copy"):
                 emp.cnic_copy = request.FILES["cnic_copy"]
 
-            # ── Step 2: Employment ──
+            # â”€â”€ Step 2: Employment â”€â”€
             emp.employee_code = p.get("employee_code", emp.employee_code if emp.pk else "").strip()
             emp.department = p.get("department", emp.department if emp.pk else "").strip()
             emp.designation = p.get("designation", emp.designation if emp.pk else "").strip()
@@ -1555,7 +1555,7 @@ def hr_employee_edit(request, pk=None):
                 if request.FILES.get(doc_field):
                     setattr(emp, doc_field, request.FILES[doc_field])
 
-            # ── Step 3: Salary & Payment ──
+            # â”€â”€ Step 3: Salary & Payment â”€â”€
             def dec(field, default="0"):
                 try:
                     return Decimal(p.get(field, default) or default)
@@ -1588,7 +1588,7 @@ def hr_employee_edit(request, pk=None):
                 from accounts.email_utils import send_password_setup_email
                 send_password_setup_email(request, emp.user)
 
-            # ── Sync to SalarySetup ──
+            # â”€â”€ Sync to SalarySetup â”€â”€
             # Derive gross from form field; fall back to deriving from basic salary on profile
             effective_gross = gross
             if effective_gross <= 0 and (emp.basic_salary or Decimal("0")) > 0:
@@ -1718,7 +1718,7 @@ def hr_attendance(request):
             elif s == AttendanceRecord.StatusChoices.PUBLIC_HOLIDAY: return "holiday"
             elif s == AttendanceRecord.StatusChoices.HALF_DAY: return "half_day"
             return "present"
-        # Company-wide WFH day — leave takes priority (handled above); show for past and future
+        # Company-wide WFH day â€” leave takes priority (handled above); show for past and future
         if day in company_wfh_dates:
             return "wfh"
         return "future" if day > today else "not_recorded"
@@ -1787,7 +1787,7 @@ def hr_leaves(request):
         ),
     }
 
-    # ── History tab: period-based filtering ────────────────────────────────
+    # â”€â”€ History tab: period-based filtering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if tab == "history":
         today = timezone.localdate()
         period = request.GET.get("period", "month")  # year | month | week
@@ -1818,7 +1818,7 @@ def hr_leaves(request):
             n_y, n_w, _ = next_week_start.isocalendar()
             prev_params = f"tab=history&period=week&year={p_y}&week={p_w}"
             next_params = f"tab=history&period=week&year={n_y}&week={n_w}"
-            period_label = f"Week {week}, {year} ({start_date.strftime('%b %d')} – {end_date.strftime('%b %d, %Y')})"
+            period_label = f"Week {week}, {year} ({start_date.strftime('%b %d')} â€“ {end_date.strftime('%b %d, %Y')})"
 
         else:  # month (default)
             period = "month"
@@ -1860,7 +1860,7 @@ def hr_leaves(request):
             status_summary[lr.status] = status_summary.get(lr.status, 0) + d
             ltype = lr.leave_type.name if lr.leave_type else "Unknown"
             type_summary[ltype] = type_summary.get(ltype, 0) + d
-            dept = lr.employee.department or "—"
+            dept = lr.employee.department or "â€”"
             dept_summary[dept] = dept_summary.get(dept, 0) + d
 
         # Current period params for tab links
@@ -1890,7 +1890,7 @@ def hr_leaves(request):
             "weeks_range": range(1, 54),
         })
 
-    # ── Status tabs — combine LeaveRequest + ShortLeaveRequest ──────────────
+    # â”€â”€ Status tabs â€” combine LeaveRequest + ShortLeaveRequest â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     status_map = {
         "pending":          LeaveRequest.StatusChoices.PENDING,
         "manager_approved": LeaveRequest.StatusChoices.MANAGER_APPROVED,
@@ -1918,7 +1918,7 @@ def hr_leaves(request):
         return {
             "kind": "leave", "pk": lr.pk,
             "employee": lr.employee,
-            "leave_type_name": lr.leave_type.name if lr.leave_type else "—",
+            "leave_type_name": lr.leave_type.name if lr.leave_type else "â€”",
             "from_date": lr.from_date, "to_date": lr.to_date,
             "duration": lr.number_of_days,
             "duration_label": "days",
@@ -1933,11 +1933,11 @@ def hr_leaves(request):
         return {
             "kind": "short_leave", "pk": sl.pk,
             "employee": sl.employee,
-            "leave_type_name": f"Short Leave — {sl.period}",
+            "leave_type_name": f"Short Leave â€” {sl.period}",
             "from_date": sl.date, "to_date": sl.date,
-            "duration": "½",
+            "duration": "Â½",
             "duration_label": "day",
-            "time_info": f"{sl.from_time.strftime('%H:%M')} – {sl.to_time.strftime('%H:%M')}",
+            "time_info": f"{sl.from_time.strftime('%H:%M')} â€“ {sl.to_time.strftime('%H:%M')}",
             "status": sl.status, "reason": sl.reason, "remarks": sl.remarks,
             "created_at": sl.created_at,
             "approved_by": sl.approved_by,
@@ -2028,9 +2028,9 @@ def hr_payroll_detail(request, pk):
     })
 
 
-# ─────────────────────────────────────────────
-# HR — Attendance Record CRUD
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# HR â€” Attendance Record CRUD
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def hr_attendance_record_edit(request, pk=None):
@@ -2110,14 +2110,14 @@ def hr_attendance_record_delete(request, pk):
         return redirect(f"/portal/hr/attendance/?year={rec_date.year}&month={rec_date.month}")
     return render(request, "portal/hr/confirm_delete.html", {
         "title": "Delete Attendance Record",
-        "description": f"{record.employee.full_name} — {record.date} — {record.get_status_display()}",
+        "description": f"{record.employee.full_name} â€” {record.date} â€” {record.get_status_display()}",
         "back_url": "/portal/hr/attendance/",
     })
 
 
-# ─────────────────────────────────────────────
-# HR — Public Holidays CRUD
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# HR â€” Public Holidays CRUD
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def hr_holidays(request):
@@ -2184,14 +2184,14 @@ def hr_holiday_delete(request, pk):
         return redirect("portal:hr_holidays")
     return render(request, "portal/hr/confirm_delete.html", {
         "title": "Delete Holiday",
-        "description": f"{holiday.name} — {holiday.display_date}",
+        "description": f"{holiday.name} â€” {holiday.display_date}",
         "back_url": "/portal/hr/attendance/holidays/",
     })
 
 
-# ─────────────────────────────────────────────
-# HR — Shifts CRUD
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# HR â€” Shifts CRUD
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def hr_shifts(request):
@@ -2262,9 +2262,9 @@ def hr_shift_delete(request, pk):
     })
 
 
-# ─────────────────────────────────────────────
-# HR — Payroll Actions
-# ─────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# HR â€” Payroll Actions
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required(login_url="/portal/login/")
 def hr_payroll_create(request):
@@ -2394,7 +2394,7 @@ def hr_payslip_edit(request, pk):
     })
 
 
-# ─── SALARY SETUPS ───────────────────────────────────────────────────────────
+# â”€â”€â”€ SALARY SETUPS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_salary_setups(request):
@@ -2515,11 +2515,11 @@ def hr_salary_setup_delete(request, pk):
         return redirect("portal:hr_salary_setups")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": setup, "back_url": "portal:hr_salary_setups",
-        "title": f"Delete Salary Setup — {setup.employee.full_name}",
+        "title": f"Delete Salary Setup â€” {setup.employee.full_name}",
     })
 
 
-# ─── SALARY FORECAST ─────────────────────────────────────────────────────────
+# â”€â”€â”€ SALARY FORECAST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_salary_forecast(request):
@@ -2559,7 +2559,7 @@ def hr_salary_forecast(request):
         total_net += n
         employees_data.append({
             "name": s.employee.full_name,
-            "dept": s.employee.department or "—",
+            "dept": s.employee.department or "â€”",
             "gross": g,
             "tax": t,
             "net": n,
@@ -2621,7 +2621,7 @@ def hr_salary_forecast(request):
     })
 
 
-# ─── STATUTORY DEDUCTIONS ────────────────────────────────────────────────────
+# â”€â”€â”€ STATUTORY DEDUCTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_statutory_deductions(request):
@@ -2676,11 +2676,11 @@ def hr_statutory_deduction_delete(request, pk):
         return redirect("portal:hr_statutory_deductions")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": obj, "back_url": "portal:hr_statutory_deductions",
-        "title": f"Delete Statutory Deduction — {obj.name}",
+        "title": f"Delete Statutory Deduction â€” {obj.name}",
     })
 
 
-# ─── TAX YEARS ───────────────────────────────────────────────────────────────
+# â”€â”€â”€ TAX YEARS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_tax_years(request):
@@ -2728,7 +2728,7 @@ def hr_tax_year_delete(request, pk):
         return redirect("portal:hr_tax_years")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": obj, "back_url": "portal:hr_tax_years",
-        "title": f"Delete Tax Year — {obj.fiscal_year}",
+        "title": f"Delete Tax Year â€” {obj.fiscal_year}",
     })
 
 
@@ -2802,7 +2802,7 @@ def hr_tax_slab_inline_delete(request, pk):
     return JsonResponse({"ok": True})
 
 
-# ─── ATTENDANCE POLICY ───────────────────────────────────────────────────────
+# â”€â”€â”€ ATTENDANCE POLICY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_attendance_policy(request):
@@ -2823,7 +2823,7 @@ def hr_attendance_policy(request):
     return render(request, "portal/hr/attendance_policy.html", {"obj": obj, "errors": errors})
 
 
-# ─── DEVICE EMPLOYEES ────────────────────────────────────────────────────────
+# â”€â”€â”€ DEVICE EMPLOYEES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_device_employees(request):
@@ -2874,11 +2874,11 @@ def hr_device_employee_delete(request, pk):
         return redirect("portal:hr_device_employees")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": obj, "back_url": "portal:hr_device_employees",
-        "title": f"Delete Device Employee — {obj.employee.full_name}",
+        "title": f"Delete Device Employee â€” {obj.employee.full_name}",
     })
 
 
-# ─── SYNC SCHEDULES ──────────────────────────────────────────────────────────
+# â”€â”€â”€ SYNC SCHEDULES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_sync_schedules(request):
@@ -2961,28 +2961,28 @@ def hr_sync_schedule_fetch(request):
             call_command("sync_device_attendance", stdout=output)
             raw_out = output.getvalue().strip()
             last_line = raw_out.splitlines()[-1] if raw_out else "Attendance sync completed."
-            messages.success(request, f"✓ {last_line}")
+            messages.success(request, f"âœ“ {last_line}")
         except CommandError as exc:
             messages.error(request, f"Sync error: {exc}")
         except Exception as exc:
             messages.error(request, f"Unexpected error during sync: {exc}")
     else:
         # Push mode: signal the device to resend its logs on next ADMS poll.
-        # This is the normal path for cloud-hosted servers — the device IP is
+        # This is the normal path for cloud-hosted servers â€” the device IP is
         # a private LAN address not reachable from the internet.
         force_adms_data_query()
         messages.success(
             request,
-            "✓ DATA QUERY queued. The biometric device will push its latest logs "
+            "âœ“ DATA QUERY queued. The biometric device will push its latest logs "
             "on its next heartbeat poll (within 1 minute). "
-            "This is normal — the device is on your office LAN and pushes to the server, "
+            "This is normal â€” the device is on your office LAN and pushes to the server, "
             "not the other way around."
         )
 
     return redirect("portal:hr_sync_schedules")
 
 
-# ─── LEAVE TYPES ─────────────────────────────────────────────────────────────
+# â”€â”€â”€ LEAVE TYPES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_leave_types(request):
@@ -3031,11 +3031,11 @@ def hr_leave_type_delete(request, pk):
         return redirect("portal:hr_leave_types")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": obj, "back_url": "portal:hr_leave_types",
-        "title": f"Delete Leave Type — {obj.name}",
+        "title": f"Delete Leave Type â€” {obj.name}",
     })
 
 
-# ─── LEAVE ALLOCATIONS ───────────────────────────────────────────────────────
+# â”€â”€â”€ LEAVE ALLOCATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_leave_allocations(request):
@@ -3106,13 +3106,13 @@ def hr_leave_allocation_delete(request, pk):
         return redirect("portal:hr_leave_allocations")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": obj, "back_url": "portal:hr_leave_allocations",
-        "title": f"Delete Allocation — {obj.employee.full_name} / {obj.leave_type.name}",
+        "title": f"Delete Allocation â€” {obj.employee.full_name} / {obj.leave_type.name}",
     })
 
 
-# ─── WFH ─────────────────────────────────────────────────────────────────────
+# â”€â”€â”€ WFH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-# ─── Short Leave HR views ─────────────────────────────────────────────────────
+# â”€â”€â”€ Short Leave HR views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_short_leaves(request):
@@ -3277,7 +3277,7 @@ def hr_wfh_days(request):
             )
             label = start_date.strftime("%d %b %Y")
             if end_date and end_date != start_date:
-                label += f" – {end_date.strftime('%d %b %Y')}"
+                label += f" â€“ {end_date.strftime('%d %b %Y')}"
             messages.success(request, f"Company WFH declared: {label}.")
             return redirect("portal:hr_wfh_days")
         except Exception as e:
@@ -3299,7 +3299,7 @@ def hr_wfh_day_delete(request, pk):
         return redirect("portal:hr_wfh_days")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": obj, "back_url": "portal:hr_wfh_days",
-        "title": f"Remove Company WFH Day — {obj.date.strftime('%d %b %Y')}",
+        "title": f"Remove Company WFH Day â€” {obj.date.strftime('%d %b %Y')}",
     })
 
 
@@ -3386,7 +3386,7 @@ def hr_wfh_balance_edit(request, employee_pk):
     })
 
 
-# ─── TEAMS ───────────────────────────────────────────────────────────────────
+# â”€â”€â”€ TEAMS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_teams(request):
@@ -3521,11 +3521,11 @@ def hr_team_delete(request, pk):
         return redirect("portal:hr_teams")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": obj, "back_url": "portal:hr_teams",
-        "title": f"Delete Team — {obj.name}",
+        "title": f"Delete Team â€” {obj.name}",
     })
 
 
-# ─── TEAM MEMBERS ────────────────────────────────────────────────────────────
+# â”€â”€â”€ TEAM MEMBERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_team_members(request):
@@ -3594,7 +3594,7 @@ def hr_team_member_delete(request, pk):
     })
 
 
-# ─── USERS ───────────────────────────────────────────────────────────────────
+# â”€â”€â”€ USERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def hr_users(request):
@@ -3675,5 +3675,5 @@ def hr_user_delete(request, pk):
         return redirect("portal:hr_users")
     return render(request, "portal/hr/confirm_delete.html", {
         "obj": user_obj, "back_url": "portal:hr_users",
-        "title": f"Delete User — {user_obj.username}",
+        "title": f"Delete User â€” {user_obj.username}",
     })

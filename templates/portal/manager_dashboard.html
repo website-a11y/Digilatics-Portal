@@ -1,10 +1,10 @@
-{% extends "portal/base.html" %}
-{% block title %}Team Dashboard — Portal{% endblock %}
+﻿{% extends "portal/base.html" %}
+{% block title %}Team Dashboard â€” Portal{% endblock %}
 {% block page_title %}Team Dashboard{% endblock %}
 
 {% block content %}
 
-<!-- ══ TOP: 4 STAT CARDS ══ -->
+<!-- â•â• TOP: 4 STAT CARDS â•â• -->
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
 
   <div class="ep-stat-card att" style="border-top:3px solid var(--brand);">
@@ -30,12 +30,12 @@
   <div class="ep-stat-card leave" style="border-top:3px solid var(--c-leave);">
     <div class="ep-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
     <div class="ep-stat-val">{{ att_pct }}%</div>
-    <div class="ep-stat-lbl">My Attendance · {{ month_label }}</div>
+    <div class="ep-stat-lbl">My Attendance Â· {{ month_label }}</div>
   </div>
 
 </div>
 
-<!-- ══ PUNCH WIDGET + PENDING LEAVES ══ -->
+<!-- â•â• PUNCH WIDGET + PENDING LEAVES â•â• -->
 <div style="display:grid; gap:20px;margin-bottom:24px;align-items:start;">
 
   
@@ -69,13 +69,13 @@
             <div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap;">
               <span style="background:#ffedd5;color:#c2410c;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;">
                 {{ lr.leave_type.name }}
-                {% if lr._is_short_leave %}<span style="background:#fce7f3;color:#9d174d;padding:1px 5px;border-radius:5px;margin-left:3px;">Short</span>{% endif %}
+                {% if lr.is_short_leave %}<span style="background:#fce7f3;color:#9d174d;padding:1px 5px;border-radius:5px;margin-left:3px;">Short</span>{% endif %}
               </span>
-              {% if lr._is_short_leave %}
+              {% if lr.is_short_leave %}
               <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.date|date:"M j, Y" }}</span>
-              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"H:i" }} – {{ lr.to_time|time:"H:i" }}</span>
+              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"H:i" }} â€“ {{ lr.to_time|time:"H:i" }}</span>
               {% else %}
-              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} – {{ lr.to_date|date:"M j, Y" }}</span>
+              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} â€“ {{ lr.to_date|date:"M j, Y" }}</span>
               <span style="font-size:12px;color:var(--muted);">{{ lr.number_of_days|floatformat:"-2" }} day{{ lr.number_of_days|pluralize }}</span>
               {% endif %}
             </div>
@@ -85,14 +85,14 @@
           </div>
           <!-- Action buttons -->
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-            {% if lr._is_short_leave %}
+            {% if lr.is_short_leave %}
             <form method="post" action="{% url 'portal:manager_short_leave_action' lr.pk %}">
               {% csrf_token %}<input type="hidden" name="action" value="approve">
-              <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;">✓ Approve</button>
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;">âœ“ Approve</button>
             </form>
             <form method="post" action="{% url 'portal:manager_short_leave_action' lr.pk %}">
               {% csrf_token %}<input type="hidden" name="action" value="reject">
-              <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;">✗ Reject</button>
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;">âœ— Reject</button>
             </form>
             {% else %}
             <form method="post" action="{% url 'portal:manager_leave_action' lr.pk %}">
@@ -100,7 +100,7 @@
               <input type="hidden" name="action" value="approve">
               <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;"
                       onclick="return confirm('Approve {{ lr.number_of_days }}-day leave for {{ lr.employee.full_name }}?')">
-                ✓ Approve
+                âœ“ Approve
               </button>
             </form>
             <form method="post" action="{% url 'portal:manager_leave_action' lr.pk %}">
@@ -108,7 +108,7 @@
               <input type="hidden" name="action" value="reject">
               <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;"
                       onclick="return confirm('Reject leave request for {{ lr.employee.full_name }}?')">
-                ✗ Reject
+                âœ— Reject
               </button>
             </form>
           </div>
@@ -136,13 +136,13 @@
 
 </div>
 
-<!-- ══ AWAITING ADMIN APPROVAL ══ -->
+<!-- â•â• AWAITING ADMIN APPROVAL â•â• -->
 {% if awaiting_admin_leaves %}
 <div class="ep-card" style="margin-bottom:24px;">
   <div class="ep-card-header">
     <div>
       <div class="ep-card-title">Awaiting HR / Admin Final Approval</div>
-      <div class="ep-card-sub">Requests you approved — pending second stage</div>
+      <div class="ep-card-sub">Requests you approved â€” pending second stage</div>
     </div>
   </div>
   <div class="ep-card-body" style="padding:0;">
@@ -156,7 +156,7 @@
           <tr>
             <td><strong>{{ lr.employee.full_name }}</strong><br><span style="font-size:11px;color:var(--muted);">{{ lr.employee.department }}</span></td>
             <td>{{ lr.leave_type.name }}</td>
-            <td>{{ lr.from_date|date:"M j" }} – {{ lr.to_date|date:"M j, Y" }}</td>
+            <td>{{ lr.from_date|date:"M j" }} â€“ {{ lr.to_date|date:"M j, Y" }}</td>
             <td>{{ lr.number_of_days|floatformat:"-2" }}</td>
             <td><span class="ep-badge manager-approved">Manager Approved</span></td>
           </tr>
@@ -168,12 +168,12 @@
 </div>
 {% endif %}
 
-<!-- ══ TEAM ROSTER ══ -->
+<!-- â•â• TEAM ROSTER â•â• -->
 <div class="ep-card">
   <div class="ep-card-header">
     <div>
       <div class="ep-card-title">Team Roster</div>
-      <div class="ep-card-sub">{{ team_count }} member{{ team_count|pluralize }} · {{ month_label }} attendance &amp; salary</div>
+      <div class="ep-card-sub">{{ team_count }} member{{ team_count|pluralize }} Â· {{ month_label }} attendance &amp; salary</div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
       <a href="{% url 'portal:manager_attendance' %}" class="ep-btn-sm" style="text-decoration:none;">
@@ -221,7 +221,7 @@
                 {% if row.today_record.check_out %}
                   <span class="ep-badge" style="background:#dcfce7;color:#14532d;">Done</span>
                 {% else %}
-                  <span class="ep-badge" style="background:#dbeafe;color:#1e40af;">● Active</span>
+                  <span class="ep-badge" style="background:#dbeafe;color:#1e40af;">â— Active</span>
                 {% endif %}
               {% elif row.today_record %}
                 <span class="ep-badge" style="background:#ffedd5;color:#c2410c;">{{ row.today_record.status }}</span>
@@ -235,14 +235,14 @@
               {% if row.today_record and row.today_record.check_in %}
                 {{ row.today_record.check_in|time:"g:i A" }}
                 {% if row.today_record.is_late %}<span style="font-size:10px;color:#eab308;font-weight:700;margin-left:3px;">Late</span>{% endif %}
-              {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
+              {% else %}<span style="color:var(--muted-2);">â€”</span>{% endif %}
             </td>
 
             <!-- Check out -->
             <td style="font-variant-numeric:tabular-nums;font-weight:600;">
               {% if row.today_record and row.today_record.check_out %}
                 {{ row.today_record.check_out|time:"g:i A" }}
-              {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
+              {% else %}<span style="color:var(--muted-2);">â€”</span>{% endif %}
             </td>
 
           
