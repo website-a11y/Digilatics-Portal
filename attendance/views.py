@@ -255,6 +255,7 @@ def _adms_receive_logs(request):
             prev_date = punch_date - _timedelta(days=1)
             prev_record = AttendanceRecord.objects.filter(
                 employee=employee, date=prev_date,
+                status=AttendanceRecord.StatusChoices.PRESENT,
                 check_in__isnull=False, check_out__isnull=True,
             ).first()
             if prev_record and not prev_record.leave_request_id:
@@ -262,10 +263,11 @@ def _adms_receive_logs(request):
                 flags_prev = compute_attendance_flags(
                     employee, prev_record.check_in, times[0]
                 )
+                prev_record.is_late = flags_prev["is_late"]
                 prev_record.is_early_checkout = flags_prev["is_early_checkout"]
-                prev_record.notes = f"ZKTeco ADMS (overnight checkout added)"
+                prev_record.notes = "ZKTeco ADMS (overnight checkout added)"
                 prev_record.save(update_fields=[
-                    "check_out", "is_early_checkout", "notes", "updated_at",
+                    "check_out", "is_late", "is_early_checkout", "notes", "updated_at",
                 ])
                 logger.info(
                     "ADMS: overnight checkout %s reassigned to %s check_out=%s",

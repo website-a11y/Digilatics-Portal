@@ -134,30 +134,35 @@ class Command(BaseCommand):
                     fixed += 1
                     continue
 
-                # ── check_in shifted to a different (usually previous) date ──
-                # The check_in belongs on new_ci_date; check_out stays on its date.
+                # ── check_in UTC date shifted to a different EST date ─────────
+                # Example: UTC 01:58 on June 12 → EST 21:58 on June 11
+                # The "check_in" punch belongs to the PREVIOUS day as a checkout.
+                # The "check_out" punch stays on the current record as the real check_in.
+                #
                 # Strategy:
-                #   • For the original record (record.date): replace check_in
-                #     with check_out EST (real start of that work-day), clear
-                #     check_out if it belongs on yet another date.
-                #   • For new_ci_date record: set check_out = new_ci_time
-                #     (the punch that belongs to the previous day).
+                #   1. Find the previous-day record and assign new_ci_time as its checkout.
+                #   2. Replace this record's check_in with new_co_time (the real day's start).
 
-                # Handle the day the check_in actually belongs to
+                # Step 1 — assign shifted check_in as checkout on new_ci_date
                 prev_record = AttendanceRecord.objects.filter(
-                    employee=record.employee, date=new_ci_date
+                    employee=record.employee,
+                    date=new_ci_date,
+                    status=AttendanceRecord.StatusChoices.PRESENT,
                 ).first()
-                if prev_record:
-                    # Update that record's check_out with the shifted check_in time
+                if prev_record and not prev_record.leave_request_id:
                     if not prev_record.check_out:
                         prev_record.check_out = new_ci_time
-                        prev_record.save(update_fields=["check_out"])
+                        flags_prev = compute_attendance_flags(
+                            record.employee, prev_record.check_in, new_ci_time
+                        )
+                        prev_record.is_early_checkout = flags_prev["is_early_checkout"]
+                        prev_record.save(update_fields=["check_out", "is_early_checkout"])
                         self.stdout.write(
-                            f"    → updated {new_ci_date} check_out={new_ci_time}"
+                            f"    → {new_ci_date}: check_out set to {new_ci_time}"
                         )
 
-                # Fix the current record: its real check_in is the check_out EST time
-                if new_co_time and (new_co_date == record.date):
+                # Step 2 — fix current record: real check_in is the checkout's EST time
+                if new_co_time and new_co_date == record.date:
                     record.check_in = new_co_time
                     record.check_out = None
                     flags = compute_attendance_flags(record.employee, new_co_time, None)
@@ -167,10 +172,10 @@ class Command(BaseCommand):
                         "check_in", "check_out", "is_late", "is_early_checkout",
                     ])
                     self.stdout.write(
-                        f"    → updated {record.date} check_in={new_co_time} check_out=None"
+                        f"    → {record.date}: check_in={new_co_time}, check_out cleared"
                     )
                 elif new_co_time is None:
-                    # No check_out; just clear the wrong check_in
+                    # Only one punch that shifted dates — clear it from the wrong record
                     record.check_in = None
                     record.save(update_fields=["check_in"])
 
