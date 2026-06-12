@@ -279,6 +279,7 @@ document.querySelectorAll('.mgr-progress-fill').forEach(function(el) {
   el.style.width = (el.dataset.pct || 0) + '%';
 });
 </script>
+<script>
 (function () {
   var checkInTime  = "{{ today_record.check_in|time:'g:i A'|default:'' }}";
   var checkOutTime = "{{ today_record.check_out|time:'g:i A'|default:'' }}";
