@@ -17,13 +17,13 @@ Usage:
 """
 from datetime import datetime, date
 
-import pytz
+from zoneinfo import ZoneInfo
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-PKT = pytz.timezone("Asia/Karachi")   # UTC+5
-EST = pytz.timezone("America/New_York")
+PKT = ZoneInfo("Asia/Karachi")   # UTC+5
+EST = ZoneInfo("America/New_York")
 
 # Use a fixed reference date so the conversion is deterministic regardless of
 # when this command is run.  DST rules for 2026 apply (EDT = UTC-4 in summer).
@@ -32,8 +32,9 @@ _REF_DATE = date(2026, 6, 1)
 
 def _pkt_to_est(naive_time):
     """Convert a naive time assumed to be PKT to a naive EST time."""
-    dt_pkt = PKT.localize(datetime(_REF_DATE.year, _REF_DATE.month, _REF_DATE.day,
-                                   naive_time.hour, naive_time.minute, naive_time.second))
+    dt_pkt = datetime(_REF_DATE.year, _REF_DATE.month, _REF_DATE.day,
+                      naive_time.hour, naive_time.minute, naive_time.second,
+                      tzinfo=PKT)
     dt_est = dt_pkt.astimezone(EST)
     return dt_est.time().replace(tzinfo=None)
 

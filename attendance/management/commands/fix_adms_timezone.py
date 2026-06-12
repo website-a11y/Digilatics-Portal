@@ -20,7 +20,7 @@ Usage:
 """
 from datetime import date, datetime, timedelta
 
-import pytz
+from zoneinfo import ZoneInfo
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -28,7 +28,8 @@ from django.utils import timezone
 from attendance.models import AttendanceRecord
 from attendance.services import compute_attendance_flags
 
-EST = pytz.timezone("America/New_York")
+EST = ZoneInfo("America/New_York")
+UTC = ZoneInfo("UTC")
 
 
 def _to_est(record_date: date, naive_time) -> datetime:
@@ -37,7 +38,7 @@ def _to_est(record_date: date, naive_time) -> datetime:
         record_date.year, record_date.month, record_date.day,
         naive_time.hour, naive_time.minute, naive_time.second,
     )
-    utc_dt = pytz.utc.localize(naive_dt)
+    utc_dt = naive_dt.replace(tzinfo=UTC)
     return utc_dt.astimezone(EST)
 
 

@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date, datetime
 
-import pytz
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -113,12 +113,12 @@ class Command(BaseCommand):
 
     def _process_logs(self, raw_logs, filter_date: date | None, device_tz_name: str = "UTC"):
         try:
-            device_tz = pytz.timezone(device_tz_name)
-        except pytz.UnknownTimeZoneError:
+            device_tz = ZoneInfo(device_tz_name)
+        except (ZoneInfoNotFoundError, KeyError):
             self.stdout.write(self.style.WARNING(
                 f"Unknown device_timezone '{device_tz_name}', defaulting to UTC"
             ))
-            device_tz = pytz.utc
+            device_tz = ZoneInfo("UTC")
 
         # Build lookup: device_user_id → EmployeeProfile
         mappings = {
@@ -156,7 +156,7 @@ class Command(BaseCommand):
 
             # pyzk returns naive datetimes in the device's local clock timezone.
             # Localise to device_tz, then convert to the portal's local time (EST).
-            ts_device = device_tz.localize(ts.replace(tzinfo=None))
+            ts_device = ts.replace(tzinfo=None).replace(tzinfo=device_tz)
             ts_local = timezone.localtime(ts_device)
             punch_date = ts_local.date()
 
