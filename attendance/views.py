@@ -113,8 +113,11 @@ def iclock_cdata(request):
 def _adms_handshake(request):
     """
     Respond to device check-in with server config.
-    ATTLOGStamp=9999 prevents the device from bulk-uploading old records on
-    every handshake — new punches arrive via the DATA QUERY command in getrequest.
+    Normally ATTLOGStamp=9999 prevents the device from bulk-uploading old
+    records on every handshake.
+    When a full_sync_from flag exists we return ATTLOGStamp=0 instead so the
+    device immediately re-uploads ALL its stored punches (more reliable than
+    DATA QUERY on most ZKTeco models).
     TransInterval=1 keeps the device polling every minute for new commands.
     TimeZone=0 instructs the device to send timestamps in UTC so we can
     reliably convert to Eastern Time on the server side.
@@ -122,9 +125,22 @@ def _adms_handshake(request):
     sn = request.GET.get("SN", "unknown")
     logger.info("ADMS handshake from device SN=%s", sn)
 
+    # Check if a full re-sync was requested (set by reset_and_resync command).
+    # Use ATTLOGStamp=0 to tell device "send all stored punches from scratch".
+    full_sync_path = os.path.join(_adms_flag_dir(), "full_sync_from")
+    if os.path.exists(full_sync_path):
+        att_stamp = "0"
+        try:
+            os.remove(full_sync_path)
+        except OSError:
+            pass
+        logger.info("ADMS: full-sync handshake (ATTLOGStamp=0) for SN=%s", sn)
+    else:
+        att_stamp = "9999"
+
     body = (
         f"GET OPTION FROM: {sn}\n"
-        "ATTLOGStamp=9999\n"
+        f"ATTLOGStamp={att_stamp}\n"
         "OPERLOGStamp=9999\n"
         "ATTPHOTOStamp=None\n"
         "ErrorDelay=30\n"
@@ -335,10 +351,9 @@ def _adms_receive_logs(request):
 def iclock_getrequest(request):
     """
     Device polls this endpoint every TransInterval minutes.
-    We respond with a DATA QUERY command so the device uploads punches.
-    Normally covers the last 2 days.  When a full-sync flag file exists
-    (written by reset_and_resync management command) it covers from that
-    date forward so the device re-uploads its full stored history.
+    We respond with a DATA QUERY covering the last 2 days so any missed
+    punches get re-uploaded.  Full re-syncs are handled by the handshake
+    (ATTLOGStamp=0 in _adms_handshake when full_sync_from flag exists).
     """
     sn = request.GET.get("SN", "unknown")
     logger.debug("ADMS getrequest SN=%s", sn)
@@ -347,24 +362,10 @@ def iclock_getrequest(request):
     from datetime import timedelta
 
     now = _tz.localtime(_tz.now())
-
-    # Check for a full-sync flag (written by reset_and_resync command)
-    full_sync_path = os.path.join(_adms_flag_dir(), "full_sync_from")
-    if os.path.exists(full_sync_path):
-        try:
-            with open(full_sync_path) as f:
-                from_date_str = f.read().strip()
-            start = f"{from_date_str} 00:00:00"
-            os.remove(full_sync_path)
-            logger.info("ADMS: full-sync requested from %s for SN=%s", from_date_str, sn)
-        except OSError:
-            start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
-    else:
-        start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
-
+    start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
     end = now.strftime("%Y-%m-%d 23:59:59")
     cmd = f"C:1:DATA QUERY ATTLOG StartTime={start} EndTime={end}"
-    logger.info("ADMS: sending DATA QUERY ATTLOG to SN=%s (%s → %s)", sn, start, end)
+    logger.debug("ADMS: sending DATA QUERY ATTLOG to SN=%s (%s → %s)", sn, start, end)
     return HttpResponse(cmd, content_type="text/plain")
 
 
