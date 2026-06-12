@@ -23,15 +23,19 @@
                  value="{{ shift.name|default:'' }}" placeholder="e.g. Morning Shift" required>
           {% if errors.name %}<div class="hr-form-error">{{ errors.name }}</div>{% endif %}
         </div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;margin-bottom:14px;color:#1e40af;font-size:12px;display:flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" width="14" height="14" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Enter times in <strong>Eastern Time (EST/EDT)</strong>. Example: if the shift is 3:00 PM PKT, enter 6:00 AM EST.
+        </div>
         <div class="hr-form-row">
           <div class="hr-form-group">
-            <label class="hr-form-label">Start Time <span class="hr-required">*</span></label>
+            <label class="hr-form-label">Start Time <span class="hr-required">*</span> <span style="font-size:11px;color:#6b7280;font-weight:400;">(EST/EDT)</span></label>
             <input type="time" name="start_time" class="hr-form-input {% if errors.start_time %}error{% endif %}"
                    value="{{ shift.start_time|time:'H:i'|default:'' }}" required>
             {% if errors.start_time %}<div class="hr-form-error">{{ errors.start_time }}</div>{% endif %}
           </div>
           <div class="hr-form-group">
-            <label class="hr-form-label">End Time <span class="hr-required">*</span></label>
+            <label class="hr-form-label">End Time <span class="hr-required">*</span> <span style="font-size:11px;color:#6b7280;font-weight:400;">(EST/EDT)</span></label>
             <input type="time" name="end_time" class="hr-form-input {% if errors.end_time %}error{% endif %}"
                    value="{{ shift.end_time|time:'H:i'|default:'' }}" required>
             {% if errors.end_time %}<div class="hr-form-error">{{ errors.end_time }}</div>{% endif %}

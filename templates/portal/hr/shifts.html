@@ -3,6 +3,10 @@
 {% block page_title %}Shifts{% endblock %}
 
 {% block content %}
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 16px;margin-bottom:18px;color:#1e40af;font-size:12.5px;display:flex;align-items:center;gap:10px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" width="16" height="16" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+  <span>All shift times must be entered in <strong>Eastern Time (EST/EDT)</strong>. The portal converts attendance from the biometric device to EST — shift times must match.</span>
+</div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
   <a href="{% url 'portal:hr_attendance' %}" class="ep-btn-sm" style="text-decoration:none;">← Attendance</a>
   <a href="{% url 'portal:hr_shift_add' %}" class="hr-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;height:38px;padding:0 20px;">
