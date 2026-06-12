@@ -3,15 +3,15 @@ Wipe device-synced attendance records and trigger a full re-sync from the
 ZKTeco biometric device.
 
 The device stores all punch history internally.  After the records are deleted
-the next time the device polls /iclock/getrequest the server will respond with
-a DATA QUERY covering the full date range, the device re-uploads everything,
-and the current UTC→EST conversion code stores it correctly.
+the next time the device polls /iclock/cdata the server returns ATTLOGStamp=0
+in the handshake, the device re-uploads everything, and the UTC→EST conversion
+code stores it correctly.
 
 Usage:
     # Preview — show what would be deleted, nothing saved
     python manage.py reset_and_resync --dry-run
 
-    # Delete records from the last 30 days and trigger device re-sync
+    # Delete records from the last 90 days and trigger device re-sync
     python manage.py reset_and_resync
 
     # Delete ALL device-synced records ever (use with care)
@@ -19,6 +19,9 @@ Usage:
 
     # Delete from a specific date onwards
     python manage.py reset_and_resync --from-date 2026-01-01
+
+    # Just trigger a full re-upload WITHOUT deleting any records
+    python manage.py reset_and_resync --force-sync
 """
 import os
 from datetime import date, timedelta
@@ -34,7 +37,7 @@ _FULL_SYNC_FLAG = "full_sync_from"
 
 
 def write_full_sync_flag(from_date: date):
-    """Write a flag file telling iclock_getrequest to query from from_date."""
+    """Write a flag file so the next handshake returns ATTLOGStamp=0."""
     path = os.path.join(_adms_flag_dir(), _FULL_SYNC_FLAG)
     with open(path, "w") as f:
         f.write(from_date.isoformat())
@@ -60,11 +63,32 @@ class Command(BaseCommand):
             action="store_true",
             help="Show what would be deleted without making any changes",
         )
+        parser.add_argument(
+            "--force-sync",
+            action="store_true",
+            help="Write the re-sync flag WITHOUT deleting any records (re-upload all punches from device)",
+        )
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
         delete_all = options["all"]
+        force_sync = options["force_sync"]
         today = timezone.localdate()
+
+        # --force-sync: just write the flag, skip deletion entirely
+        if force_sync:
+            if dry_run:
+                self.stdout.write(self.style.WARNING(
+                    "DRY RUN — would write full-sync flag (no records deleted)"
+                ))
+                return
+            from_date = date(2000, 1, 1)
+            write_full_sync_flag(from_date)
+            self.stdout.write(self.style.SUCCESS(
+                "Full-sync flag written — device will re-upload ALL punches on its next "
+                "poll (within ~1 minute). No records were deleted."
+            ))
+            return
 
         if dry_run:
             self.stdout.write(self.style.WARNING("DRY RUN — nothing will be changed\n"))
@@ -93,6 +117,13 @@ class Command(BaseCommand):
 
         if count == 0:
             self.stdout.write("Nothing to delete.")
+            # Still write the flag so the device re-uploads (useful after a failed sync)
+            if not dry_run:
+                write_full_sync_flag(from_date)
+                self.stdout.write(self.style.SUCCESS(
+                    f"Full-sync flag written — device will re-upload all punches from "
+                    f"{from_date} on its next poll (within ~1 minute)."
+                ))
             return
 
         # Show a sample
@@ -114,7 +145,7 @@ class Command(BaseCommand):
         qs.delete()
         self.stdout.write(self.style.SUCCESS(f"\nDeleted {count} record(s)."))
 
-        # Write flag so iclock_getrequest sends a full DATA QUERY on next device poll
+        # Write flag so next handshake returns ATTLOGStamp=0
         write_full_sync_flag(from_date)
         self.stdout.write(self.style.SUCCESS(
             f"Full-sync flag written — device will re-upload all punches from "
