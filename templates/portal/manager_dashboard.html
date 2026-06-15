@@ -35,6 +35,35 @@
 
 </div>
 
+<!-- LEAVE BALANCE (full width, below stat cards) -->
+<div class="ep-card" style="margin-bottom:24px;">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">Leave Balance</div>
+      <div class="ep-card-sub">{{ month_label }} allocations</div>
+    </div>
+    <a href="{% url 'portal:leave' %}" class="ep-btn ep-btn-outline ep-btn-sm">Apply →</a>
+  </div>
+  <div class="ep-card-body">
+    {% if own_allocations %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
+      {% for alloc in own_allocations %}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">{{ alloc.leave_type.name }}</div>
+        <div style="font-size:24px;font-weight:800;color:var(--brand);line-height:1;">{{ alloc.remaining_days|floatformat:"-2" }}</div>
+        <div style="font-size:11px;color:var(--muted-2);margin-bottom:6px;">of {{ alloc.total_available_days|floatformat:"-2" }} days</div>
+        <div class="ep-progress">
+          <div class="ep-progress-bar green" style="width:{% widthratio alloc.remaining_days alloc.total_available_days 100 %}%;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="ep-empty"><p>No leave allocations for this year</p></div>
+    {% endif %}
+  </div>
+</div>
+
 <!-- PENDING LEAVE REQUESTS -->
 <div style="display:grid; gap:20px;margin-bottom:24px;align-items:start;">
 
