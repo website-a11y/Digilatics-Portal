@@ -234,12 +234,10 @@ def _adms_receive_logs(request):
             logger.warning("ADMS: unrecognised timestamp %r", att_time_str)
             continue
 
-        # Device clock is set to PST (America/Los_Angeles) and sends naive
-        # timestamps in that timezone.  Attach PST, then convert to portal
-        # local time (America/New_York / EST) for storage.
-        from zoneinfo import ZoneInfo
-        punch_dt_pst = timezone.make_aware(punch_dt, ZoneInfo("America/Los_Angeles"))
-        punch_dt_local = timezone.localtime(punch_dt_pst)
+        # Device sends timestamps in UTC.  Attach UTC, then convert to portal
+        # local time (America/New_York / EST/EDT) for storage.
+        punch_dt_utc = timezone.make_aware(punch_dt, dt_timezone.utc)
+        punch_dt_local = timezone.localtime(punch_dt_utc)
 
         punches[(employee.pk, punch_dt_local.date())].append((punch_dt_local.time(), status_code))
 

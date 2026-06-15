@@ -21,14 +21,11 @@ Usage:
 """
 import re
 from collections import defaultdict
-from datetime import datetime, date as date_cls
-from zoneinfo import ZoneInfo
+from datetime import datetime, timezone as dt_timezone, date as date_cls
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
-
-PST = ZoneInfo("America/Los_Angeles")
 
 from attendance.models import AttendanceRecord, DeviceEmployee
 from attendance.services import compute_attendance_flags
@@ -110,11 +107,12 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                # Device clock is PST — convert to EST (same as live ADMS pipeline)
-                punch_pst = punch_naive.replace(tzinfo=PST)
-                punch_local = punch_pst.astimezone(timezone.get_current_timezone())
+                # Device sends UTC — convert to portal local time (EST/EDT)
+                punch_local = timezone.localtime(
+                    timezone.make_aware(punch_naive, dt_timezone.utc)
+                )
                 punches[(employee.pk, punch_local.date())].append(
-                    (punch_local.time().replace(tzinfo=None), status_code)
+                    (punch_local.time(), status_code)
                 )
 
         self.stdout.write(f"Unique punches parsed : {unique}")

@@ -2,8 +2,8 @@
 Import attendance records from a CSV exported by zk_export.py.
 
 CSV columns required: user_id, timestamp  (status and punch are optional).
-Timestamps are treated as PST (America/Los_Angeles — the device's clock timezone)
-and converted to EST for storage, matching the live ADMS pipeline.
+Timestamps are treated as UTC (the device sends UTC) and converted to EST
+for storage, matching the live ADMS pipeline.
 
 Usage:
     python manage.py import_attendance_csv attendance_export.csv --dry-run
@@ -12,9 +12,7 @@ Usage:
 """
 import csv
 from collections import defaultdict
-from datetime import date as date_cls, datetime
-
-from zoneinfo import ZoneInfo
+from datetime import date as date_cls, datetime, timezone as dt_timezone
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -23,8 +21,6 @@ from django.utils import timezone
 from attendance.models import AttendanceRecord, DeviceEmployee
 from attendance.services import compute_attendance_flags
 
-PST = ZoneInfo("America/Los_Angeles")
-EST = ZoneInfo("America/New_York")
 
 
 class Command(BaseCommand):
@@ -105,17 +101,19 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                # Device clock is PST — convert to EST (same as live ADMS pipeline)
-                punch_pst = punch_naive.replace(tzinfo=PST)
-                punch_est = punch_pst.astimezone(EST)
+                # Device sends UTC — convert to portal local time (EST/EDT)
+                from django.utils import timezone as _tz
+                punch_local = _tz.localtime(
+                    _tz.make_aware(punch_naive, dt_timezone.utc)
+                )
 
                 try:
                     status_code = int(row.get("status") or 0)
                 except (ValueError, TypeError):
                     status_code = 0
 
-                punches[(employee.pk, punch_est.date())].append(
-                    (punch_est.time().replace(tzinfo=None), status_code)
+                punches[(employee.pk, punch_local.date())].append(
+                    (punch_local.time(), status_code)
                 )
 
         self.stdout.write(f"Total CSV rows       : {total_rows}")
