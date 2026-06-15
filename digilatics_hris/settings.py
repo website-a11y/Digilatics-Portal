@@ -152,3 +152,9 @@ ZK_DEVICE = {
 # Stray device enrollment IDs with no real employee — their punches are dropped
 # silently during ADMS sync instead of being logged as "unmapped".
 ZK_IGNORED_DEVICE_IDS = [713, 113]
+
+# ONE-TIME HISTORICAL RECOVERY: when set to a "YYYY-MM-DD" string, every device
+# poll sends a wide DATA QUERY from that date and tells the device to re-send all
+# stored punches. Set this to pull history, then set back to None once the audit
+# confirms the data is in (otherwise the device re-dumps everything every minute).
+ZK_FETCH_FROM = "2026-02-01"

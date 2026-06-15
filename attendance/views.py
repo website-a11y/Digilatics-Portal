@@ -131,7 +131,9 @@ def _adms_handshake(request):
     # NOTE: only PEEK here — iclock_getrequest consumes the flag to send a wide
     # DATA QUERY covering the historical range. Clearing it here would race
     # getrequest and limit the device to only the last 2 days.
-    if DeviceSyncFlag.peek():
+    # ZK_FETCH_FROM (settings) forces a full re-dump on every poll — used for a
+    # one-time historical recovery; set it, recover, then set back to None.
+    if getattr(settings, "ZK_FETCH_FROM", None) or DeviceSyncFlag.peek():
         att_stamp = "0"
         logger.info("ADMS: full-sync handshake (ATTLOGStamp=0) for SN=%s", sn)
     else:
@@ -367,6 +369,17 @@ def iclock_getrequest(request):
 
     now = _tz.localtime(_tz.now())
     end = now.strftime("%Y-%m-%d 23:59:59")
+
+    # ZK_FETCH_FROM (settings): force a wide DATA QUERY on EVERY poll. This is the
+    # robust one-time historical recovery path — it depends only on deployed code,
+    # not on a runtime flag, so there are no file/DB/permission/timing pitfalls.
+    # Set ZK_FETCH_FROM = "2026-02-01" in settings, recover, then set back to None.
+    fetch_from = getattr(settings, "ZK_FETCH_FROM", None)
+    if fetch_from:
+        start = f"{fetch_from} 00:00:00"
+        cmd = f"C:1:DATA QUERY ATTLOG StartTime={start} EndTime={end}"
+        logger.info("ADMS: WIDE-FETCH DATA QUERY to SN=%s (%s -> %s)", sn, start, end)
+        return HttpResponse(cmd, content_type="text/plain")
 
     # Full re-sync requested (reset_and_resync set the DB flag): send ONE wide
     # DATA QUERY covering everything from the requested start date so the device
