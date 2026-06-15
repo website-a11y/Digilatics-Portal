@@ -284,3 +284,46 @@ class AttendanceRecord(models.Model):
 
     def __str__(self):
         return f"{self.employee.full_name} — {self.date} — {self.get_status_display()}"
+
+
+class DeviceSyncFlag(models.Model):
+    """
+    Singleton flag requesting a full re-sync of all punches from the device.
+
+    Stored in the database (not a file) because the management command runs as a
+    different OS user than the gunicorn web process; a shared flag file kept
+    hitting directory/ownership permission problems. The DB is shared cleanly.
+    """
+    full_sync_from = models.DateField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Device Sync Flag"
+        verbose_name_plural = "Device Sync Flags"
+
+    def __str__(self):
+        return f"full_sync_from={self.full_sync_from}"
+
+    @classmethod
+    def request(cls, from_date):
+        """Mark that the device should re-upload all punches from from_date."""
+        obj, _ = cls.objects.get_or_create(pk=1)
+        obj.full_sync_from = from_date
+        obj.save(update_fields=["full_sync_from", "updated_at"])
+
+    @classmethod
+    def peek(cls):
+        """Return the pending full-sync start date without clearing it."""
+        obj = cls.objects.filter(pk=1).first()
+        return obj.full_sync_from if obj else None
+
+    @classmethod
+    def consume(cls):
+        """Return the pending full-sync start date and clear it (one-shot)."""
+        obj = cls.objects.filter(pk=1).first()
+        if obj and obj.full_sync_from:
+            d = obj.full_sync_from
+            obj.full_sync_from = None
+            obj.save(update_fields=["full_sync_from", "updated_at"])
+            return d
+        return None

@@ -23,24 +23,21 @@ Usage:
     # Just trigger a full re-upload WITHOUT deleting any records
     python manage.py reset_and_resync --force-sync
 """
-import os
 from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from attendance.models import AttendanceRecord
-from attendance.views import _adms_flag_dir
-
-
-_FULL_SYNC_FLAG = "full_sync_from"
+from attendance.models import AttendanceRecord, DeviceSyncFlag
 
 
 def write_full_sync_flag(from_date: date):
-    """Write a flag file so the next handshake returns ATTLOGStamp=0."""
-    path = os.path.join(_adms_flag_dir(), _FULL_SYNC_FLAG)
-    with open(path, "w") as f:
-        f.write(from_date.isoformat())
+    """Record (in the DB) that the device should re-upload all punches.
+
+    Stored in the database rather than a file so the web process (different OS
+    user) reliably sees it — a shared file kept hitting permission problems.
+    """
+    DeviceSyncFlag.request(from_date)
 
 
 class Command(BaseCommand):
