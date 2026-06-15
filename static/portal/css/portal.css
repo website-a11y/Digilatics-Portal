@@ -1266,7 +1266,7 @@ img {
   display: grid;
   grid-template-columns: 360px 1fr;
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
   margin-bottom: 24px;
 }
 
@@ -1285,6 +1285,8 @@ img {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .ep-punch-name {

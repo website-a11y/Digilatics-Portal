@@ -4,6 +4,35 @@
 
 {% block content %}
 
+<!-- ══ LEAVE BALANCE (full width, above stats) ══ -->
+<div class="ep-card" style="margin-bottom:20px;">
+  <div class="ep-card-header">
+    <div>
+      <div class="ep-card-title">Leave Balance</div>
+      <div class="ep-card-sub">{{ month_label|slice:"5:" }} allocations</div>
+    </div>
+    <a href="{% url 'portal:leave' %}" class="ep-btn ep-btn-outline ep-btn-sm">Apply →</a>
+  </div>
+  <div class="ep-card-body">
+    {% if leave_allocations %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
+      {% for alloc in leave_allocations %}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">{{ alloc.leave_type.name }}</div>
+        <div style="font-size:24px;font-weight:800;color:var(--brand);line-height:1;">{{ alloc.remaining_days|floatformat:"-2" }}</div>
+        <div style="font-size:11px;color:var(--muted-2);margin-bottom:6px;">of {{ alloc.total_available_days|floatformat:"-2" }} days</div>
+        <div class="ep-progress">
+          <div class="ep-progress-bar green" style="width:{% widthratio alloc.remaining_days alloc.total_available_days 100 %}%;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="ep-empty"><p>No leave allocations for this year</p></div>
+    {% endif %}
+  </div>
+</div>
+
 <div class="ep-dash-top">
 
   <!-- ══ CHECK-IN WIDGET ══ -->
@@ -141,111 +170,40 @@
 </div><!-- /.ep-dash-top -->
 
 
-<!-- ══ BOTTOM GRID ══ -->
-<div class="ep-dash-grid">
-
-  <!-- Leave Balances -->
-  <div class="ep-card">
-    <div class="ep-card-header">
-      <div>
-        <div class="ep-card-title">Leave Balance</div>
-        <div class="ep-card-sub">{{ month_label|slice:"5:" }} allocations</div>
-      </div>
-      <a href="{% url 'portal:leave' %}" class="ep-btn ep-btn-outline ep-btn-sm">Apply →</a>
-    </div>
-    <div class="ep-card-body">
-      {% if leave_allocations %}
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
-        {% for alloc in leave_allocations %}
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">{{ alloc.leave_type.name }}</div>
-          <div style="font-size:24px;font-weight:800;color:var(--brand);line-height:1;">{{ alloc.remaining_days|floatformat:"-2" }}</div>
-          <div style="font-size:11px;color:var(--muted-2);margin-bottom:6px;">of {{ alloc.total_available_days|floatformat:"-2" }} days</div>
-          <div class="ep-progress">
-            <div class="ep-progress-bar green" style="width:{% widthratio alloc.remaining_days alloc.total_available_days 100 %}%;"></div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="ep-empty"><p>No leave allocations for this year</p></div>
-      {% endif %}
-    </div>
+<!-- ══ RECENT LEAVE REQUESTS ══ -->
+<div class="ep-card">
+  <div class="ep-card-header">
+    <div class="ep-card-title">Recent Leave Requests</div>
+    <a href="{% url 'portal:leave' %}" class="ep-btn ep-btn-outline ep-btn-sm">View All →</a>
   </div>
-
-  <!-- Latest Payslip -->
-  <div class="ep-card">
-    <div class="ep-card-header">
-      <div>
-        <div class="ep-card-title">Latest Payslip</div>
-        <div class="ep-card-sub">Most recent salary</div>
-      </div>
-      <a href="{% url 'portal:payslips' %}" class="ep-btn ep-btn-outline ep-btn-sm">All →</a>
+  <div class="ep-card-body" style="padding:0;">
+    {% if recent_leaves %}
+    <div class="ep-table-wrap">
+      <table class="ep-table">
+        <thead>
+          <tr>
+            <th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Applied</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lr in recent_leaves %}
+          <tr>
+            <td><strong>{{ lr.leave_type.name }}</strong></td>
+            <td>{{ lr.from_date|date:"M j, Y" }}</td>
+            <td>{{ lr.to_date|date:"M j, Y" }}</td>
+            <td>{{ lr.number_of_days|floatformat:"-2" }}</td>
+            <td><span class="ep-badge {{ lr.status|slugify }}">{{ lr.status }}</span></td>
+            <td>{{ lr.created_at|date:"M j, Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div class="ep-card-body">
-      {% if latest_payslip %}
-      <div style="background:linear-gradient(145deg,#1e293b,#0f172a);border-radius:10px;padding:20px;color:white;text-align:center;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.45);margin-bottom:6px;">
-          {{ latest_payslip.payroll_run.get_month_display }} {{ latest_payslip.payroll_run.year }}
-        </div>
-        <div class="salary-blur" style="font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1;">
-          {{ latest_payslip.net_salary|floatformat:0 }}
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px;margin-bottom:16px;">Net Salary &middot; PKR</div>
-        <div style="display:flex;justify-content:center;gap:24px;font-size:13px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);">
-          <div>
-            <div class="salary-blur" style="font-weight:700;color:#4ade80;">{{ latest_payslip.gross_salary|floatformat:0 }}</div>
-            <div style="color:rgba(255,255,255,.35);font-size:10px;margin-top:2px;">Gross</div>
-          </div>
-          <div>
-            <div class="salary-blur" style="font-weight:700;color:#f87171;">{{ latest_payslip.total_deductions|floatformat:0 }}</div>
-            <div style="color:rgba(255,255,255,.35);font-size:10px;margin-top:2px;">Deductions</div>
-          </div>
-        </div>
-      </div>
-      <a href="{% url 'portal:payslip_detail' latest_payslip.pk %}" class="ep-btn ep-btn-primary" style="margin-top:12px;justify-content:center;width:100%;">View Full Payslip</a>
-      {% else %}
-      <div class="ep-empty"><p>No payslips available yet</p></div>
-      {% endif %}
-    </div>
+    {% else %}
+    <div class="ep-empty"><p>No leave requests yet</p></div>
+    {% endif %}
   </div>
-
-  <!-- Recent Leave Requests -->
-  <div class="ep-card ep-dash-full">
-    <div class="ep-card-header">
-      <div class="ep-card-title">Recent Leave Requests</div>
-      <a href="{% url 'portal:leave' %}" class="ep-btn ep-btn-outline ep-btn-sm">View All →</a>
-    </div>
-    <div class="ep-card-body" style="padding:0;">
-      {% if recent_leaves %}
-      <div class="ep-table-wrap">
-        <table class="ep-table">
-          <thead>
-            <tr>
-              <th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Applied</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for lr in recent_leaves %}
-            <tr>
-              <td><strong>{{ lr.leave_type.name }}</strong></td>
-              <td>{{ lr.from_date|date:"M j, Y" }}</td>
-              <td>{{ lr.to_date|date:"M j, Y" }}</td>
-              <td>{{ lr.number_of_days|floatformat:"-2" }}</td>
-              <td><span class="ep-badge {{ lr.status|slugify }}">{{ lr.status }}</span></td>
-              <td>{{ lr.created_at|date:"M j, Y" }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="ep-empty"><p>No leave requests yet</p></div>
-      {% endif %}
-    </div>
-  </div>
-
-</div><!-- /.ep-dash-grid -->
+</div>
 
 {% endblock %}
 
