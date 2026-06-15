@@ -11,9 +11,7 @@ class BlockAdminForNonSuperusers:
 
     def __call__(self, request):
         if request.path.startswith("/admin/"):
-            user = getattr(request, "user", None)
-            if user and user.is_authenticated and not user.is_superuser:
-                return redirect("/portal/")
+            return redirect("/portal/")
         return self.get_response(request)
 
 
