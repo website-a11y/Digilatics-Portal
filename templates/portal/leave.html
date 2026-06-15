@@ -142,7 +142,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
       <div>
         <div class="ep-card-title">Short Leave</div>
-        <div class="ep-card-sub">Half-day — late start (morning) or early leaving (afternoon)</div>
+        <div class="ep-card-sub">Apply for a partial-day absence with a custom time range</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div style="text-align:right;">
@@ -161,18 +161,12 @@
   <div class="ep-card-body" style="padding:0;">
     <table class="ep-table">
       <thead>
-        <tr><th>Date</th><th>Period</th><th>Time</th><th>Status</th><th></th></tr>
+        <tr><th>Date</th><th>Time</th><th>Status</th><th></th></tr>
       </thead>
       <tbody>
         {% for sl in sl_recent %}
         <tr>
           <td>{{ sl.date|date:"d M Y" }}</td>
-          <td>
-            <span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;
-              {% if sl.period == 'Morning' %}background:#fef9c3;color:#854d0e;{% else %}background:#fce7f3;color:#9d174d;{% endif %}">
-              {{ sl.period }}
-            </span>
-          </td>
           <td style="font-size:12px;font-family:monospace;color:var(--muted);">{{ sl.from_time|time:"H:i" }} – {{ sl.to_time|time:"H:i" }}</td>
           <td>
             {% if sl.status == "Approved" %}<span class="ep-badge active">Approved</span>

@@ -1,10 +1,10 @@
-﻿{% extends "portal/base.html" %}
-{% block title %}Team Dashboard â€” Portal{% endblock %}
+{% extends "portal/base.html" %}
+{% block title %}Team Dashboard &mdash; Portal{% endblock %}
 {% block page_title %}Team Dashboard{% endblock %}
 
 {% block content %}
 
-<!-- â•â• TOP: 4 STAT CARDS â•â• -->
+<!-- TOP: 4 STAT CARDS -->
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
 
   <div class="ep-stat-card att" style="border-top:3px solid var(--brand);">
@@ -30,15 +30,13 @@
   <div class="ep-stat-card leave" style="border-top:3px solid var(--c-leave);">
     <div class="ep-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
     <div class="ep-stat-val">{{ att_pct }}%</div>
-    <div class="ep-stat-lbl">My Attendance Â· {{ month_label }}</div>
+    <div class="ep-stat-lbl">My Attendance &middot; {{ month_label }}</div>
   </div>
 
 </div>
 
-<!-- â•â• PUNCH WIDGET + PENDING LEAVES â•â• -->
+<!-- PENDING LEAVE REQUESTS -->
 <div style="display:grid; gap:20px;margin-bottom:24px;align-items:start;">
-
-  
 
   <!-- Pending Leave Requests -->
   <div class="ep-card" style="min-height:360px;">
@@ -73,9 +71,9 @@
               </span>
               {% if lr.is_short_leave %}
               <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.date|date:"M j, Y" }}</span>
-              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"H:i" }} â€“ {{ lr.to_time|time:"H:i" }}</span>
+              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"H:i" }} &ndash; {{ lr.to_time|time:"H:i" }}</span>
               {% else %}
-              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} â€“ {{ lr.to_date|date:"M j, Y" }}</span>
+              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} &ndash; {{ lr.to_date|date:"M j, Y" }}</span>
               <span style="font-size:12px;color:var(--muted);">{{ lr.number_of_days|floatformat:"-2" }} day{{ lr.number_of_days|pluralize }}</span>
               {% endif %}
             </div>
@@ -88,11 +86,11 @@
             {% if lr.is_short_leave %}
             <form method="post" action="{% url 'portal:manager_short_leave_action' lr.pk %}">
               {% csrf_token %}<input type="hidden" name="action" value="approve">
-              <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;">âœ“ Approve</button>
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;">&#10003; Approve</button>
             </form>
             <form method="post" action="{% url 'portal:manager_short_leave_action' lr.pk %}">
               {% csrf_token %}<input type="hidden" name="action" value="reject">
-              <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;">âœ— Reject</button>
+              <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;">&#10007; Reject</button>
             </form>
             {% else %}
             <form method="post" action="{% url 'portal:manager_leave_action' lr.pk %}">
@@ -100,7 +98,7 @@
               <input type="hidden" name="action" value="approve">
               <button type="submit" class="ep-btn ep-btn-sm" style="background:#dcfce7;color:#14532d;border:1px solid #86efac;width:90px;justify-content:center;"
                       onclick="return confirm('Approve {{ lr.number_of_days }}-day leave for {{ lr.employee.full_name }}?')">
-                âœ“ Approve
+                &#10003; Approve
               </button>
             </form>
             <form method="post" action="{% url 'portal:manager_leave_action' lr.pk %}">
@@ -108,13 +106,13 @@
               <input type="hidden" name="action" value="reject">
               <button type="submit" class="ep-btn ep-btn-sm" style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;width:90px;justify-content:center;"
                       onclick="return confirm('Reject leave request for {{ lr.employee.full_name }}?')">
-                âœ— Reject
+                &#10007; Reject
               </button>
             </form>
             {% endif %}
           </div>
         </div>
-        {% if lr.allocation %}
+        {% if not lr.is_short_leave and lr.allocation %}
         <div style="margin-top:8px;margin-left:50px;">
           <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);">
             <span>Balance: {{ lr.allocation.remaining_days|floatformat:"-2" }} / {{ lr.allocation.total_available_days|floatformat:"-2" }} days remaining</span>
@@ -137,13 +135,13 @@
 
 </div>
 
-<!-- â•â• AWAITING ADMIN APPROVAL â•â• -->
+<!-- AWAITING ADMIN APPROVAL -->
 {% if awaiting_admin_leaves %}
 <div class="ep-card" style="margin-bottom:24px;">
   <div class="ep-card-header">
     <div>
       <div class="ep-card-title">Awaiting HR / Admin Final Approval</div>
-      <div class="ep-card-sub">Requests you approved â€” pending second stage</div>
+      <div class="ep-card-sub">Requests you approved &mdash; pending second stage</div>
     </div>
   </div>
   <div class="ep-card-body" style="padding:0;">
@@ -157,7 +155,7 @@
           <tr>
             <td><strong>{{ lr.employee.full_name }}</strong><br><span style="font-size:11px;color:var(--muted);">{{ lr.employee.department }}</span></td>
             <td>{{ lr.leave_type.name }}</td>
-            <td>{{ lr.from_date|date:"M j" }} â€“ {{ lr.to_date|date:"M j, Y" }}</td>
+            <td>{{ lr.from_date|date:"M j" }} &ndash; {{ lr.to_date|date:"M j, Y" }}</td>
             <td>{{ lr.number_of_days|floatformat:"-2" }}</td>
             <td><span class="ep-badge manager-approved">Manager Approved</span></td>
           </tr>
@@ -169,12 +167,12 @@
 </div>
 {% endif %}
 
-<!-- â•â• TEAM ROSTER â•â• -->
+<!-- TEAM ROSTER -->
 <div class="ep-card">
   <div class="ep-card-header">
     <div>
       <div class="ep-card-title">Team Roster</div>
-      <div class="ep-card-sub">{{ team_count }} member{{ team_count|pluralize }} Â· {{ month_label }} attendance &amp; salary</div>
+      <div class="ep-card-sub">{{ team_count }} member{{ team_count|pluralize }} &middot; {{ month_label }} attendance &amp; salary</div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
       <a href="{% url 'portal:manager_attendance' %}" class="ep-btn-sm" style="text-decoration:none;">
@@ -197,6 +195,8 @@
             <th>Today's Status</th>
             <th>Check In</th>
             <th>Check Out</th>
+            <th>Leave Balance</th>
+            <th>Net Salary</th>
           </tr>
         </thead>
         <tbody>
@@ -222,7 +222,7 @@
                 {% if row.today_record.check_out %}
                   <span class="ep-badge" style="background:#dcfce7;color:#14532d;">Done</span>
                 {% else %}
-                  <span class="ep-badge" style="background:#dbeafe;color:#1e40af;">â— Active</span>
+                  <span class="ep-badge" style="background:#dbeafe;color:#1e40af;">&#9679; Active</span>
                 {% endif %}
               {% elif row.today_record %}
                 <span class="ep-badge" style="background:#ffedd5;color:#c2410c;">{{ row.today_record.status }}</span>
@@ -236,19 +236,45 @@
               {% if row.today_record and row.today_record.check_in %}
                 {{ row.today_record.check_in|time:"g:i A" }}
                 {% if row.today_record.is_late %}<span style="font-size:10px;color:#eab308;font-weight:700;margin-left:3px;">Late</span>{% endif %}
-              {% else %}<span style="color:var(--muted-2);">â€”</span>{% endif %}
+              {% else %}<span style="color:var(--muted-2);">&mdash;</span>{% endif %}
             </td>
 
             <!-- Check out -->
             <td style="font-variant-numeric:tabular-nums;font-weight:600;">
               {% if row.today_record and row.today_record.check_out %}
                 {{ row.today_record.check_out|time:"g:i A" }}
-              {% else %}<span style="color:var(--muted-2);">â€”</span>{% endif %}
+              {% else %}<span style="color:var(--muted-2);">&mdash;</span>{% endif %}
             </td>
 
-          
+            <!-- Leave Balance -->
+            <td>
+              {% if row.allocations %}
+              <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                {% for alloc in row.allocations %}
+                <div title="{{ alloc.leave_type.name }}: {{ alloc.remaining_days|floatformat:'-2' }} / {{ alloc.total_available_days|floatformat:'-2' }} days"
+                     style="font-size:10px;padding:2px 6px;border-radius:10px;background:var(--surface);border:1px solid var(--border);white-space:nowrap;cursor:default;">
+                  <span style="font-weight:700;color:{% if alloc.remaining_days > 0 %}var(--brand){% else %}#dc2626{% endif %};">{{ alloc.remaining_days|floatformat:"-2" }}</span>
+                  <span style="color:var(--muted);">/{{ alloc.total_available_days|floatformat:"-2" }}</span>
+                  <span style="color:var(--muted-2);margin-left:2px;">{{ alloc.leave_type.name|truncatechars:6 }}</span>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <span style="color:var(--muted-2);font-size:12px;">&mdash;</span>
+              {% endif %}
+            </td>
 
-           
+            <!-- Net Salary (blurred until hover) -->
+            <td>
+              {% if row.latest_payslip %}
+              <span class="salary-blur" title="Hover to reveal">
+                {{ row.latest_payslip.net_salary|floatformat:0 }}
+                <span style="font-size:10px;color:var(--muted);margin-left:2px;">PKR</span>
+              </span>
+              {% else %}
+              <span style="color:var(--muted-2);font-size:12px;">&mdash;</span>
+              {% endif %}
+            </td>
 
           </tr>
           {% endfor %}
@@ -269,12 +295,23 @@
 {% block extra_css %}
 <style>
 .mgr-pending-alert { color: var(--c-absent); }
+
+.salary-blur {
+  filter: blur(6px);
+  transition: filter 0.25s ease;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  font-size: 13px;
+}
+.salary-blur:hover {
+  filter: none;
+}
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-/* Set progress bar widths from data-pct attributes (avoids inline style + Django tag warning) */
 document.querySelectorAll('.mgr-progress-fill').forEach(function(el) {
   el.style.width = (el.dataset.pct || 0) + '%';
 });
@@ -293,17 +330,18 @@ document.querySelectorAll('.mgr-progress-fill').forEach(function(el) {
     var now = new Date();
     var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    dateEl.textContent = days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+    if (dateEl) dateEl.textContent = days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+    if (!clockEl) return;
     if (checkInTime && !checkOutTime) {
       var nowMs=now.getHours()*3600000+now.getMinutes()*60000+now.getSeconds()*1000;
       var diff=nowMs-timeToMs(checkInTime); if(diff<0) diff+=86400000;
-      clockEl.textContent=fmtElapsed(diff); labelEl.textContent='Time Worked';
+      clockEl.textContent=fmtElapsed(diff); if(labelEl) labelEl.textContent='Time Worked';
     } else if (checkInTime && checkOutTime) {
       var diff=timeToMs(checkOutTime)-timeToMs(checkInTime); if(diff<0) diff+=86400000;
-      clockEl.textContent=fmtElapsed(diff); labelEl.textContent='Total Worked';
+      clockEl.textContent=fmtElapsed(diff); if(labelEl) labelEl.textContent='Total Worked';
     } else {
       clockEl.textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
-      labelEl.textContent='Current Time';
+      if(labelEl) labelEl.textContent='Current Time';
     }
   }
   tick(); setInterval(tick,1000);

@@ -464,7 +464,7 @@ class ShortLeaveRequest(models.Model):
         EmployeeProfile, on_delete=models.CASCADE, related_name="short_leave_requests",
     )
     date      = models.DateField()
-    period    = models.CharField(max_length=20, choices=PeriodChoices.choices)
+    period    = models.CharField(max_length=20, choices=PeriodChoices.choices, blank=True, default="")
     from_time = models.TimeField()
     to_time   = models.TimeField()
     reason    = models.TextField(blank=True)
@@ -487,7 +487,8 @@ class ShortLeaveRequest(models.Model):
         verbose_name_plural = "Short Leave Requests"
 
     def __str__(self) -> str:
-        return f"{self.employee.full_name} — {self.period} short leave on {self.date}"
+        period_label = f"{self.period} " if self.period else ""
+        return f"{self.employee.full_name} — {period_label}short leave on {self.date}"
 
     @property
     def duration_hours(self) -> Decimal:

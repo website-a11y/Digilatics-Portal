@@ -383,7 +383,24 @@ def portal_leave(request):
                 if num_days == 0:
                     messages.error(request, "Selected dates fall on weekends only.")
                 else:
-                    if leave_type.is_wfh:
+                    overlapping = LeaveRequest.objects.filter(
+                        employee=emp,
+                        status__in=[
+                            LeaveRequest.StatusChoices.PENDING,
+                            LeaveRequest.StatusChoices.MANAGER_APPROVED,
+                            LeaveRequest.StatusChoices.APPROVED,
+                        ],
+                        from_date__lte=to_date,
+                        to_date__gte=from_date,
+                    ).select_related("leave_type").first()
+                    if overlapping:
+                        messages.error(
+                            request,
+                            f"You already have a {overlapping.leave_type.name} request covering "
+                            f"{overlapping.from_date} to {overlapping.to_date}. "
+                            "You cannot apply two leaves for the same date."
+                        )
+                    elif leave_type.is_wfh:
                         # WFH: check monthly balance instead of annual allocation
                         from leaves.models import WFHBalance
                         from decimal import Decimal as _D
@@ -523,7 +540,6 @@ def portal_short_leave_apply(request):
         p = request.POST
         try:
             date_str = p.get("date", "").strip()
-            period = p.get("period", "").strip()
             from_time_str = p.get("from_time", "").strip()
             to_time_str = p.get("to_time", "").strip()
             reason = p.get("reason", "").strip()
@@ -531,9 +547,6 @@ def portal_short_leave_apply(request):
             if not date_str:
                 raise ValueError("Date is required.")
             req_date = _dt.strptime(date_str, "%Y-%m-%d").date()
-
-            if period not in (SLR.PeriodChoices.MORNING, SLR.PeriodChoices.AFTERNOON):
-                raise ValueError("Please select Morning or Afternoon.")
 
             if not from_time_str or not to_time_str:
                 raise ValueError("From time and to time are required.")
@@ -543,24 +556,6 @@ def portal_short_leave_apply(request):
 
             if to_time <= from_time:
                 raise ValueError("To time must be after from time.")
-
-            # Duration checks
-            from datetime import datetime as _dt2, date as _d2
-            _start_dt = _dt2.combine(_d2.today(), from_time)
-            _end_dt   = _dt2.combine(_d2.today(), to_time)
-            _duration_hours = (_end_dt - _start_dt).total_seconds() / 3600
-            if _duration_hours > 4:
-                raise ValueError(
-                    "HALF_DAY_ESCALATION: This request exceeds the 4-hour limit and will be "
-                    "calculated as a half-day leave. Please resubmit your application using "
-                    "the Half-Day Leave option."
-                )
-            if _duration_hours > 2:
-                raise ValueError(
-                    f"Short leave cannot exceed 2 hours. Your selected duration is "
-                    f"{int(_duration_hours)}h {int((_duration_hours % 1) * 60)}m. "
-                    "Please adjust your times."
-                )
 
             # Check monthly quota
             used = SLR.objects.filter(
@@ -572,56 +567,40 @@ def portal_short_leave_apply(request):
                     f"You have used all {policy.max_per_month} short leave(s) for {req_date.strftime('%B %Y')}."
                 )
 
-            # For afternoon: check actual hours worked from attendance
-            if period == SLR.PeriodChoices.AFTERNOON:
-                rec = AttendanceRecord.objects.filter(employee=emp, date=req_date).first()
-                if not rec or not rec.check_in:
-                    raise ValueError(
-                        "No check-in record found for this date. "
-                        "You must be checked in before applying for an afternoon short leave."
-                    )
-                check_in_dt = _dt.combine(req_date, rec.check_in)
-                from_dt = _dt.combine(req_date, from_time)
-                hours_worked = (from_dt - check_in_dt).total_seconds() / 3600
-                min_h = float(policy.min_hours_before_afternoon)
-                if hours_worked < min_h:
-                    worked_str = f"{int(hours_worked)}h {int((hours_worked % 1)*60)}m"
-                    raise ValueError(
-                        f"You need to work at least {policy.min_hours_before_afternoon} hours before applying. "
-                        f"You have worked {worked_str} so far."
-                    )
-
-            # No duplicate on same date + period
+            # No duplicate short leave on same date
             if SLR.objects.filter(
-                employee=emp, date=req_date, period=period,
+                employee=emp, date=req_date,
                 status__in=[SLR.StatusChoices.PENDING, SLR.StatusChoices.MANAGER_APPROVED, SLR.StatusChoices.APPROVED],
             ).exists():
-                raise ValueError(f"You already have a {period.lower()} short leave request for {req_date}.")
+                raise ValueError(f"You already have a short leave request for {req_date.strftime('%d %b %Y')}.")
+
+            # No regular leave on this date
+            existing_lr = LeaveRequest.objects.filter(
+                employee=emp,
+                status__in=[
+                    LeaveRequest.StatusChoices.PENDING,
+                    LeaveRequest.StatusChoices.MANAGER_APPROVED,
+                    LeaveRequest.StatusChoices.APPROVED,
+                ],
+                from_date__lte=req_date,
+                to_date__gte=req_date,
+            ).select_related("leave_type").first()
+            if existing_lr:
+                raise ValueError(
+                    f"You already have a {existing_lr.leave_type.name} leave on "
+                    f"{req_date.strftime('%d %b %Y')}. You cannot apply two leaves for the same date."
+                )
 
             SLR.objects.create(
-                employee=emp, date=req_date, period=period,
+                employee=emp, date=req_date,
                 from_time=from_time, to_time=to_time,
                 reason=reason, status=SLR.StatusChoices.PENDING,
             )
-            messages.success(request, f"{period} short leave applied for {req_date.strftime('%d %b %Y')}.")
+            messages.success(request, f"Short leave applied for {req_date.strftime('%d %b %Y')}.")
             return redirect("portal:leave")
 
         except ValueError as e:
             errors["general"] = str(e)
-
-    # Auto-fill times from shift
-    shift = emp.shift_master
-    shift_start = shift.start_time if shift else None
-    shift_end   = shift.end_time   if shift else None
-    shift_mid   = None
-    if shift_start and shift_end:
-        start_mins = shift_start.hour * 60 + shift_start.minute
-        end_mins   = shift_end.hour   * 60 + shift_end.minute
-        if end_mins < start_mins:
-            end_mins += 1440  # overnight
-        mid_mins = (start_mins + end_mins) // 2
-        mid_mins = mid_mins % 1440
-        shift_mid = f"{mid_mins // 60:02d}:{mid_mins % 60:02d}"
 
     # Monthly stats
     used = SLR.objects.filter(
@@ -632,9 +611,6 @@ def portal_short_leave_apply(request):
     return render(request, "portal/short_leave_apply.html", {
         "emp": emp, "today": today, "today_str": today.isoformat(),
         "policy": policy, "errors": errors,
-        "shift_start": shift_start.strftime("%H:%M") if shift_start else "",
-        "shift_end":   shift_end.strftime("%H:%M")   if shift_end   else "",
-        "shift_mid":   shift_mid or "",
         "sl_used": used,
         "sl_remaining": max(0, policy.max_per_month - used),
     })
@@ -922,6 +898,16 @@ def portal_manager_dashboard(request):
         if ps.employee_id not in latest_payslips:
             latest_payslips[ps.employee_id] = ps
 
+    # Leave allocations per team member
+    from leaves.models import LeaveAllocation as _LA
+    team_alloc_map = {}
+    for alloc in (
+        _LA.objects.filter(employee_id__in=team_ids, year=year)
+        .select_related("leave_type")
+        .order_by("leave_type__name")
+    ):
+        team_alloc_map.setdefault(alloc.employee_id, []).append(alloc)
+
     # Build team rows
     team_rows = []
     for member in team:
@@ -936,6 +922,7 @@ def portal_manager_dashboard(request):
             "leave_days": ms.get("leave", 0),
             "att_pct": pct,
             "latest_payslip": latest_payslips.get(member.pk),
+            "allocations": team_alloc_map.get(member.pk, []),
         })
 
     # Pending / manager-approved leave requests (regular + short leave combined)
@@ -957,7 +944,7 @@ def portal_manager_dashboard(request):
         lr.is_short_leave = False
     for sl in pending_short_leaves:
         sl.is_short_leave = True
-        sl.leave_type = type("FakeLT", (), {"name": f"Short Leave â€” {sl.period}"})()
+        sl.leave_type = type("FakeLT", (), {"name": "Short Leave"})()
         sl.allocation = None
         sl.number_of_days = 0.5
     # Merge and sort by created_at
