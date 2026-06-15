@@ -127,13 +127,12 @@ def _adms_handshake(request):
 
     # Check if a full re-sync was requested (set by reset_and_resync command).
     # Use ATTLOGStamp=0 to tell device "send all stored punches from scratch".
+    # NOTE: do NOT delete the flag here — iclock_getrequest consumes it to send a
+    # wide DATA QUERY covering the historical range. Deleting it here would race
+    # getrequest and limit the device to only the last 2 days.
     full_sync_path = os.path.join(_adms_flag_dir(), "full_sync_from")
     if os.path.exists(full_sync_path):
         att_stamp = "0"
-        try:
-            os.remove(full_sync_path)
-        except OSError:
-            pass
         logger.info("ADMS: full-sync handshake (ATTLOGStamp=0) for SN=%s", sn)
     else:
         att_stamp = "9999"
@@ -362,8 +361,30 @@ def iclock_getrequest(request):
     from datetime import timedelta
 
     now = _tz.localtime(_tz.now())
-    start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
     end = now.strftime("%Y-%m-%d 23:59:59")
+
+    # Full re-sync requested (reset_and_resync wrote the flag): send ONE wide
+    # DATA QUERY covering everything from the requested start date so the device
+    # re-uploads historical punches. Consume the flag so the next poll reverts to
+    # the normal 2-day window.
+    full_sync_path = os.path.join(_adms_flag_dir(), "full_sync_from")
+    if os.path.exists(full_sync_path):
+        try:
+            with open(full_sync_path) as f:
+                start_date = f.read().strip() or "2000-01-01"
+        except OSError:
+            start_date = "2000-01-01"
+        try:
+            os.remove(full_sync_path)
+        except OSError:
+            pass
+        start = f"{start_date} 00:00:00"
+        cmd = f"C:1:DATA QUERY ATTLOG StartTime={start} EndTime={end}"
+        logger.info("ADMS: FULL-SYNC DATA QUERY to SN=%s (%s → %s)", sn, start, end)
+        return HttpResponse(cmd, content_type="text/plain")
+
+    # Normal poll: re-query the last 2 days so any missed punches get re-uploaded.
+    start = (now - timedelta(days=2)).strftime("%Y-%m-%d 00:00:00")
     cmd = f"C:1:DATA QUERY ATTLOG StartTime={start} EndTime={end}"
     logger.debug("ADMS: sending DATA QUERY ATTLOG to SN=%s (%s → %s)", sn, start, end)
     return HttpResponse(cmd, content_type="text/plain")
