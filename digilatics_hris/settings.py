@@ -82,6 +82,8 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "America/New_York"  # Eastern Time (ET)
 USE_I18N = True
 USE_TZ = True
+TIME_FORMAT = "g:i A"   # 12-hour display (e.g. 9:30 AM) across admin and templates
+DATETIME_FORMAT = "d M Y, g:i A"
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

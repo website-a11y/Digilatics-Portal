@@ -324,14 +324,14 @@
             <div class="mp-self-dot mp-self-dot-in"></div>
             <span class="mp-self-time-label">Clock In</span>
             <span class="mp-self-time-val">
-              {% if row.check_in %}{{ row.check_in|time:"H:i:s" }}{% else %}—{% endif %}
+              {% if row.check_in %}{{ row.check_in|time:"g:i A" }}{% else %}—{% endif %}
             </span>
           </div>
           <div class="mp-self-time-row">
             <div class="mp-self-dot mp-self-dot-out"></div>
             <span class="mp-self-time-label">Clock Out</span>
             <span class="mp-self-time-val">
-              {% if row.check_out %}{{ row.check_out|time:"H:i:s" }}{% else %}—{% endif %}
+              {% if row.check_out %}{{ row.check_out|time:"g:i A" }}{% else %}—{% endif %}
             </span>
           </div>
         </div>
