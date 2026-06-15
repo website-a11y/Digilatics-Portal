@@ -8,8 +8,8 @@ This command re-reads the log, applies the CURRENT mappings, and imports the
 punches — recovering history the device may no longer hold in its own memory.
 
 It uses the same grouping/upsert logic as the live ADMS sync:
-  - device sends UTC; we convert to local time (settings.TIME_ZONE)
-  - punches grouped per (employee, local date); first = check-in, last = check-out
+  - device clock is PST (America/Los_Angeles); we convert to EST for storage
+  - punches grouped per (employee, EST date); first = check-in, last = check-out
   - existing records tied to a leave request or public holiday are left untouched
   - device IDs in settings.ZK_IGNORED_DEVICE_IDS are dropped
 
@@ -21,11 +21,14 @@ Usage:
 """
 import re
 from collections import defaultdict
-from datetime import datetime, timezone as dt_timezone, date as date_cls
+from datetime import datetime, date as date_cls
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
+
+PST = ZoneInfo("America/Los_Angeles")
 
 from attendance.models import AttendanceRecord, DeviceEmployee
 from attendance.services import compute_attendance_flags
@@ -44,9 +47,9 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--log", default="zkteco_debug.log", help="Path to the debug log")
         parser.add_argument("--from", dest="from_date", default=None,
-                            help="Only import punches on/after this device (UTC) date YYYY-MM-DD")
+                            help="Only import punches on/after this device (PST) date YYYY-MM-DD")
         parser.add_argument("--to", dest="to_date", default=None,
-                            help="Only import punches on/before this device (UTC) date YYYY-MM-DD")
+                            help="Only import punches on/before this device (PST) date YYYY-MM-DD")
         parser.add_argument("--dry-run", action="store_true",
                             help="Parse and report counts without writing any records")
 
@@ -107,11 +110,11 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                punch_local = timezone.localtime(
-                    timezone.make_aware(punch_naive, dt_timezone.utc)
-                )
+                # Device clock is PST — convert to EST (same as live ADMS pipeline)
+                punch_pst = punch_naive.replace(tzinfo=PST)
+                punch_local = punch_pst.astimezone(timezone.get_current_timezone())
                 punches[(employee.pk, punch_local.date())].append(
-                    (punch_local.time(), status_code)
+                    (punch_local.time().replace(tzinfo=None), status_code)
                 )
 
         self.stdout.write(f"Unique punches parsed : {unique}")
