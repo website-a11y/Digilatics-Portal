@@ -21,7 +21,8 @@ Usage:
 """
 import re
 from collections import defaultdict
-from datetime import datetime, timezone as dt_timezone, date as date_cls
+from datetime import datetime, date as date_cls
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -107,9 +108,11 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                # Device sends UTC — convert to portal local time (EST/EDT)
+                # Device sends timestamps in its own clock timezone (PKT = UTC+5).
+                # Convert to portal local time (EST/EDT).
+                _device_tz = ZoneInfo(settings.ZK_DEVICE.get("device_timezone", "UTC"))
                 punch_local = timezone.localtime(
-                    timezone.make_aware(punch_naive, dt_timezone.utc)
+                    timezone.make_aware(punch_naive, _device_tz)
                 )
                 punches[(employee.pk, punch_local.date())].append(
                     (punch_local.time(), status_code)

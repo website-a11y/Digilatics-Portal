@@ -234,10 +234,12 @@ def _adms_receive_logs(request):
             logger.warning("ADMS: unrecognised timestamp %r", att_time_str)
             continue
 
-        # Device sends timestamps in UTC.  Attach UTC, then convert to portal
-        # local time (America/New_York / EST/EDT) for storage.
-        punch_dt_utc = timezone.make_aware(punch_dt, dt_timezone.utc)
-        punch_dt_local = timezone.localtime(punch_dt_utc)
+        # Device sends timestamps in its local clock timezone (settings.ZK_DEVICE
+        # "device_timezone").  Attach that zone, then convert to portal local time.
+        from zoneinfo import ZoneInfo
+        _device_tz = ZoneInfo(settings.ZK_DEVICE.get("device_timezone", "UTC"))
+        punch_dt_aware = timezone.make_aware(punch_dt, _device_tz)
+        punch_dt_local = timezone.localtime(punch_dt_aware)
 
         punches[(employee.pk, punch_dt_local.date())].append((punch_dt_local.time(), status_code))
 

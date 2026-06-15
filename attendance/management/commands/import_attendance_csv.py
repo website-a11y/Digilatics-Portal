@@ -12,7 +12,8 @@ Usage:
 """
 import csv
 from collections import defaultdict
-from datetime import date as date_cls, datetime, timezone as dt_timezone
+from datetime import date as date_cls, datetime
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -101,10 +102,10 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                # Device sends UTC — convert to portal local time (EST/EDT)
-                from django.utils import timezone as _tz
-                punch_local = _tz.localtime(
-                    _tz.make_aware(punch_naive, dt_timezone.utc)
+                # Device sends timestamps in its own clock timezone (PKT = UTC+5).
+                _device_tz = ZoneInfo(settings.ZK_DEVICE.get("device_timezone", "UTC"))
+                punch_local = timezone.localtime(
+                    timezone.make_aware(punch_naive, _device_tz)
                 )
 
                 try:
