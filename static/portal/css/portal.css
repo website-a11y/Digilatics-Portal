@@ -203,6 +203,7 @@ img {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden; /* prevent page-level horizontal scroll; tables scroll inside their own containers */
 }
 
 /* ════════════ TOPBAR ════════════ */
@@ -2024,6 +2025,9 @@ img {
 .ep-team-att-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
+  /* isolate horizontal scroll so it stays inside the card, not the page */
+  display: block;
 }
 
 .ep-team-att-table {
