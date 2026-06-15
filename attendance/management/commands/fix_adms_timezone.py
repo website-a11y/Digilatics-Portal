@@ -29,17 +29,17 @@ from attendance.models import AttendanceRecord
 from attendance.services import compute_attendance_flags
 
 EST = ZoneInfo("America/New_York")
-UTC = ZoneInfo("UTC")
+PST = ZoneInfo("America/Los_Angeles")
 
 
 def _to_est(record_date: date, naive_time) -> datetime:
-    """Treat a naive time stored on record_date as UTC, return EST datetime."""
+    """Treat a naive time stored on record_date as PST, return EST datetime."""
     naive_dt = datetime(
         record_date.year, record_date.month, record_date.day,
         naive_time.hour, naive_time.minute, naive_time.second,
     )
-    utc_dt = naive_dt.replace(tzinfo=UTC)
-    return utc_dt.astimezone(EST)
+    pst_dt = naive_dt.replace(tzinfo=PST)
+    return pst_dt.astimezone(EST)
 
 
 class Command(BaseCommand):
