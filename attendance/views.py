@@ -149,7 +149,7 @@ def _adms_handshake(request):
         "TransTimes=00:00;23:59\n"
         "TransInterval=1\n"
         "TransFlag=TransData AttLog\n"
-        "TimeZone=0\n"
+        "TimeZone=-8\n"
         "Realtime=1\n"
         "Encrypt=None\n"
     )
@@ -234,11 +234,12 @@ def _adms_receive_logs(request):
             logger.warning("ADMS: unrecognised timestamp %r", att_time_str)
             continue
 
-        # Device sends UTC (TimeZone=0 in handshake).
-        # Convert to local time (America/New_York) so date and clock time
-        # match what employees see on the portal.
-        punch_dt_utc = timezone.make_aware(punch_dt, dt_timezone.utc)
-        punch_dt_local = timezone.localtime(punch_dt_utc)
+        # Device clock is set to PST (America/Los_Angeles) and sends naive
+        # timestamps in that timezone.  Attach PST, then convert to portal
+        # local time (America/New_York / EST) for storage.
+        from zoneinfo import ZoneInfo
+        punch_dt_pst = timezone.make_aware(punch_dt, ZoneInfo("America/Los_Angeles"))
+        punch_dt_local = timezone.localtime(punch_dt_pst)
 
         punches[(employee.pk, punch_dt_local.date())].append((punch_dt_local.time(), status_code))
 
