@@ -144,17 +144,20 @@ def portal_login(request):
         identifier = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
 
-        # Allow login by email: look up the username from official_email or auth email
+        # Allow login by email — prefer EmployeeProfile.official_email (always the
+        # canonical linked user) to avoid resolving to a duplicate User record.
         username = identifier
         if "@" in identifier:
-            db_user = (
-                User.objects.filter(email__iexact=identifier).first()
-                or User.objects.filter(
-                    employee_profile__official_email__iexact=identifier
-                ).first()
-            )
-            if db_user:
-                username = db_user.username
+            from accounts.models import EmployeeProfile as _EP
+            ep_match = _EP.objects.filter(
+                official_email__iexact=identifier
+            ).select_related("user").first()
+            if ep_match and ep_match.user:
+                username = ep_match.user.username
+            else:
+                db_user = User.objects.filter(email__iexact=identifier).first()
+                if db_user:
+                    username = db_user.username
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
@@ -167,9 +170,11 @@ def portal_login(request):
             # HR-level: superuser or Super Admin role â†’ HR panel
             if user.is_superuser or (emp_profile and emp_profile.role == EmployeeProfile.RoleChoices.SUPER_ADMIN):
                 return redirect("portal:hr_dashboard")
-            # No employee profile (plain staff) â†’ Django admin
+            # No employee profile — superusers go to admin, others to portal home
             if not emp_profile:
-                return redirect("/admin/")
+                if user.is_superuser:
+                    return redirect("/admin/")
+                return redirect("portal:dashboard")
             # Manager / Approver â†’ manager dashboard
             if emp_profile.role in [EmployeeProfile.RoleChoices.MANAGER, EmployeeProfile.RoleChoices.APPROVER]:
                 return redirect("portal:manager_dashboard")

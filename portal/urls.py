@@ -1,4 +1,6 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
+
 from . import views
 
 app_name = "portal"
@@ -6,6 +8,25 @@ app_name = "portal"
 urlpatterns = [
     path("login/",                          views.portal_login,                name="login"),
     path("logout/",                         views.portal_logout,               name="logout"),
+
+    # ── Password reset ────────────────────────────────────────────────────────
+    path("password-reset/", auth_views.PasswordResetView.as_view(
+        template_name="portal/password_reset.html",
+        email_template_name="portal/password_reset_email.txt",
+        html_email_template_name="portal/password_reset_email.html",
+        subject_template_name="portal/password_reset_subject.txt",
+        success_url="/portal/password-reset/done/",
+    ), name="password_reset"),
+    path("password-reset/done/", auth_views.PasswordResetDoneView.as_view(
+        template_name="portal/password_reset_done.html",
+    ), name="password_reset_done"),
+    path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(
+        template_name="portal/password_reset_confirm.html",
+        success_url="/portal/password-reset/complete/",
+    ), name="password_reset_confirm"),
+    path("password-reset/complete/", auth_views.PasswordResetCompleteView.as_view(
+        template_name="portal/password_reset_complete.html",
+    ), name="password_reset_complete"),
     path("",                                views.portal_dashboard,            name="dashboard"),
     path("attendance/",                     views.portal_attendance,           name="attendance"),
     path("leave/",                          views.portal_leave,                name="leave"),
