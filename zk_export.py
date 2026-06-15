@@ -7,7 +7,8 @@ Install:
     pip install pyzk
 
 Run:
-    python zk_export.py
+    python zk_export.py                          # TCP (default)
+    python zk_export.py --udp                    # try UDP if TCP times out
     python zk_export.py --host 10.11.0.101 --output attendance_export.csv
 """
 import argparse
@@ -21,6 +22,8 @@ def main():
     parser.add_argument("--port", type=int, default=4370)
     parser.add_argument("--password", type=int, default=0)
     parser.add_argument("--output", default="attendance_export.csv")
+    parser.add_argument("--udp", action="store_true", help="Use UDP instead of TCP")
+    parser.add_argument("--timeout", type=int, default=60)
     args = parser.parse_args()
 
     try:
@@ -30,13 +33,14 @@ def main():
         print("Run:  pip install pyzk")
         sys.exit(1)
 
-    print(f"Connecting to device at {args.host}:{args.port} ...")
+    mode = "UDP" if args.udp else "TCP"
+    print(f"Connecting to device at {args.host}:{args.port} ({mode}, timeout={args.timeout}s) ...")
     zk = ZK(
         args.host,
         port=args.port,
-        timeout=30,
+        timeout=args.timeout,
         password=args.password,
-        force_udp=False,
+        force_udp=args.udp,
         ommit_ping=True,
     )
 
