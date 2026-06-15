@@ -378,8 +378,8 @@ def portal_leave(request):
 
             if to_date < from_date:
                 messages.error(request, "End date cannot be before start date.")
-            elif from_date < today:
-                messages.error(request, "Cannot apply for leave on past dates.")
+            elif from_date < today and not leave_type.allow_backdated:
+                messages.error(request, f"{leave_type.name} must be applied for in advance — past dates are not allowed.")
             else:
                 num_days = sum(
                     1 for i in range((to_date - from_date).days + 1)
@@ -3009,6 +3009,7 @@ def hr_leave_type_edit(request, pk=None):
             obj.default_days = Decimal(request.POST.get("default_days", "0") or "0")
             obj.requires_attachment = "requires_attachment" in request.POST
             obj.available_for_probation = "available_for_probation" in request.POST
+            obj.allow_backdated = "allow_backdated" in request.POST
             obj.is_active = "is_active" in request.POST
             obj.save()
             messages.success(request, "Leave type saved.")

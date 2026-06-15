@@ -31,9 +31,10 @@ class LeaveTypeAdmin(admin.ModelAdmin):
         "is_paid_display",
         "available_for_probation_display",
         "requires_attachment_display",
+        "allow_backdated_display",
         "is_active_display",
     )
-    list_filter = ("is_paid", "available_for_probation", "requires_attachment", "is_active")
+    list_filter = ("is_paid", "available_for_probation", "requires_attachment", "allow_backdated", "is_active")
     search_fields = ("name",)
 
     @display(description="Days")
@@ -56,6 +57,10 @@ class LeaveTypeAdmin(admin.ModelAdmin):
     @display(description="Attachment")
     def requires_attachment_display(self, obj):
         return "Required" if obj.requires_attachment else "Optional"
+
+    @display(description="Backdated")
+    def allow_backdated_display(self, obj):
+        return "Allowed" if obj.allow_backdated else "Future only"
 
     @display(description="Status")
     def is_active_display(self, obj):

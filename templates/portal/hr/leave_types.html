@@ -28,7 +28,7 @@
 <div class="ep-card" style="padding:0;overflow:hidden;">
   <table class="hr-table">
     <thead>
-      <tr><th>Name</th><th>Paid</th><th>Default Days</th><th>Attachment Required</th><th>For Probation</th><th>Active</th><th></th></tr>
+      <tr><th>Name</th><th>Paid</th><th>Default Days</th><th>Attachment Required</th><th>For Probation</th><th>Backdated</th><th>Active</th><th></th></tr>
     </thead>
     <tbody>
       {% for item in items %}
@@ -38,6 +38,7 @@
         <td style="font-weight:600;">{{ item.default_days }}</td>
         <td>{% if item.requires_attachment %}<span class="ep-badge approved">Yes</span>{% else %}No{% endif %}</td>
         <td>{% if item.available_for_probation %}<span class="ep-badge approved">Yes</span>{% else %}No{% endif %}</td>
+        <td>{% if item.allow_backdated %}<span class="ep-badge approved">Allowed</span>{% else %}<span class="ep-badge draft">Future only</span>{% endif %}</td>
         <td>{% if item.is_active %}<span class="ep-badge active">Active</span>{% else %}<span class="ep-badge draft">Inactive</span>{% endif %}</td>
         <td style="white-space:nowrap;">
           <a href="{% url 'portal:hr_leave_type_edit' item.pk %}" class="ep-btn-sm" style="text-decoration:none;">Edit</a>

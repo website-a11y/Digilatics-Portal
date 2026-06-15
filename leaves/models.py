@@ -21,6 +21,14 @@ class LeaveType(models.Model):
     default_days = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     requires_attachment = models.BooleanField(default=False)
     available_for_probation = models.BooleanField(default=False)
+    allow_backdated = models.BooleanField(
+        default=True,
+        verbose_name="Allow backdated applications",
+        help_text=(
+            "When enabled, employees can apply for this leave type on past dates. "
+            "Disable for Annual/Planned Leave which must be requested in advance."
+        ),
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

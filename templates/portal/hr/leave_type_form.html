@@ -22,6 +22,7 @@
           <label class="hr-checkbox-label"><input type="checkbox" name="is_paid" {% if obj.is_paid %}checked{% endif %}> Paid Leave</label>
           <label class="hr-checkbox-label"><input type="checkbox" name="requires_attachment" {% if obj.requires_attachment %}checked{% endif %}> Requires Attachment</label>
           <label class="hr-checkbox-label"><input type="checkbox" name="available_for_probation" {% if obj.available_for_probation %}checked{% endif %}> Available for Probation</label>
+          <label class="hr-checkbox-label"><input type="checkbox" name="allow_backdated" {% if obj.allow_backdated or not obj %}checked{% endif %}> Allow Backdated Applications <span style="font-size:11px;color:var(--muted);font-weight:400;">(uncheck for Annual/Planned Leave)</span></label>
           <label class="hr-checkbox-label"><input type="checkbox" name="is_active" {% if obj.is_active or not obj %}checked{% endif %}> Active</label>
         </div>
         <div style="display:flex;gap:12px;margin-top:8px;">
