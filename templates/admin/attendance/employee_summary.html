@@ -54,13 +54,13 @@
           {% if employee.scheduled_checkin %}
           <span class="emp-schedule-item">
             <span class="emp-schedule-icon">&#9654;</span>
-            Check-in: <strong>{{ employee.scheduled_checkin|time:"H:i" }}</strong>
+            Check-in: <strong>{{ employee.scheduled_checkin|time:"g:i A" }}</strong>
           </span>
           {% endif %}
           {% if employee.scheduled_checkout %}
           <span class="emp-schedule-item">
             <span class="emp-schedule-icon">&#9632;</span>
-            Check-out: <strong>{{ employee.scheduled_checkout|time:"H:i" }}</strong>
+            Check-out: <strong>{{ employee.scheduled_checkout|time:"g:i A" }}</strong>
           </span>
           {% endif %}
         </div>
@@ -203,7 +203,7 @@
             <td class="num emp-time-cell">
               {% if row.record and row.record.check_in %}
                 <span class="emp-time{% if row.record.is_late %} emp-time-late{% endif %}">
-                  {{ row.record.check_in|time:"H:i" }}
+                  {{ row.record.check_in|time:"g:i A" }}
                 </span>
                 {% if row.record.is_late %}
                 <span class="emp-flag-late">Late</span>
@@ -215,7 +215,7 @@
             <td class="num emp-time-cell">
               {% if row.record and row.record.check_out %}
                 <span class="emp-time{% if row.record.is_early_checkout %} emp-time-early{% endif %}">
-                  {{ row.record.check_out|time:"H:i" }}
+                  {{ row.record.check_out|time:"g:i A" }}
                 </span>
                 {% if row.record.is_early_checkout %}
                 <span class="emp-flag-early">Early</span>

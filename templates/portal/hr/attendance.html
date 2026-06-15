@@ -81,7 +81,7 @@
             <a href="{% if cell.record %}{% url 'portal:hr_attendance_record_edit' cell.record.pk %}{% else %}{% url 'portal:hr_attendance_record_add' %}?emp={{ row.employee.pk }}&date={{ cell.day|date:'Y-m-d' }}{% endif %}" style="text-decoration:none;">
             <div class="ep-hgrid-cell {{ cell.status }}" style="cursor:pointer;"
               {% if cell.record and cell.record.check_in %}
-              title="{{ cell.day }} | In: {{ cell.record.check_in|time:'H:i' }}{% if cell.record.check_out %} Out: {{ cell.record.check_out|time:'H:i' }}{% endif %}"
+              title="{{ cell.day }} | In: {{ cell.record.check_in|time:'g:i A' }}{% if cell.record.check_out %} Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}"
               {% else %}
               title="{{ cell.day }} | {{ cell.status|title }}"
               {% endif %}

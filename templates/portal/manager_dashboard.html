@@ -71,7 +71,7 @@
               </span>
               {% if lr.is_short_leave %}
               <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.date|date:"M j, Y" }}</span>
-              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"H:i" }} &ndash; {{ lr.to_time|time:"H:i" }}</span>
+              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"g:i A" }} &ndash; {{ lr.to_time|time:"g:i A" }}</span>
               {% else %}
               <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} &ndash; {{ lr.to_date|date:"M j, Y" }}</span>
               <span style="font-size:12px;color:var(--muted);">{{ lr.number_of_days|floatformat:"-2" }} day{{ lr.number_of_days|pluralize }}</span>

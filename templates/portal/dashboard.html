@@ -31,7 +31,7 @@
         <div class="ep-punch-time-label">Check In</div>
         <div class="ep-punch-time-val {% if today_record and today_record.check_in %}ep-punch-time-set{% endif %}">
           {% if today_record and today_record.check_in %}
-            {{ today_record.check_in|time:"H:i" }}
+            {{ today_record.check_in|time:"g:i A" }}
             {% if today_record.is_late %}<span class="ep-punch-badge ep-punch-badge-late">Late</span>{% endif %}
             <div class="ep-punch-source">via Portal App</div>
           {% else %}—{% endif %}
@@ -52,7 +52,7 @@
         <div class="ep-punch-time-label">Check Out</div>
         <div class="ep-punch-time-val {% if today_record and today_record.check_out %}ep-punch-time-set{% endif %}">
           {% if today_record and today_record.check_out %}
-            {{ today_record.check_out|time:"H:i" }}
+            {{ today_record.check_out|time:"g:i A" }}
             {% if today_record.is_early_checkout %}<span class="ep-punch-badge ep-punch-badge-early">Early</span>{% endif %}
             <div class="ep-punch-source">via Portal App</div>
           {% else %}—{% endif %}
@@ -65,12 +65,12 @@
     <div class="ep-punch-shift">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       {{ emp.shift_master.name }} &nbsp;·&nbsp;
-      <span style="color:rgba(255,255,255,.7);">{{ emp.shift_master.start_time|time:"H:i" }} – {{ emp.shift_master.end_time|time:"H:i" }}</span>
+      <span style="color:rgba(255,255,255,.7);">{{ emp.shift_master.start_time|time:"g:i A" }} – {{ emp.shift_master.end_time|time:"g:i A" }}</span>
     </div>
     {% elif emp.scheduled_checkin %}
     <div class="ep-punch-shift">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Shift: <span style="color:rgba(255,255,255,.7);">{{ emp.scheduled_checkin|time:"H:i" }} – {{ emp.scheduled_checkout|time:"H:i" }}</span>
+      Shift: <span style="color:rgba(255,255,255,.7);">{{ emp.scheduled_checkin|time:"g:i A" }} – {{ emp.scheduled_checkout|time:"g:i A" }}</span>
     </div>
     {% endif %}
 

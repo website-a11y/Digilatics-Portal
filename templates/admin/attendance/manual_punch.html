@@ -340,7 +340,7 @@
           <span class="mp-self-hours-val" id="mp-duration">
             {% if row.check_in and row.check_out %}
               {% with h=row.check_out.hour|add:0 %}
-                {{ row.check_in|time:"H:i" }} – {{ row.check_out|time:"H:i" }}
+                {{ row.check_in|time:"g:i A" }} – {{ row.check_out|time:"g:i A" }}
               {% endwith %}
             {% else %}
               00:00
@@ -451,20 +451,20 @@
               </div>
             </td>
             <td class="num">
-              {% if row.employee.scheduled_checkin %}<span class="mp-sched">{{ row.employee.scheduled_checkin|time:"H:i" }}</span>{% else %}<span class="mp-muted">—</span>{% endif %}
+              {% if row.employee.scheduled_checkin %}<span class="mp-sched">{{ row.employee.scheduled_checkin|time:"g:i A" }}</span>{% else %}<span class="mp-muted">—</span>{% endif %}
             </td>
             <td class="num">
-              {% if row.employee.scheduled_checkout %}<span class="mp-sched">{{ row.employee.scheduled_checkout|time:"H:i" }}</span>{% else %}<span class="mp-muted">—</span>{% endif %}
+              {% if row.employee.scheduled_checkout %}<span class="mp-sched">{{ row.employee.scheduled_checkout|time:"g:i A" }}</span>{% else %}<span class="mp-muted">—</span>{% endif %}
             </td>
             <td class="num">
               {% if row.check_in %}
-                <span class="mp-time-in">{{ row.check_in|time:"H:i" }}</span>
+                <span class="mp-time-in">{{ row.check_in|time:"g:i A" }}</span>
                 {% if row.is_late %}<span class="mp-flag mp-flag-late">Late</span>{% endif %}
               {% else %}<span class="mp-muted">—</span>{% endif %}
             </td>
             <td class="num">
               {% if row.check_out %}
-                <span class="mp-time-out">{{ row.check_out|time:"H:i" }}</span>
+                <span class="mp-time-out">{{ row.check_out|time:"g:i A" }}</span>
                 {% if row.is_early_checkout %}<span class="mp-flag mp-flag-early">Early</span>{% endif %}
               {% else %}<span class="mp-muted">—</span>{% endif %}
             </td>

@@ -67,7 +67,7 @@
             {{ sl.period }}
           </span>
         </td>
-        <td style="font-size:13px;font-family:monospace;">{{ sl.from_time|time:"H:i" }} – {{ sl.to_time|time:"H:i" }}</td>
+        <td style="font-size:13px;font-family:monospace;">{{ sl.from_time|time:"g:i A" }} – {{ sl.to_time|time:"g:i A" }}</td>
         <td style="font-size:12px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ sl.reason|default:"—" }}</td>
         <td>
           {% if sl.status == "Approved" %}<span class="ep-badge active">Approved</span>

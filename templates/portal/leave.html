@@ -167,7 +167,7 @@
         {% for sl in sl_recent %}
         <tr>
           <td>{{ sl.date|date:"d M Y" }}</td>
-          <td style="font-size:12px;font-family:monospace;color:var(--muted);">{{ sl.from_time|time:"H:i" }} – {{ sl.to_time|time:"H:i" }}</td>
+          <td style="font-size:12px;font-family:monospace;color:var(--muted);">{{ sl.from_time|time:"g:i A" }} – {{ sl.to_time|time:"g:i A" }}</td>
           <td>
             {% if sl.status == "Approved" %}<span class="ep-badge active">Approved</span>
             {% elif sl.status == "Pending" %}<span class="ep-badge draft">Pending</span>

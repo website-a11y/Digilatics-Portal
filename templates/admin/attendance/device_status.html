@@ -271,13 +271,13 @@
           <td>{{ rec.date|date:"d M Y" }}</td>
           <td>
             {% if rec.check_in %}
-              <span class="ds-badge ds-badge-in">↑ {{ rec.check_in|time:"H:i" }}</span>
+              <span class="ds-badge ds-badge-in">↑ {{ rec.check_in|time:"g:i A" }}</span>
               {% if rec.is_late %}<span style="font-size:10px;color:#D97706;font-weight:700;margin-left:4px;">LATE</span>{% endif %}
             {% else %}—{% endif %}
           </td>
           <td>
             {% if rec.check_out %}
-              <span class="ds-badge ds-badge-out">↓ {{ rec.check_out|time:"H:i" }}</span>
+              <span class="ds-badge ds-badge-out">↓ {{ rec.check_out|time:"g:i A" }}</span>
             {% else %}<span style="color:#D1D5DB;">—</span>{% endif %}
           </td>
           <td>

@@ -82,7 +82,7 @@
         <div class="pp-status-label">CHECK-IN</div>
         {% if check_in %}
         <div class="pp-status-time pp-status-ok">
-          {{ check_in|time:"H:i" }}
+          {{ check_in|time:"g:i A" }}
           {% if is_late %}<span class="pp-badge-late">Late</span>{% endif %}
         </div>
         {% else %}
@@ -108,7 +108,7 @@
         <div class="pp-status-label">CHECK-OUT</div>
         {% if check_out %}
         <div class="pp-status-time pp-status-ok">
-          {{ check_out|time:"H:i" }}
+          {{ check_out|time:"g:i A" }}
           {% if is_early_checkout %}<span class="pp-badge-early">Early</span>{% endif %}
         </div>
         {% else %}
