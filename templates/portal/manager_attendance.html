@@ -61,9 +61,10 @@
           <td class="ep-team-att-cell-td {% if cell.day.weekday >= 5 %}ep-day-weekend{% endif %} {% if cell.day == today %}ep-day-today{% endif %}">
             <div class="ep-hgrid-cell {{ cell.status }}"
               {% if cell.record and cell.record.check_in %}
-              title="{{ cell.day }} | In: {{ cell.record.check_in|time:'g:i A' }}{% if cell.record.check_out %} Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}"
+              data-tip="{{ cell.day }} | In: {{ cell.record.check_in|time:'g:i A' }}{% if cell.record.check_out %} | Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}"
+              {% if cell.record.is_late %}data-late="1"{% endif %}
               {% else %}
-              title="{{ cell.day }} | {{ cell.status|title }}"
+              data-tip="{{ cell.day }} | {{ cell.status|title }}"
               {% endif %}
             >
               {% if cell.status == "present" %}

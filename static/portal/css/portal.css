@@ -1606,6 +1606,30 @@ img {
   position: relative;
 }
 
+/* ── Attendance hover tooltip ── */
+.ep-att-tip {
+  position: fixed;
+  z-index: 9999;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-size: 13px;
+  font-weight: 500;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(44, 49, 146, .30);
+  opacity: 0;
+  transition: opacity .12s ease;
+  letter-spacing: .2px;
+}
+
+.ep-tip-late {
+  color: #fbbf24;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
 .ep-hgrid-cell.present {
   background: #dcfce7;
   color: #16a34a;

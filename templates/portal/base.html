@@ -191,5 +191,34 @@
 </script>
 
 {% block extra_js %}{% endblock %}
+
+<script>
+/* ── Attendance cell tooltip ── */
+(function () {
+  var tip = document.createElement('div');
+  tip.className = 'ep-att-tip';
+  document.body.appendChild(tip);
+
+  document.addEventListener('mouseover', function (e) {
+    var cell = e.target.closest('[data-tip]');
+    if (!cell) { tip.style.opacity = '0'; return; }
+    var text = cell.dataset.tip || '';
+    var isLate = cell.dataset.late;
+    tip.innerHTML = text + (isLate ? ' &nbsp;<span class="ep-tip-late">● Late</span>' : '');
+    tip.style.opacity = '1';
+  });
+
+  document.addEventListener('mousemove', function (e) {
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY - 44) + 'px';
+  });
+
+  document.addEventListener('mouseout', function (e) {
+    if (!e.relatedTarget || !e.relatedTarget.closest('[data-tip]')) {
+      tip.style.opacity = '0';
+    }
+  });
+})();
+</script>
 </body>
 </html>
