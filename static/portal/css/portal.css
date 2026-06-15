@@ -97,7 +97,7 @@ img {
 
 .ep-logo {
   height: var(--topbar-h);
-  padding: 10px 20px;
+  padding: 20px;
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border);
@@ -106,6 +106,7 @@ img {
 
 .ep-logo img {
   height: 28px;
+  padding-top: 10px;
 }
 
 .ep-logo-text {
