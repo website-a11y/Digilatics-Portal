@@ -51,8 +51,9 @@
         <div class="ep-hgrid-col {% if cell.is_today %}is-today{% endif %}">
           <div class="ep-hgrid-num">{{ cell.num }}</div>
           <div class="ep-hgrid-day">{{ cell.name|slice:":1" }}</div>
-          <div class="ep-hgrid-cell {{ cell.status }}"
-               title="{{ cell.day|date:'l, N j' }}{% if cell.record and cell.record.check_in %} · In: {{ cell.record.check_in|time:'g:i A' }}{% endif %}{% if cell.record and cell.record.check_out %} · Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}{% if cell.record and cell.record.is_late %} (Late){% endif %}">
+          <div class="ep-hgrid-cell {{ cell.status }}{% if cell.record.is_late %} late{% endif %}"
+               data-tip="{{ cell.day|date:'l, N j' }}{% if cell.record and cell.record.check_in %} · In: {{ cell.record.check_in|time:'g:i A' }}{% endif %}{% if cell.record and cell.record.check_out %} · Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}"
+               {% if cell.record.is_late %}data-late="1"{% endif %}>
             {% if cell.status == "present" %}
               {% if cell.record.is_late %}
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><polyline points="8,5 8,8 10.5,8"/></svg>

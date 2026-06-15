@@ -1635,6 +1635,11 @@ img {
   color: #16a34a;
 }
 
+.ep-hgrid-cell.present.late {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
 .ep-hgrid-cell.absent {
   background: #fee2e2;
   color: #dc2626;
