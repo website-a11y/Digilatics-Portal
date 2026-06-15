@@ -90,9 +90,12 @@ class Command(BaseCommand):
         if dry_run:
             self.stdout.write(self.style.WARNING("DRY RUN — nothing will be changed\n"))
 
-        # Build queryset — only delete device-synced records, never leave records
+        # Build queryset — only delete device-synced records, never leave records.
+        # Catches both ADMS records ("ZKTeco ADMS …") and TCP sync records
+        # ("Synced from device …").
+        from django.db.models import Q
         qs = AttendanceRecord.objects.filter(
-            notes__icontains="ZKTeco",
+            Q(notes__icontains="ZKTeco") | Q(notes__icontains="Synced from device"),
             leave_request__isnull=True,
         ).exclude(
             status=AttendanceRecord.StatusChoices.PUBLIC_HOLIDAY,
