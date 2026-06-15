@@ -33,12 +33,12 @@
           <tr class="ps-row-link" data-pk="{{ row.pk }}" style="cursor:pointer;">
             <td style="font-weight:600;">{{ row.period }}</td>
             <td style="color:var(--muted);">{% if row.pay_date %}{{ row.pay_date|date:"d M Y" }}{% else %}—{% endif %}</td>
-            <td>PKR {{ row.base_salary|floatformat:0 }}</td>
-            <td>PKR {{ row.allowance|floatformat:0 }}</td>
-            <td style="font-weight:600;">PKR {{ row.gross_salary|floatformat:0 }}</td>
-            <td>PKR {{ row.deduction|floatformat:0 }}</td>
-            <td>PKR {{ row.tax|floatformat:0 }}</td>
-            <td style="font-weight:800;color:var(--brand);font-size:14px;">PKR {{ row.net_salary|floatformat:0 }}</td>
+            <td><span class="sal-blur">PKR {{ row.base_salary|floatformat:0 }}</span></td>
+            <td><span class="sal-blur">PKR {{ row.allowance|floatformat:0 }}</span></td>
+            <td style="font-weight:600;"><span class="sal-blur">PKR {{ row.gross_salary|floatformat:0 }}</span></td>
+            <td><span class="sal-blur">PKR {{ row.deduction|floatformat:0 }}</span></td>
+            <td><span class="sal-blur">PKR {{ row.tax|floatformat:0 }}</span></td>
+            <td style="font-weight:800;color:var(--brand);font-size:14px;"><span class="sal-blur">PKR {{ row.net_salary|floatformat:0 }}</span></td>
             <td>
               <button type="button" class="ep-btn ep-btn-sm ep-btn-primary ps-view-btn">View</button>
             </td>
@@ -96,6 +96,19 @@
 .ep-payslip-table td { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 13px; }
 .ep-payslip-table th { background: #f9fafb; font-weight: 700; color: #374151; }
 .ep-payslip-table tr:hover td { background: #fffbf5; }
+
+/* Salary blur — hidden by default, revealed on cell hover */
+.sal-blur {
+  display: inline-block;
+  filter: blur(7px);
+  user-select: none;
+  transition: filter 0.25s ease;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.sal-blur:hover {
+  filter: blur(0);
+}
 </style>
 {% endblock %}
 
