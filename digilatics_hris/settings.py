@@ -148,3 +148,7 @@ ZK_DEVICE = {
     "ommit_ping": True,        # Skip ping check
     "device_timezone": "Asia/Karachi",  # Physical clock timezone of the ZKTeco device
 }
+
+# Stray device enrollment IDs with no real employee — their punches are dropped
+# silently during ADMS sync instead of being logged as "unmapped".
+ZK_IGNORED_DEVICE_IDS = [713, 113]

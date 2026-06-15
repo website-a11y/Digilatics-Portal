@@ -8,6 +8,7 @@ import logging
 import os
 
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -186,6 +187,10 @@ def _adms_receive_logs(request):
     punches: dict = defaultdict(list)  # (emp_pk, date) → [(time, status_code)]
     unknown_ids = set()
 
+    # Stray device enrollments with no real employee (e.g. test/duplicate IDs).
+    # Their punches are dropped silently instead of logged as "unmapped".
+    ignored_ids = {int(x) for x in getattr(settings, "ZK_IGNORED_DEVICE_IDS", [])}
+
     for line in data_lines:
         parts = line.split("\t")
         if len(parts) < 2:
@@ -213,7 +218,8 @@ def _adms_receive_logs(request):
 
         employee = mappings.get(device_uid)
         if employee is None:
-            unknown_ids.add(device_uid)
+            if device_uid not in ignored_ids:
+                unknown_ids.add(device_uid)
             continue
 
         punch_dt = None
