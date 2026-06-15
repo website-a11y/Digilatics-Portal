@@ -288,17 +288,38 @@
     return pad(h) + ':' + pad(m) + ':' + pad(s);
   }
 
-  function tick() {
+  // Always display Eastern Time regardless of browser timezone
+  function getEST() {
     var now = new Date();
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false, weekday: 'long'
+    });
+    var parts = {};
+    fmt.formatToParts(now).forEach(function(p) { parts[p.type] = p.value; });
+    return {
+      h: parseInt(parts.hour) % 24,
+      m: parseInt(parts.minute),
+      s: parseInt(parts.second),
+      weekday: parts.weekday,
+      date: parseInt(parts.day),
+      month: parseInt(parts.month) - 1,
+      year: parseInt(parts.year)
+    };
+  }
 
-    var days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    dateEl.textContent =
-      days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function tick() {
+    var t = getEST();
+
+    dateEl.textContent = t.weekday + ', ' + t.date + ' ' + months[t.month] + ' ' + t.year;
 
     if (checkInTime && !checkOutTime) {
       var inMs   = timeToMs(checkInTime);
-      var nowMs  = now.getHours() * 3600000 + now.getMinutes() * 60000 + now.getSeconds() * 1000;
+      var nowMs  = t.h * 3600000 + t.m * 60000 + t.s * 1000;
       var diffMs = nowMs - inMs;
       if (diffMs < 0) diffMs += 86400000;
       clockEl.textContent = fmtElapsed(diffMs);
@@ -311,8 +332,7 @@
       labelEl.textContent = 'Total Worked';
 
     } else {
-      clockEl.textContent =
-        pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+      clockEl.textContent = pad(t.h) + ':' + pad(t.m) + ':' + pad(t.s);
       labelEl.textContent = 'Current Time';
     }
   }

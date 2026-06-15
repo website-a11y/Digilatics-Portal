@@ -318,29 +318,42 @@ document.querySelectorAll('.mgr-progress-fill').forEach(function(el) {
 </script>
 <script>
 (function () {
-  var checkInTime  = "{{ today_record.check_in|time:'g:i A'|default:'' }}";
-  var checkOutTime = "{{ today_record.check_out|time:'g:i A'|default:'' }}";
+  var checkInTime  = "{{ today_record.check_in|time:'H:i'|default:'' }}";
+  var checkOutTime = "{{ today_record.check_out|time:'H:i'|default:'' }}";
   var clockEl = document.getElementById('punch-clock');
   var dateEl  = document.getElementById('punch-date');
   var labelEl = document.getElementById('punch-clock-label');
   function pad(n) { return String(n).padStart(2,'0'); }
   function timeToMs(hhmm) { var p=hhmm.split(':'); return parseInt(p[0])*3600000+parseInt(p[1])*60000; }
   function fmtElapsed(ms) { var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000); return pad(h)+':'+pad(m)+':'+pad(s); }
-  function tick() {
+  function getEST() {
     var now = new Date();
-    var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    if (dateEl) dateEl.textContent = days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit',
+      hour12: false, weekday:'long'
+    });
+    var parts = {};
+    fmt.formatToParts(now).forEach(function(p) { parts[p.type] = p.value; });
+    return { h: parseInt(parts.hour)%24, m: parseInt(parts.minute), s: parseInt(parts.second),
+             weekday: parts.weekday, date: parseInt(parts.day),
+             month: parseInt(parts.month)-1, year: parseInt(parts.year) };
+  }
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function tick() {
+    var t = getEST();
+    if (dateEl) dateEl.textContent = t.weekday+', '+t.date+' '+months[t.month]+' '+t.year;
     if (!clockEl) return;
     if (checkInTime && !checkOutTime) {
-      var nowMs=now.getHours()*3600000+now.getMinutes()*60000+now.getSeconds()*1000;
+      var nowMs=t.h*3600000+t.m*60000+t.s*1000;
       var diff=nowMs-timeToMs(checkInTime); if(diff<0) diff+=86400000;
       clockEl.textContent=fmtElapsed(diff); if(labelEl) labelEl.textContent='Time Worked';
     } else if (checkInTime && checkOutTime) {
       var diff=timeToMs(checkOutTime)-timeToMs(checkInTime); if(diff<0) diff+=86400000;
       clockEl.textContent=fmtElapsed(diff); if(labelEl) labelEl.textContent='Total Worked';
     } else {
-      clockEl.textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+      clockEl.textContent=pad(t.h)+':'+pad(t.m)+':'+pad(t.s);
       if(labelEl) labelEl.textContent='Current Time';
     }
   }
