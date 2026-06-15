@@ -146,7 +146,7 @@ ZK_DEVICE = {
     "password": 0,
     "force_udp": False,        # Use TCP (device does not respond on UDP)
     "ommit_ping": True,        # Skip ping check
-    "device_timezone": "Asia/Karachi",  # Physical clock timezone of the ZKTeco device
+    "device_timezone": "America/Los_Angeles",  # Physical clock timezone of the ZKTeco device (PST)
 }
 
 # Stray device enrollment IDs with no real employee — their punches are dropped
