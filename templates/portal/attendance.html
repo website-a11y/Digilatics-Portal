@@ -1,4 +1,5 @@
 {% extends "portal/base.html" %}
+{% load attendance_tags %}
 {% block title %}My Attendance — Portal{% endblock %}
 {% block page_title %}My Attendance{% endblock %}
 
@@ -52,7 +53,7 @@
           <div class="ep-hgrid-num">{{ cell.num }}</div>
           <div class="ep-hgrid-day">{{ cell.name|slice:":1" }}</div>
           <div class="ep-hgrid-cell {{ cell.status }}{% if cell.record.is_late %} late{% endif %}"
-               data-tip="{{ cell.day|date:'l, N j' }}{% if cell.record and cell.record.check_in %} · In: {{ cell.record.check_in|time:'g:i A' }}{% endif %}{% if cell.record and cell.record.check_out %} · Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}"
+               data-tip="{{ cell.day|date:'l, N j' }}{% if cell.record and cell.record.check_in %} · In: {{ cell.record.check_in|tz_time:cell.record.date }}{% endif %}{% if cell.record and cell.record.check_out %} · Out: {{ cell.record.check_out|tz_time:cell.record.date }}{% endif %}"
                {% if cell.record.is_late %}data-late="1"{% endif %}>
             {% if cell.status == "present" %}
               {% if cell.record.is_late %}
@@ -141,13 +142,13 @@
             </td>
             <td>
               {% if cell.record and cell.record.check_in %}
-                <span style="font-weight:600;font-variant-numeric:tabular-nums;">{{ cell.record.check_in|time:"g:i A" }}</span>
+                <span style="font-weight:600;font-variant-numeric:tabular-nums;">{{ cell.record.check_in|tz_time:cell.record.date }}</span>
                 {% if cell.record.is_late %}<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#fef9c3;color:#1a1d6b;">Late</span>{% endif %}
               {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
             </td>
             <td>
               {% if cell.record and cell.record.check_out %}
-                <span style="font-weight:600;font-variant-numeric:tabular-nums;">{{ cell.record.check_out|time:"g:i A" }}</span>
+                <span style="font-weight:600;font-variant-numeric:tabular-nums;">{{ cell.record.check_out|tz_time:cell.record.date }}</span>
                 {% if cell.record.is_early_checkout %}<span style="display:inline-block;margin-left:5px;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#ffedd5;color:#9a3412;">Early</span>{% endif %}
               {% else %}<span style="color:var(--muted-2);">—</span>{% endif %}
             </td>

@@ -1519,3 +1519,85 @@ a.att-icon:hover { transform: scale(1.18); box-shadow: 0 2px 8px rgba(0,0,0,0.18
   .att-dept-grid { grid-template-columns: 1fr; }
   .att-dept-summary-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Employee hover info card ────────────────────────────── */
+.att-emp-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.att-emp-card {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 10px;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+  padding: 12px 16px;
+  min-width: 210px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.att-emp-wrap:hover .att-emp-card {
+  display: block;
+}
+
+.att-emp-card::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #e5e7eb;
+}
+
+.att-emp-card::after {
+  content: "";
+  position: absolute;
+  right: calc(100% - 1px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #fff;
+}
+
+.att-emp-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.att-emp-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 3px 0;
+}
+
+.att-emp-card-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.att-emp-card-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-align: right;
+}
+

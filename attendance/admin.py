@@ -10,7 +10,8 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from accounts.models import EmployeeProfile
-from .models import AttendancePolicy, AttendanceRecord, DeviceEmployee, PublicHoliday, Shift, SyncSchedule
+from .models import AttendancePolicy, AttendanceRecord, DeviceEmployee, PublicHoliday, Shift, SyncSchedule, SystemSetting
+from .tz_utils import convert_time, get_display_tz_label
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -213,6 +214,11 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.manual_punch_view),
                 name="attendance_manual_punch",
             ),
+            path(
+                "force-refetch/",
+                self.admin_site.admin_view(self.force_refetch_view),
+                name="attendance_force_refetch",
+            ),
         ] + urls
 
     # ── monthly grid view (replaces default changelist) ──────────────────────
@@ -242,7 +248,7 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
         # All active employees (scoped to manager's team when applicable)
         _emp_base = EmployeeProfile.objects.filter(
             employment_status=EmployeeProfile.EmploymentStatusChoices.ACTIVE
-        ).select_related("user").order_by("department", "full_name")
+        ).select_related("user", "reporting_manager").order_by("department", "full_name")
         if _is_manager(request):
             _emp_base = _emp_base.filter(pk__in=_manager_team_qs(request))
         all_employees = list(_emp_base)
@@ -286,18 +292,19 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
                 else:
                     status_key = "not_recorded"
 
+                tz_lbl = get_display_tz_label()
                 tooltip_parts = [STATUS_META[status_key]["label"]]
                 if rec:
                     if rec.check_in:
-                        in_label = rec.check_in.strftime('%I:%M %p')
+                        in_label = convert_time(rec.check_in, day)
                         if rec.is_late:
                             in_label += " ⚠ Late"
-                        tooltip_parts.append(f"In: {in_label}")
+                        tooltip_parts.append(f"In: {in_label} {tz_lbl}")
                     if rec.check_out:
-                        out_label = rec.check_out.strftime('%I:%M %p')
+                        out_label = convert_time(rec.check_out, day)
                         if rec.is_early_checkout:
                             out_label += " ⚠ Early Out"
-                        tooltip_parts.append(f"Out: {out_label}")
+                        tooltip_parts.append(f"Out: {out_label} {tz_lbl}")
                     if rec.leave_request_id:
                         lr = rec.leave_request
                         tooltip_parts.append(
@@ -744,6 +751,31 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
             self.message_user(
                 request,
                 f"Re-sync complete — {count} approved leave request(s) processed.",
+                level=messages.SUCCESS,
+            )
+        from django.http import HttpResponseRedirect
+        return HttpResponseRedirect(
+            reverse("admin:attendance_attendancerecord_changelist")
+        )
+
+    # ── force device re-fetch view ────────────────────────────────────────────
+
+    def force_refetch_view(self, request):
+        """
+        Drop a flag file so the next ADMS getrequest poll (within 1 minute)
+        responds with a DATA QUERY covering the last 7 days, forcing the device
+        to re-upload all recent punches.
+        """
+        if request.method == "POST":
+            from attendance.views import force_adms_data_query
+            from attendance.models import DeviceSyncFlag
+            from datetime import date, timedelta
+            force_adms_data_query()
+            DeviceSyncFlag.request(date.today() - timedelta(days=7))
+            self.message_user(
+                request,
+                "Re-fetch requested — the device will re-upload the last 7 days of "
+                "punches on its next poll (within 1 minute).",
                 level=messages.SUCCESS,
             )
         from django.http import HttpResponseRedirect
@@ -1294,3 +1326,41 @@ class ShiftAdmin(admin.ModelAdmin):
     def has_add_permission(self, request): return not _is_manager(request) and super().has_add_permission(request)
     def has_change_permission(self, request, obj=None): return not _is_manager(request) and super().has_change_permission(request, obj)
     def has_delete_permission(self, request, obj=None): return not _is_manager(request) and super().has_delete_permission(request, obj)
+
+
+# ── System Settings admin ─────────────────────────────────────────────────────
+
+@admin.register(SystemSetting)
+class SystemSettingAdmin(admin.ModelAdmin):
+    change_form_template = "admin/attendance/systemsetting/change_form.html"
+
+    def has_add_permission(self, request):
+        return False  # singleton — created automatically on first get()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def changelist_view(self, request, extra_context=None):
+        """Always jump straight to the single settings record."""
+        from django.http import HttpResponseRedirect
+        obj = SystemSetting.get()
+        return HttpResponseRedirect(
+            reverse("admin:attendance_systemsetting_change", args=[obj.pk])
+        )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        self.message_user(
+            request,
+            f"Display timezone updated to: {obj.get_display_timezone_display()}",
+            level=messages.SUCCESS,
+        )

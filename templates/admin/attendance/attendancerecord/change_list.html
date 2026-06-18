@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n static %}
+{% load i18n static attendance_tags %}
 
 {% block extrastyle %}
 {{ block.super }}
@@ -44,6 +44,16 @@
       </form>
       <a href="{% url 'admin:attendance_device_status' %}" class="att-btn att-btn-sync">
         ⟳ Device Status
+      </a>
+      <form method="post" action="{% url 'admin:attendance_force_refetch' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="att-btn att-btn-sync"
+                onclick="return confirm('Force the device to re-upload the last 7 days of punches?')">
+          ⬇ Fetch Latest
+        </button>
+      </form>
+      <a href="{% url 'admin:attendance_systemsetting_changelist' %}" class="att-btn att-btn-outline" title="System Settings">
+        ⚙ Settings <small style="opacity:.7;font-size:10px;">({% tz_label %})</small>
       </a>
     </div>
   </div>
@@ -130,19 +140,40 @@
           {% with leave_count=0 %}
           <tr class="att-emp-row">
             <td class="att-col-name">
-              <a href="{% url 'admin:attendance_employee_summary' row.employee.pk %}?year={{ year }}&month={{ month }}"
-                 class="att-emp-info att-emp-link" title="View {{ row.employee.full_name }}'s summary">
-                {% if row.employee.profile_photo %}
-                <img src="{{ row.employee.profile_photo.url }}" alt="{{ row.employee.full_name }}" class="att-emp-avatar">
-                {% else %}
-                <div class="att-emp-avatar att-emp-avatar-placeholder">{{ row.employee.full_name|first }}</div>
-                {% endif %}
-                <div>
-                  <div class="att-emp-name">{{ row.employee.full_name }}</div>
-                  
-                  {% if not dept_filter %}<div class="att-emp-dept">{{ row.employee.department }}</div>{% endif %}
+              <div class="att-emp-wrap">
+                <a href="{% url 'admin:attendance_employee_summary' row.employee.pk %}?year={{ year }}&month={{ month }}"
+                   class="att-emp-info att-emp-link">
+                  {% if row.employee.profile_photo %}
+                  <img src="{{ row.employee.profile_photo.url }}" alt="{{ row.employee.full_name }}" class="att-emp-avatar">
+                  {% else %}
+                  <div class="att-emp-avatar att-emp-avatar-placeholder">{{ row.employee.full_name|first }}</div>
+                  {% endif %}
+                  <div>
+                    <div class="att-emp-name">{{ row.employee.full_name }}</div>
+                    {% if not dept_filter %}<div class="att-emp-dept">{{ row.employee.department }}</div>{% endif %}
+                  </div>
+                </a>
+                <!-- Hover info card -->
+                <div class="att-emp-card">
+                  <div class="att-emp-card-name">{{ row.employee.full_name }}</div>
+                  <div class="att-emp-card-row">
+                    <span class="att-emp-card-lbl">Code</span>
+                    <span class="att-emp-card-val">{{ row.employee.employee_code|default:"—" }}</span>
+                  </div>
+                  <div class="att-emp-card-row">
+                    <span class="att-emp-card-lbl">Department</span>
+                    <span class="att-emp-card-val">{{ row.employee.department|default:"—" }}</span>
+                  </div>
+                  <div class="att-emp-card-row">
+                    <span class="att-emp-card-lbl">Manager</span>
+                    <span class="att-emp-card-val">{{ row.employee.reporting_manager.full_name|default:"—" }}</span>
+                  </div>
+                  <div class="att-emp-card-row">
+                    <span class="att-emp-card-lbl">Role</span>
+                    <span class="att-emp-card-val">{{ row.employee.get_role_display|default:"—" }}</span>
+                  </div>
                 </div>
-              </a>
+              </div>
             </td>
             {% for cell in row.cells %}
             <td class="att-cell {% if cell.is_weekend %}att-cell-weekend{% endif %} {% if cell.is_today %}att-cell-today{% endif %} {% if cell.is_leave_synced %}att-cell-leave-synced{% endif %}"

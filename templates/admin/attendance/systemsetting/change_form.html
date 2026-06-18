@@ -1,0 +1,215 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' 'attendance' %}">Attendance</a>
+  &rsaquo; System Settings
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+*,body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;box-sizing:border-box;}
+.ss-wrap{max-width:760px;margin:0 auto;padding:24px 0 48px;}
+
+/* Hero */
+.ss-hero{
+  border-radius:16px;padding:28px 32px;margin-bottom:28px;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  display:flex;align-items:center;gap:18px;
+}
+.ss-hero-icon{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ss-hero-icon svg{width:26px;height:26px;color:#fff;}
+.ss-hero-title{font-size:22px;font-weight:900;color:#fff;margin:0 0 4px;letter-spacing:-.02em;}
+.ss-hero-sub{font-size:13px;color:rgba(255,255,255,.55);margin:0;}
+
+/* Card */
+.ss-card{background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);overflow:hidden;margin-bottom:20px;}
+.ss-card-head{padding:16px 22px;border-bottom:1px solid #F3F4F6;background:#F9FAFB;
+  display:flex;align-items:center;gap:8px;}
+.ss-card-head svg{width:15px;height:15px;color:#2c3192;}
+.ss-card-head-title{font-size:13px;font-weight:700;color:#374151;}
+.ss-card-body{padding:22px;}
+
+/* Current badge */
+.ss-current-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:12px;
+  background:#EEF2FF;border:1.5px solid #C7D2FE;
+  font-size:14px;font-weight:700;color:#3730a3;margin-bottom:18px;
+}
+.ss-current-dot{width:8px;height:8px;border-radius:50%;background:#4f46e5;}
+
+/* Timezone options grid */
+.ss-tz-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:600px){.ss-tz-grid{grid-template-columns:1fr;}}
+
+.ss-tz-option{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 16px;border-radius:12px;
+  border:2px solid #E5E7EB;cursor:pointer;
+  transition:border-color .15s, background .15s;
+  position:relative;
+}
+.ss-tz-option:hover{border-color:#a5b4fc;background:#F5F3FF;}
+.ss-tz-option.selected{border-color:#4f46e5;background:#EEF2FF;}
+.ss-tz-option input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+.ss-tz-radio{
+  width:18px;height:18px;border-radius:50%;border:2px solid #D1D5DB;
+  flex-shrink:0;margin-top:1px;transition:border-color .15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.ss-tz-option.selected .ss-tz-radio{border-color:#4f46e5;}
+.ss-tz-radio-dot{
+  width:8px;height:8px;border-radius:50%;background:#4f46e5;
+  display:none;
+}
+.ss-tz-option.selected .ss-tz-radio-dot{display:block;}
+.ss-tz-name{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px;}
+.ss-tz-desc{font-size:11.5px;color:#6B7280;}
+.ss-tz-tag{
+  display:inline-block;margin-top:5px;
+  padding:2px 8px;border-radius:999px;
+  font-size:10.5px;font-weight:700;
+  background:#E0E7FF;color:#3730a3;
+}
+.ss-tz-tag.highlight{background:#DCFCE7;color:#166534;}
+
+/* Save button */
+.ss-save-row{display:flex;align-items:center;gap:12px;margin-top:24px;}
+.ss-save-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:11px 28px;border-radius:10px;
+  background:linear-gradient(135deg,#2c3192,#1e2268);
+  color:#fff;font-size:14px;font-weight:700;
+  border:none;cursor:pointer;transition:opacity .12s;
+}
+.ss-save-btn:hover{opacity:.88;}
+.ss-save-btn svg{width:16px;height:16px;}
+.ss-cancel-link{font-size:13px;color:#6B7280;text-decoration:none;font-weight:600;}
+.ss-cancel-link:hover{color:#374151;}
+
+/* Info box */
+.ss-info{background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:10px;
+  padding:12px 16px;font-size:12.5px;color:#166534;display:flex;gap:10px;align-items:flex-start;}
+.ss-info svg{flex-shrink:0;width:16px;height:16px;margin-top:1px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ss-wrap">
+
+  <!-- Hero -->
+  <div class="ss-hero">
+    <div class="ss-hero-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="ss-hero-title">⚙ System Settings</h1>
+      <p class="ss-hero-sub">Configure portal-wide display preferences for all users and admin views.</p>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+  {% for msg in messages %}
+  <div style="margin-bottom:14px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;
+    {% if msg.level == 25 %}background:#DCFCE7;border:1.5px solid #86EFAC;color:#166534;
+    {% else %}background:#FEE2E2;border:1.5px solid #FCA5A5;color:#991B1B;{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="_continue" value="1">
+
+    <!-- Timezone Setting Card -->
+    <div class="ss-card">
+      <div class="ss-card-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span class="ss-card-head-title">Display Timezone</span>
+      </div>
+      <div class="ss-card-body">
+
+        <div class="ss-current-badge">
+          <span class="ss-current-dot"></span>
+          Currently: <strong id="current-tz-label">{{ adminform.form.display_timezone.value }}</strong>
+        </div>
+
+        <div class="ss-info" style="margin-bottom:18px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>
+            All check-in / check-out times, leave times, and short leave times shown in the portal and admin
+            will be converted to this timezone. Device data is received in UTC+5 (PKT) and internally
+            converted to Eastern Time before being re-displayed in your chosen timezone.
+          </span>
+        </div>
+
+        <div class="ss-tz-grid" id="tz-grid">
+          {% for value, label in adminform.form.display_timezone.field.choices %}
+          {% with is_selected=adminform.form.display_timezone.value|stringformat:"s" %}
+          <label class="ss-tz-option {% if is_selected == value %}selected{% endif %}" data-val="{{ value }}">
+            <input type="radio" name="display_timezone" value="{{ value }}"
+              {% if is_selected == value %}checked{% endif %}>
+            <div class="ss-tz-radio"><div class="ss-tz-radio-dot"></div></div>
+            <div>
+              {% with parts=label|cut:"—"|split:" " %}
+              <div class="ss-tz-name">{{ label|slice:":label.index('—')"|default:label }}</div>
+              {% endwith %}
+              <div class="ss-tz-desc">{{ label }}</div>
+              {% if value == "Asia/Karachi" %}
+              <span class="ss-tz-tag highlight">Device timezone</span>
+              {% elif value == "America/New_York" %}
+              <span class="ss-tz-tag">Server default</span>
+              {% endif %}
+            </div>
+          </label>
+          {% endwith %}
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Save row -->
+    <div class="ss-save-row">
+      <button type="submit" class="ss-save-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Save Settings
+      </button>
+      <a href="{% url 'admin:attendance_attendancerecord_changelist' %}" class="ss-cancel-link">Cancel</a>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+(function () {
+  var options = document.querySelectorAll('.ss-tz-option');
+  options.forEach(function (opt) {
+    opt.addEventListener('click', function () {
+      options.forEach(function (o) { o.classList.remove('selected'); });
+      opt.classList.add('selected');
+      opt.querySelector('input[type=radio]').checked = true;
+      document.getElementById('current-tz-label').textContent = opt.dataset.val;
+    });
+  });
+})();
+</script>
+{% endblock %}

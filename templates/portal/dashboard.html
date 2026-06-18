@@ -1,4 +1,5 @@
 {% extends "portal/base.html" %}
+{% load attendance_tags %}
 {% block title %}Dashboard — My Portal{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
@@ -31,7 +32,7 @@
         <div class="ep-punch-time-label">Check In</div>
         <div class="ep-punch-time-val {% if today_record and today_record.check_in %}ep-punch-time-set{% endif %}">
           {% if today_record and today_record.check_in %}
-            {{ today_record.check_in|time:"g:i A" }}
+            {{ today_record.check_in|tz_time:today_record.date }} <small style="opacity:.6;font-size:10px;">{% tz_label %}</small>
             {% if today_record.is_late %}<span class="ep-punch-badge ep-punch-badge-late">Late</span>{% endif %}
             <div class="ep-punch-source">via Portal App</div>
           {% else %}—{% endif %}
@@ -52,7 +53,7 @@
         <div class="ep-punch-time-label">Check Out</div>
         <div class="ep-punch-time-val {% if today_record and today_record.check_out %}ep-punch-time-set{% endif %}">
           {% if today_record and today_record.check_out %}
-            {{ today_record.check_out|time:"g:i A" }}
+            {{ today_record.check_out|tz_time:today_record.date }} <small style="opacity:.6;font-size:10px;">{% tz_label %}</small>
             {% if today_record.is_early_checkout %}<span class="ep-punch-badge ep-punch-badge-early">Early</span>{% endif %}
             <div class="ep-punch-source">via Portal App</div>
           {% else %}—{% endif %}
@@ -65,12 +66,12 @@
     <div class="ep-punch-shift">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       {{ emp.shift_master.name }} &nbsp;·&nbsp;
-      <span style="color:rgba(255,255,255,.7);">{{ emp.shift_master.start_time|time:"g:i A" }} – {{ emp.shift_master.end_time|time:"g:i A" }}</span>
+      <span style="color:rgba(255,255,255,.7);">{{ emp.shift_master.start_time|tz_time }} – {{ emp.shift_master.end_time|tz_time }} {% tz_label %}</span>
     </div>
     {% elif emp.scheduled_checkin %}
     <div class="ep-punch-shift">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Shift: <span style="color:rgba(255,255,255,.7);">{{ emp.scheduled_checkin|time:"g:i A" }} – {{ emp.scheduled_checkout|time:"g:i A" }}</span>
+      Shift: <span style="color:rgba(255,255,255,.7);">{{ emp.scheduled_checkin|tz_time }} – {{ emp.scheduled_checkout|tz_time }} {% tz_label %}</span>
     </div>
     {% endif %}
 
@@ -224,8 +225,8 @@
 {% block extra_js %}
 <script>
 (function () {
-  var checkInTime  = "{{ today_record.check_in|time:'H:i'|default:'' }}";
-  var checkOutTime = "{{ today_record.check_out|time:'H:i'|default:'' }}";
+  var checkInTime  = "{% if today_record and today_record.check_in %}{{ today_record.check_in|tz_time_24:today_record.date }}{% endif %}";
+  var checkOutTime = "{% if today_record and today_record.check_out %}{{ today_record.check_out|tz_time_24:today_record.date }}{% endif %}";
 
   var clockEl  = document.getElementById('punch-clock');
   var dateEl   = document.getElementById('punch-date');
@@ -245,12 +246,12 @@
     return pad(h) + ':' + pad(m) + ':' + pad(s);
   }
 
-  // Convert a JS Date to EST/EDT components by parsing the locale string.
-  // More compatible than Intl.DateTimeFormat.formatToParts across all browsers.
+  // Convert a JS Date to the selected display timezone.
+  var DISPLAY_TZ = "{{ display_timezone|default:'America/New_York' }}";
   function getEST() {
-    var estStr = new Date().toLocaleString('en-US', {timeZone: 'America/New_York'});
-    var d = new Date(estStr);
-    return d;  // getHours/getMinutes/etc. now return EST values
+    var tzStr = new Date().toLocaleString('en-US', {timeZone: DISPLAY_TZ});
+    var d = new Date(tzStr);
+    return d;
   }
 
   var DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];

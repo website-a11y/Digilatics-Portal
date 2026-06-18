@@ -50,6 +50,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "attendance.context_processors.display_timezone",
             ],
         },
     },
@@ -160,4 +161,5 @@ ZK_IGNORED_DEVICE_IDS = [713, 113]
 # poll sends a wide DATA QUERY from that date and tells the device to re-send all
 # stored punches. Set this to pull history, then set back to None once the audit
 # confirms the data is in (otherwise the device re-dumps everything every minute).
-ZK_FETCH_FROM = "2026-02-01"
+# Use the "Fetch Latest" button in the attendance admin to trigger a one-off re-fetch.
+ZK_FETCH_FROM = None

@@ -1,4 +1,5 @@
 {% extends "portal/base.html" %}
+{% load attendance_tags %}
 {% block title %}Team Dashboard &mdash; Portal{% endblock %}
 {% block page_title %}Team Dashboard{% endblock %}
 
@@ -100,7 +101,7 @@
               </span>
               {% if lr.is_short_leave %}
               <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.date|date:"M j, Y" }}</span>
-              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|time:"g:i A" }} &ndash; {{ lr.to_time|time:"g:i A" }}</span>
+              <span style="font-size:12px;color:var(--muted);font-family:monospace;">{{ lr.from_time|tz_time }} &ndash; {{ lr.to_time|tz_time }} {% tz_label %}</span>
               {% else %}
               <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} &ndash; {{ lr.to_date|date:"M j, Y" }}</span>
               <span style="font-size:12px;color:var(--muted);">{{ lr.number_of_days|floatformat:"-2" }} day{{ lr.number_of_days|pluralize }}</span>
@@ -263,7 +264,7 @@
             <!-- Check in -->
             <td style="font-variant-numeric:tabular-nums;font-weight:600;">
               {% if row.today_record and row.today_record.check_in %}
-                {{ row.today_record.check_in|time:"g:i A" }}
+                {{ row.today_record.check_in|tz_time:row.today_record.date }}
                 {% if row.today_record.is_late %}<span style="font-size:10px;color:#eab308;font-weight:700;margin-left:3px;">Late</span>{% endif %}
               {% else %}<span style="color:var(--muted-2);">&mdash;</span>{% endif %}
             </td>
@@ -271,7 +272,7 @@
             <!-- Check out -->
             <td style="font-variant-numeric:tabular-nums;font-weight:600;">
               {% if row.today_record and row.today_record.check_out %}
-                {{ row.today_record.check_out|time:"g:i A" }}
+                {{ row.today_record.check_out|tz_time:row.today_record.date }}
               {% else %}<span style="color:var(--muted-2);">&mdash;</span>{% endif %}
             </td>
 
@@ -348,7 +349,7 @@
             <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap;">
               <span style="background:#ffedd5;color:#c2410c;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;">{{ lr.leave_type.name }}{% if lr.is_short_leave %} · Short{% endif %}</span>
               {% if lr.is_short_leave %}
-              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.date|date:"M j, Y" }} &nbsp;{{ lr.from_time|time:"g:i A" }} – {{ lr.to_time|time:"g:i A" }}</span>
+              <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.date|date:"M j, Y" }} &nbsp;{{ lr.from_time|tz_time }} – {{ lr.to_time|tz_time }} {% tz_label %}</span>
               {% else %}
               <span style="font-size:12px;color:var(--text-2);font-weight:600;">{{ lr.from_date|date:"M j" }} – {{ lr.to_date|date:"M j, Y" }} &nbsp;({{ lr.number_of_days|floatformat:"-2" }} day{{ lr.number_of_days|pluralize }})</span>
               {% endif %}
@@ -422,16 +423,17 @@ document.querySelectorAll('.mgr-progress-fill').forEach(function(el) {
 </script>
 <script>
 (function () {
-  var checkInTime  = "{{ today_record.check_in|time:'H:i'|default:'' }}";
-  var checkOutTime = "{{ today_record.check_out|time:'H:i'|default:'' }}";
+  var checkInTime  = "{% if today_record and today_record.check_in %}{{ today_record.check_in|tz_time_24:today_record.date }}{% endif %}";
+  var checkOutTime = "{% if today_record and today_record.check_out %}{{ today_record.check_out|tz_time_24:today_record.date }}{% endif %}";
   var clockEl = document.getElementById('punch-clock');
   var dateEl  = document.getElementById('punch-date');
   var labelEl = document.getElementById('punch-clock-label');
+  var DISPLAY_TZ = "{{ display_timezone|default:'America/New_York' }}";
   function pad(n) { return String(n).padStart(2,'0'); }
   function timeToMs(hhmm) { var p=hhmm.split(':'); return parseInt(p[0])*3600000+parseInt(p[1])*60000; }
   function fmtElapsed(ms) { var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000); return pad(h)+':'+pad(m)+':'+pad(s); }
   function getEST() {
-    var d = new Date(new Date().toLocaleString('en-US', {timeZone: 'America/New_York'}));
+    var d = new Date(new Date().toLocaleString('en-US', {timeZone: DISPLAY_TZ}));
     return d;
   }
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];

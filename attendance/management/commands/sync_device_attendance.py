@@ -158,7 +158,10 @@ class Command(BaseCommand):
             # Localise to device_tz, then convert to the portal's local time (EST).
             ts_device = ts.replace(tzinfo=None).replace(tzinfo=device_tz)
             ts_local = timezone.localtime(ts_device)
-            punch_date = ts_local.date()
+            # Use the device-local (PKT) calendar date so records land on the
+            # correct workday.  Bucketing by EST date shifts morning PKT punches
+            # to the previous calendar day due to the 10-hour offset.
+            punch_date = ts_device.date()
 
             if filter_date and punch_date != filter_date:
                 continue

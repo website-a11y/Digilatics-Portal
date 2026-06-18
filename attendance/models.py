@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from django.core.cache import cache
 from django.db import models
 
 
@@ -327,3 +328,64 @@ class DeviceSyncFlag(models.Model):
             obj.save(update_fields=["full_sync_from", "updated_at"])
             return d
         return None
+
+
+# ── System-wide display settings ──────────────────────────────────────────────
+
+class SystemSetting(models.Model):
+    """Singleton model (pk=1) that holds portal-wide display preferences."""
+
+    TIMEZONE_CHOICES = [
+        ("America/New_York",    "Eastern Time (ET)  —  UTC-5 / UTC-4"),
+        ("America/Chicago",     "Central Time (CT)  —  UTC-6 / UTC-5"),
+        ("America/Denver",      "Mountain Time (MT)  —  UTC-7 / UTC-6"),
+        ("America/Los_Angeles", "Pacific Time (PT)  —  UTC-8 / UTC-7"),
+        ("America/Phoenix",     "Arizona (MST, no DST)  —  UTC-7"),
+        ("Asia/Karachi",        "Pakistan Standard Time (PKT)  —  UTC+5"),
+        ("Asia/Kolkata",        "India Standard Time (IST)  —  UTC+5:30"),
+        ("Asia/Dubai",          "Gulf Standard Time (GST)  —  UTC+4"),
+        ("Asia/Riyadh",         "Arabia Standard Time (AST)  —  UTC+3"),
+        ("Europe/London",       "Greenwich / British Time (GMT/BST)  —  UTC+0/+1"),
+        ("Europe/Paris",        "Central European Time (CET)  —  UTC+1/+2"),
+        ("UTC",                 "Coordinated Universal Time (UTC)  —  UTC+0"),
+    ]
+
+    _CACHE_KEY = "system_setting_display_tz"
+
+    display_timezone = models.CharField(
+        max_length=100,
+        choices=TIMEZONE_CHOICES,
+        default="America/New_York",
+        verbose_name="Display Timezone",
+        help_text=(
+            "All attendance check-in/out times and leave times across the portal and admin "
+            "will be converted and displayed in this timezone. "
+            "Device data is stored internally in Eastern Time (ET) and converted on the fly."
+        ),
+    )
+
+    class Meta:
+        verbose_name = "System Settings"
+        verbose_name_plural = "⚙ System Settings"
+
+    def __str__(self):
+        return f"Display timezone: {self.display_timezone}"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+        cache.delete(self._CACHE_KEY)
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @classmethod
+    def get_display_timezone(cls) -> str:
+        cached = cache.get(cls._CACHE_KEY)
+        if cached:
+            return cached
+        tz = cls.get().display_timezone
+        cache.set(cls._CACHE_KEY, tz, 120)
+        return tz

@@ -241,7 +241,11 @@ def _adms_receive_logs(request):
         punch_dt_aware = timezone.make_aware(punch_dt, _device_tz)
         punch_dt_local = timezone.localtime(punch_dt_aware)
 
-        punches[(employee.pk, punch_dt_local.date())].append((punch_dt_local.time(), status_code))
+        # Use the device-local (PKT) calendar date so records land on the correct
+        # workday.  PKT is UTC+5 and EST is UTC-5; using EST date shifts all
+        # morning punches to the previous calendar day.
+        punch_date_device = punch_dt_aware.astimezone(_device_tz).date()
+        punches[(employee.pk, punch_date_device)].append((punch_dt_local.time(), status_code))
 
     if unknown_ids:
         logger.warning("ADMS: unmapped device IDs %s — add them in Device Employee Mappings", unknown_ids)
