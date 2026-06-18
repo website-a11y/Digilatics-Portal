@@ -256,12 +256,7 @@ def _adms_receive_logs(request):
     emp_cache = {dm.device_user_id: dm.employee for dm in DeviceEmployee.objects.select_related("employee")}
     emp_by_pk = {e.pk: e for e in emp_cache.values()}
 
-    from datetime import time as _time, timedelta as _timedelta
-
-    # Overnight-checkout threshold: a single punch arriving before this hour EST
-    # is treated as a checkout for the PREVIOUS day's open record rather than a
-    # new check-in, provided that previous record has a check-in but no check-out.
-    _OVERNIGHT_CUTOFF = _time(8, 0)  # 8:00 AM EST
+    from datetime import timedelta as _timedelta
 
     for (emp_pk, punch_date), punch_list in punches.items():
         employee = emp_by_pk.get(emp_pk)
@@ -270,47 +265,6 @@ def _adms_receive_logs(request):
 
         punch_list.sort(key=lambda x: x[0])
         times = [t for t, _ in punch_list]
-
-        # Overnight-checkout reassignment:
-        # If there is exactly one early-morning punch (<08:00 EST) and the previous
-        # calendar day has an open record (check_in set, check_out null), this punch
-        # is a late checkout for that shift — not a new check-in for today.
-        if (
-            len(times) == 1
-            and times[0] < _OVERNIGHT_CUTOFF
-        ):
-            prev_date = punch_date - _timedelta(days=1)
-            prev_record = AttendanceRecord.objects.filter(
-                employee=employee, date=prev_date,
-                status=AttendanceRecord.StatusChoices.PRESENT,
-                check_in__isnull=False, check_out__isnull=True,
-            ).first()
-            if prev_record and not prev_record.leave_request_id:
-                prev_record.check_out = times[0]
-                flags_prev = compute_attendance_flags(
-                    employee, prev_record.check_in, times[0]
-                )
-                prev_record.is_late = flags_prev["is_late"]
-                prev_record.is_early_checkout = flags_prev["is_early_checkout"]
-                prev_record.notes = "ZKTeco ADMS (overnight checkout added)"
-                prev_record.save(update_fields=[
-                    "check_out", "is_late", "is_early_checkout", "notes", "updated_at",
-                ])
-                logger.info(
-                    "ADMS: overnight checkout %s reassigned to %s check_out=%s",
-                    employee, prev_date, times[0],
-                )
-                # Remove any ABSENT placeholder that may have been created for
-                # punch_date before the overnight checkout arrived.
-                AttendanceRecord.objects.filter(
-                    employee=employee,
-                    date=punch_date,
-                    status=AttendanceRecord.StatusChoices.ABSENT,
-                    check_in__isnull=True,
-                    leave_request__isnull=True,
-                ).delete()
-                updated += 1
-                continue  # do NOT create a new record for punch_date
 
         # Always use first punch = check-in, last punch = check-out.
         # Face-recognition ZKTeco devices (like this ZAM70) send all punches
