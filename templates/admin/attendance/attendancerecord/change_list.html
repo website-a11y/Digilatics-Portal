@@ -4,6 +4,19 @@
 {% block extrastyle %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'attendance/css/attendance.css' %}">
+<style>
+.att-float-tip{
+  position:fixed;z-index:99999;
+  background:#2c3192;color:#fff;
+  border-radius:8px;padding:7px 14px;
+  font-size:13px;font-weight:500;
+  pointer-events:none;white-space:nowrap;
+  box-shadow:0 6px 20px rgba(44,49,146,.30);
+  opacity:0;transition:opacity .12s ease;
+  letter-spacing:.2px;
+}
+.att-float-tip-late{color:#fbbf24;font-weight:700;margin-left:4px;}
+</style>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -177,16 +190,16 @@
             </td>
             {% for cell in row.cells %}
             <td class="att-cell {% if cell.is_weekend %}att-cell-weekend{% endif %} {% if cell.is_today %}att-cell-today{% endif %} {% if cell.is_leave_synced %}att-cell-leave-synced{% endif %}"
-                title="{{ cell.tooltip }}">
+                data-tip="{{ cell.tooltip }}"{% if cell.record.is_late %} data-late="1"{% endif %}>
               {% if cell.is_weekend %}
                 <span class="att-icon att-icon-weekend">—</span>
               {% elif cell.status_key == "public_holiday" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-holiday">
                   <img src="/media/employee_profiles/photos/3199857.png" alt="Public Holiday" />
                 </a>
                 {% else %}
-                <span class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                <span class="att-icon att-icon-holiday">
                   <img src="/media/employee_profiles/photos/3199857.png" alt="Public Holiday" />
                 </span>
                 {% endif %}
@@ -198,7 +211,7 @@
                 </span>
               {% elif cell.status_key == "present" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-present" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-present">
                   {% if cell.record.is_late %}
                   <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/><circle cx="10" cy="10" r="3.7" stroke="#dc2626" stroke-width="1.2"/><path d="M10 6.5v3.5l2.5 2.5" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   {% else %}
@@ -212,7 +225,7 @@
                 {% endif %}
               {% elif cell.status_key == "absent" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-absent" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-absent">
                   <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/><line x1="6.5" y1="6.5" x2="13.5" y2="13.5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/><line x1="13.5" y1="6.5" x2="6.5" y2="13.5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg>
                 </a>
                 {% else %}
@@ -222,7 +235,7 @@
                 {% endif %}
               {% elif cell.status_key == "work_from_home" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-wfh" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-wfh">
                   <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/><path d="M5.5 10.8L10 7.2l4.5 3.6V15a.5.5 0 0 1-.5.5h-2.75V12.5h-2.5V15H6A.5.5 0 0 1 5.5 15v-4.2z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="1.4"/><path d="M8.2 12.7l1.1 1.1 3.4-3.4" stroke="#4c1d95" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
                 {% else %}
@@ -232,7 +245,7 @@
                 {% endif %}
               {% elif cell.status_key == "half_day" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-halfday" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-halfday">
                   <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/><text x="10" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#a16207">½</text></svg>
                 </a>
                 {% else %}
@@ -242,7 +255,7 @@
                 {% endif %}
               {% elif cell.status_key == "on_leave_paid" or cell.status_key == "on_leave_unpaid" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-leave" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-leave">
                   <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/><path d="M10 6.5v7m-2-2h4" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
                 {% else %}
@@ -252,7 +265,7 @@
                 {% endif %}
               {% elif cell.status_key == "on_hourly_leave" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-hourly" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-hourly">
                   <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="#1e293b" stroke-width="1"/><line x1="10" y1="7" x2="10" y2="5.5" stroke="#1e293b" stroke-width="1"/><line x1="13.5" y1="10" x2="15" y2="10" stroke="#1e293b" stroke-width="1"/></svg>
                 </a>
                 {% else %}
@@ -262,12 +275,12 @@
                 {% endif %}
               {% elif cell.status_key == "public_holiday" %}
                 {% if cell.record %}
-                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}" class="att-icon att-icon-holiday">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/><text x="10" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#6366F1">H</text></svg>
                   H
                 </a>
                 {% else %}
-                <span class="att-icon att-icon-holiday" title="{{ cell.tooltip }}">
+                <span class="att-icon att-icon-holiday">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/><text x="10" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#6366F1">H</text></svg>
                   H
                 </span>
@@ -275,7 +288,7 @@
               {% else %}
                 {% if cell.record %}
                 <a href="{% url 'admin:attendance_attendancerecord_change' cell.record.pk %}"
-                   class="att-badge att-badge-{{ cell.status_key }}" title="{{ cell.tooltip }}">
+                   class="att-badge att-badge-{{ cell.status_key }}">
                   {{ cell.meta.symbol }}
                 </a>
                 {% else %}
@@ -310,6 +323,27 @@
     </div>
   </div>
 
+<script>
+(function(){
+  var tip = document.createElement('div');
+  tip.className = 'att-float-tip';
+  document.body.appendChild(tip);
+  document.addEventListener('mouseover', function(e){
+    var cell = e.target.closest('[data-tip]');
+    if(!cell){ tip.style.opacity='0'; return; }
+    var text = cell.dataset.tip || '';
+    tip.innerHTML = text + (cell.dataset.late ? ' &nbsp;<span class="att-float-tip-late">● Late</span>' : '');
+    tip.style.opacity = '1';
+  });
+  document.addEventListener('mousemove', function(e){
+    tip.style.left = (e.clientX+14)+'px';
+    tip.style.top  = (e.clientY-44)+'px';
+  });
+  document.addEventListener('mouseout', function(e){
+    if(!e.relatedTarget || !e.relatedTarget.closest('[data-tip]')) tip.style.opacity='0';
+  });
+})();
+</script>
 </div><!-- /att-page -->
 
 <!-- Chart.js -->
