@@ -1,4 +1,5 @@
 {% extends "portal/hr/base.html" %}
+{% load attendance_tags %}
 {% block title %}Attendance — Funnelatics HR{% endblock %}
 {% block page_title %}Attendance{% endblock %}
 
@@ -14,6 +15,9 @@
   </a>
   <a href="{% url 'portal:hr_shifts' %}" class="ep-btn-sm" style="text-decoration:none;">
     ⏰ Shifts
+  </a>
+  <a href="/admin/attendance/systemsetting/" class="ep-btn-sm" style="text-decoration:none;margin-left:auto;">
+    ⚙ Settings &nbsp;<span style="opacity:.6;font-size:11px;">({% tz_label %})</span>
   </a>
 </div>
 
@@ -81,7 +85,7 @@
             <a href="{% if cell.record %}{% url 'portal:hr_attendance_record_edit' cell.record.pk %}{% else %}{% url 'portal:hr_attendance_record_add' %}?emp={{ row.employee.pk }}&date={{ cell.day|date:'Y-m-d' }}{% endif %}" style="text-decoration:none;">
             <div class="ep-hgrid-cell {{ cell.status }}{% if cell.record.is_late %} late{% endif %}" style="cursor:pointer;"
               {% if cell.record and cell.record.check_in %}
-              data-tip="{{ cell.day }} | In: {{ cell.record.check_in|time:'g:i A' }}{% if cell.record.check_out %} | Out: {{ cell.record.check_out|time:'g:i A' }}{% endif %}"
+              data-tip="{{ cell.day }} | In: {{ cell.record.check_in|tz_time:cell.record.date }} {% tz_label %}{% if cell.record.check_out %} | Out: {{ cell.record.check_out|tz_time:cell.record.date }} {% tz_label %}{% endif %}"
               {% if cell.record.is_late %}data-late="1"{% endif %}
               {% else %}
               data-tip="{{ cell.day }} | {{ cell.status|title }}"
