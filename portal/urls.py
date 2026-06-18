@@ -64,6 +64,7 @@ urlpatterns = [
     path("hr/attendance/shifts/add/",                   views.hr_shift_edit,              name="hr_shift_add"),
     path("hr/attendance/shifts/<int:pk>/",              views.hr_shift_edit,              name="hr_shift_edit"),
     path("hr/attendance/shifts/<int:pk>/delete/",       views.hr_shift_delete,            name="hr_shift_delete"),
+    path("hr/settings/",                                views.hr_settings,                name="hr_settings"),
 
     # Leaves
     path("hr/leaves/",                                  views.hr_leaves,                  name="hr_leaves"),

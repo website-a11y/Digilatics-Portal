@@ -2202,6 +2202,29 @@ def hr_shifts(request):
 
 
 @login_required(login_url="/portal/login/")
+def hr_settings(request):
+    if not _hr_check(request):
+        return redirect("portal:dashboard")
+    from attendance.models import SystemSetting
+    from attendance.tz_utils import get_display_tz_label
+    setting = SystemSetting.get()
+    if request.method == "POST":
+        tz = request.POST.get("display_timezone", "").strip()
+        valid = [v for v, _ in SystemSetting.TIMEZONE_CHOICES]
+        if tz in valid:
+            setting.display_timezone = tz
+            setting.save()
+            from django.contrib import messages
+            messages.success(request, f"Display timezone updated to: {setting.get_display_timezone_display()}")
+        return redirect("portal:hr_settings")
+    return render(request, "portal/hr/settings.html", {
+        "setting": setting,
+        "choices": SystemSetting.TIMEZONE_CHOICES,
+        "current_label": get_display_tz_label(),
+    })
+
+
+@login_required(login_url="/portal/login/")
 def hr_shift_edit(request, pk=None):
     if not _hr_check(request):
         return redirect("portal:dashboard")
