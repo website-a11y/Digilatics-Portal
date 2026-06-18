@@ -149,7 +149,7 @@ def _adms_handshake(request):
         "TransTimes=00:00;23:59\n"
         "TransInterval=1\n"
         "TransFlag=TransData AttLog\n"
-        "TimeZone=-8\n"
+        "TimeZone=5\n"
         "Realtime=1\n"
         "Encrypt=None\n"
     )
