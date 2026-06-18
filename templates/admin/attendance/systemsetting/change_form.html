@@ -166,9 +166,7 @@
               {% if is_selected == value %}checked{% endif %}>
             <div class="ss-tz-radio"><div class="ss-tz-radio-dot"></div></div>
             <div>
-              {% with parts=label|cut:"—"|split:" " %}
-              <div class="ss-tz-name">{{ label|slice:":label.index('—')"|default:label }}</div>
-              {% endwith %}
+              <div class="ss-tz-name">{{ label|truncatewords:4 }}</div>
               <div class="ss-tz-desc">{{ label }}</div>
               {% if value == "Asia/Karachi" %}
               <span class="ss-tz-tag highlight">Device timezone</span>
