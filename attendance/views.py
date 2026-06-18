@@ -149,7 +149,7 @@ def _adms_handshake(request):
         "TransTimes=00:00;23:59\n"
         "TransInterval=1\n"
         "TransFlag=TransData AttLog\n"
-        "TimeZone=5\n"
+        "TimeZone=-8\n"
         "Realtime=1\n"
         "Encrypt=None\n"
     )
@@ -241,29 +241,14 @@ def _adms_receive_logs(request):
         punch_dt_aware = timezone.make_aware(punch_dt, _device_tz)
         punch_dt_local = timezone.localtime(punch_dt_aware)
 
-        from datetime import timedelta as _td
-        punch_dt_in_device_tz = punch_dt_aware.astimezone(_device_tz)
-        punch_time_pkt = punch_dt_in_device_tz.time()
-        punch_date_raw = punch_dt_in_device_tz.date()
-
-        # Shift-day boundary: group overnight punches with the correct shift day.
-        # For a shift that starts at 5 PM PKT and ends at 2 AM PKT, the 2 AM
-        # checkout punch carries PKT date of the NEXT calendar day, but it belongs
-        # to the previous day's shift.
-        # Rule: if the punch time (PKT) is before the employee's scheduled check-in,
-        # it belongs to the previous shift day.
-        # employee.scheduled_checkin is naive (stored as ET) but its numeric value
-        # sits between the overnight checkout (2 AM PKT) and the evening check-in
-        # (5 PM PKT), so the < comparison gives the right result for this shift
-        # without requiring a full timezone conversion.
-        shift_start = employee.scheduled_checkin
-        if shift_start and punch_time_pkt < shift_start:
-            punch_date_device = punch_date_raw - _td(days=1)
-        else:
-            punch_date_device = punch_date_raw
+        # Use the device's local date (UTC-8) as the record date.
+        # The shift (5PM-2AM PKT) runs 04:00-13:00 in UTC-8 — same calendar day,
+        # no midnight crossing, so the raw device date is always correct.
+        punch_date_device = punch_dt_aware.astimezone(_device_tz).date()
 
         # Store (utc_aware_dt, local_time, status) so we can sort by absolute UTC
-        # time.  Naive EDT times give wrong order when PKT punches cross EDT midnight.
+        # time rather than naive EDT time, which gives wrong order if punches
+        # cross EDT midnight.
         punches[(employee.pk, punch_date_device)].append((punch_dt_aware, punch_dt_local.time(), status_code))
 
     if unknown_ids:
