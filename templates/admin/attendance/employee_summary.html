@@ -27,6 +27,10 @@
       <span class="att-page-sub">{{ month_label }}</span>
     </div>
     <div class="att-topbar-right">
+      <a href="{% url 'admin:attendance_export' %}?year={{ year }}&month={{ month }}&employee_pk={{ employee.pk }}"
+         class="att-btn att-btn-primary" title="Export this employee's attendance to Excel">
+        ↓ Export Excel
+      </a>
       <a href="{% url 'admin:attendance_attendancerecord_changelist' %}?year={{ year }}&month={{ month }}" class="att-btn att-btn-outline">
         ← Monthly Grid
       </a>

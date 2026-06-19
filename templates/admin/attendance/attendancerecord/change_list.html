@@ -16,6 +16,25 @@
   letter-spacing:.2px;
 }
 .att-float-tip-late{color:#fbbf24;font-weight:700;margin-left:4px;}
+
+/* Export panel */
+.att-export-panel{
+  background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;
+  padding:14px 20px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.att-export-panel label{font-size:13px;font-weight:600;color:#475569;}
+.att-export-select{
+  padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;
+  font-size:13px;background:#fff;color:#1e293b;min-width:200px;
+}
+.att-btn-export{
+  background:#16a34a;color:#fff;border:none;border-radius:6px;
+  padding:6px 16px;font-size:13px;font-weight:600;cursor:pointer;
+  text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+}
+.att-btn-export:hover{background:#15803d;color:#fff;}
+.att-export-note{font-size:11px;color:#94a3b8;}
 </style>
 {% endblock %}
 
@@ -71,7 +90,25 @@
     </div>
   </div>
 
-  
+  <!-- ── Export Panel ── -->
+  <div class="att-export-panel">
+    <label>📥 Export Report</label>
+    <form method="get" action="{% url 'admin:attendance_export' %}" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;">
+      <input type="hidden" name="year" value="{{ year }}">
+      <input type="hidden" name="month" value="{{ month }}">
+      <select name="employee_pk" class="att-export-select">
+        <option value="">— All Employees —</option>
+        {% for row in grid %}
+        <option value="{{ row.employee.pk }}">{{ row.employee.full_name }}{% if row.employee.department %} ({{ row.employee.department }}){% endif %}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="att-btn-export">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Excel
+      </button>
+    </form>
+    <span class="att-export-note">{{ month_label }} · .xlsx</span>
+  </div>
 
   <!-- ── Month Navigator ── -->
   <div class="att-nav-bar">

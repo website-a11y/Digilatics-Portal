@@ -1,9 +1,11 @@
 import calendar
+import io
 import json
 from datetime import date, timedelta
 
 from django.contrib import admin, messages
 from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import path, reverse
 from django.utils import timezone
@@ -218,6 +220,11 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
                 "force-refetch/",
                 self.admin_site.admin_view(self.force_refetch_view),
                 name="attendance_force_refetch",
+            ),
+            path(
+                "export/",
+                self.admin_site.admin_view(self.export_attendance_view),
+                name="attendance_export",
             ),
         ] + urls
 
@@ -741,6 +748,280 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
             "attendance_pct": attendance_pct,
         }
         return render(request, "admin/attendance/employee_summary.html", context)
+
+    # ── attendance export view ────────────────────────────────────────────────
+
+    def export_attendance_view(self, request):
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.utils import get_column_letter
+        except ImportError:
+            return HttpResponse("openpyxl is not installed. Run: pip install openpyxl", status=500)
+
+        today = timezone.localdate()
+
+        try:
+            year = int(request.GET.get("year", today.year))
+            month = int(request.GET.get("month", today.month))
+            if not (1 <= month <= 12):
+                raise ValueError
+        except (ValueError, TypeError):
+            year, month = today.year, today.month
+
+        employee_pk = request.GET.get("employee_pk", "").strip()
+
+        start, end = _month_bounds(year, month)
+        days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
+
+        holidays_qs = PublicHoliday.objects.filter(date__range=(start, end), is_active=True)
+        holidays = {h.date: h.name for h in holidays_qs}
+
+        # Resolve employee scope
+        single_employee = False
+        if employee_pk:
+            try:
+                target_emp = EmployeeProfile.objects.get(pk=employee_pk)
+            except EmployeeProfile.DoesNotExist:
+                return HttpResponse("Employee not found.", status=400)
+            if _is_manager(request) and not _manager_team_qs(request).filter(pk=target_emp.pk).exists():
+                from django.http import HttpResponseForbidden
+                return HttpResponseForbidden("Access denied.")
+            employees = [target_emp]
+            single_employee = True
+        else:
+            emp_qs = (
+                EmployeeProfile.objects
+                .filter(employment_status=EmployeeProfile.EmploymentStatusChoices.ACTIVE)
+                .select_related("reporting_manager")
+                .order_by("department", "full_name")
+            )
+            if _is_manager(request):
+                emp_qs = emp_qs.filter(pk__in=_manager_team_qs(request))
+            employees = list(emp_qs)
+
+        # Fetch records for all target employees
+        emp_pks = [e.pk for e in employees]
+        records = (
+            AttendanceRecord.objects
+            .filter(employee_id__in=emp_pks, date__range=(start, end))
+            .select_related("employee", "leave_request__leave_type")
+            .order_by("employee__full_name", "date")
+        )
+        record_map: dict[int, dict] = {}
+        for rec in records:
+            record_map.setdefault(rec.employee_id, {})[rec.date] = rec
+
+        # ── Workbook setup ────────────────────────────────────────────────────
+        wb = openpyxl.Workbook()
+        month_label = start.strftime("%B %Y")
+
+        hdr_font = Font(bold=True, color="FFFFFF", size=11)
+        hdr_fill = PatternFill("solid", fgColor="1E293B")
+        center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        left_align = Alignment(horizontal="left", vertical="center")
+        thin = Border(
+            left=Side(style="thin", color="CBD5E1"),
+            right=Side(style="thin", color="CBD5E1"),
+            top=Side(style="thin", color="CBD5E1"),
+            bottom=Side(style="thin", color="CBD5E1"),
+        )
+
+        STATUS_FILLS = {
+            "present":         PatternFill("solid", fgColor="D1FAE5"),
+            "absent":          PatternFill("solid", fgColor="FEE2E2"),
+            "work_from_home":  PatternFill("solid", fgColor="DBEAFE"),
+            "on_leave_paid":   PatternFill("solid", fgColor="FED7AA"),
+            "on_leave_unpaid": PatternFill("solid", fgColor="D1FAE5"),
+            "on_hourly_leave": PatternFill("solid", fgColor="F1F5F9"),
+            "public_holiday":  PatternFill("solid", fgColor="E0E7FF"),
+            "half_day":        PatternFill("solid", fgColor="FEF9C3"),
+        }
+
+        STATUS_LABELS = {
+            "present":         "Present",
+            "absent":          "Absent",
+            "work_from_home":  "WFH",
+            "on_leave_paid":   "Leave (Paid)",
+            "on_leave_unpaid": "Leave (Unpaid)",
+            "on_hourly_leave": "Hourly Leave",
+            "public_holiday":  "Public Holiday",
+            "half_day":        "Half Day",
+        }
+
+        def _apply_header_row(ws, headers, row_num=None):
+            if row_num is None:
+                row_num = ws.max_row
+            for col_idx, _ in enumerate(headers, 1):
+                cell = ws.cell(row=row_num, column=col_idx)
+                cell.font = hdr_font
+                cell.fill = hdr_fill
+                cell.alignment = center_align
+                cell.border = thin
+            ws.row_dimensions[row_num].height = 22
+
+        def _apply_data_cell(ws, row_num, col_idx, align=None, fill=None):
+            cell = ws.cell(row=row_num, column=col_idx)
+            cell.border = thin
+            cell.alignment = align or left_align
+            if fill:
+                cell.fill = fill
+            return cell
+
+        # ── Sheet 1: Summary ──────────────────────────────────────────────────
+        ws_s = wb.active
+        ws_s.title = "Summary"
+
+        ws_s.merge_cells("A1:O1")
+        ws_s["A1"].value = f"Attendance Report — {month_label}"
+        ws_s["A1"].font = Font(bold=True, size=14, color="1E293B")
+        ws_s["A1"].alignment = Alignment(horizontal="center", vertical="center")
+        ws_s.row_dimensions[1].height = 28
+
+        ws_s.merge_cells("A2:O2")
+        ws_s["A2"].value = f"Generated on {today.strftime('%d %B %Y')}  |  Period: {start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
+        ws_s["A2"].font = Font(color="64748B", size=10)
+        ws_s["A2"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws_s.append([])  # blank
+
+        summary_headers = [
+            "Employee", "Code", "Department", "Designation",
+            "Working Days", "Present", "Absent", "Late Arrivals",
+            "Early Checkouts", "WFH Days", "Leave (Paid)", "Leave (Unpaid)",
+            "Hourly Leave", "Half Days", "Public Holidays", "Attendance %",
+        ]
+        ws_s.append(summary_headers)
+        _apply_header_row(ws_s, summary_headers)
+
+        for emp in employees:
+            emp_recs = record_map.get(emp.pk, {})
+            wd = present = absent = late = early_out = wfh = lp = lu = hl = hd = ph = 0
+
+            for day in days:
+                if day.weekday() >= 5 or day > today:
+                    continue
+                wd += 1
+                rec = emp_recs.get(day)
+                if rec:
+                    s = rec.status
+                    if s == "present":
+                        present += 1
+                        if rec.is_late: late += 1
+                        if rec.is_early_checkout: early_out += 1
+                    elif s == "absent":
+                        absent += 1
+                    elif s == "work_from_home":
+                        wfh += 1
+                    elif s == "on_leave_paid":
+                        lp += 1
+                    elif s == "on_leave_unpaid":
+                        lu += 1
+                    elif s == "on_hourly_leave":
+                        hl += 1
+                        if rec.is_late: late += 1
+                        if rec.is_early_checkout: early_out += 1
+                    elif s == "half_day":
+                        hd += 1
+                        if rec.is_late: late += 1
+                        if rec.is_early_checkout: early_out += 1
+                    elif s == "public_holiday":
+                        ph += 1
+                elif day in holidays:
+                    ph += 1
+                else:
+                    absent += 1
+
+            effective = present + absent + wfh + lp + lu + hl + hd
+            att_pct = f"{round(present / effective * 100)}%" if effective else "0%"
+
+            ws_s.append([
+                emp.full_name, emp.employee_code or "—",
+                emp.department or "—", emp.designation or "—",
+                wd, present, absent, late, early_out,
+                wfh, lp, lu, hl, hd, ph, att_pct,
+            ])
+            dr = ws_s.max_row
+            for ci in range(1, len(summary_headers) + 1):
+                al = left_align if ci <= 4 else center_align
+                _apply_data_cell(ws_s, dr, ci, align=al)
+
+        col_widths_s = [26, 12, 18, 20, 13, 10, 10, 14, 15, 10, 13, 14, 13, 11, 15, 13]
+        for i, w in enumerate(col_widths_s, 1):
+            ws_s.column_dimensions[get_column_letter(i)].width = w
+        ws_s.freeze_panes = "A5"
+
+        # ── Sheet 2: Daily Records ─────────────────────────────────────────────
+        ws_d = wb.create_sheet("Daily Records")
+
+        daily_headers = [
+            "Date", "Day", "Employee", "Code", "Department", "Designation",
+            "Status", "Check-In", "Check-Out",
+            "Late", "Early Checkout", "Leave Type", "Notes",
+        ]
+        ws_d.append(daily_headers)
+        _apply_header_row(ws_d, daily_headers)
+
+        for emp in employees:
+            emp_recs = record_map.get(emp.pk, {})
+            for day in days:
+                if day.weekday() >= 5 or day > today:
+                    continue
+                rec = emp_recs.get(day)
+                is_holiday = day in holidays
+
+                if rec:
+                    status_label = STATUS_LABELS.get(rec.status, rec.status.replace("_", " ").title())
+                    check_in = rec.check_in.strftime("%H:%M") if rec.check_in else "—"
+                    check_out = rec.check_out.strftime("%H:%M") if rec.check_out else "—"
+                    is_late = "Yes" if rec.is_late else "No"
+                    early_checkout = "Yes" if rec.is_early_checkout else "No"
+                    leave_type = rec.leave_request.leave_type.name if rec.leave_request_id else "—"
+                    notes = rec.notes or "—"
+                    fill = STATUS_FILLS.get(rec.status)
+                elif is_holiday:
+                    status_label = f"Public Holiday ({holidays[day]})"
+                    check_in = check_out = is_late = early_checkout = leave_type = notes = "—"
+                    fill = STATUS_FILLS["public_holiday"]
+                else:
+                    status_label = "Absent"
+                    check_in = check_out = is_late = early_checkout = leave_type = notes = "—"
+                    fill = STATUS_FILLS["absent"]
+
+                ws_d.append([
+                    day.strftime("%d-%m-%Y"), day.strftime("%A"),
+                    emp.full_name, emp.employee_code or "—",
+                    emp.department or "—", emp.designation or "—",
+                    status_label, check_in, check_out,
+                    is_late, early_checkout, leave_type, notes,
+                ])
+                dr = ws_d.max_row
+                for ci in range(1, len(daily_headers) + 1):
+                    _apply_data_cell(ws_d, dr, ci, fill=fill)
+
+        col_widths_d = [13, 12, 26, 12, 18, 20, 18, 10, 10, 8, 14, 20, 32]
+        for i, w in enumerate(col_widths_d, 1):
+            ws_d.column_dimensions[get_column_letter(i)].width = w
+        ws_d.freeze_panes = "A2"
+
+        # ── Build response ─────────────────────────────────────────────────────
+        safe_month = month_label.replace(" ", "_")
+        if single_employee:
+            safe_name = employees[0].full_name.replace(" ", "_").replace("/", "-")
+            filename = f"Attendance_{safe_month}_{safe_name}.xlsx"
+        else:
+            filename = f"Attendance_{safe_month}_All.xlsx"
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+
+        response = HttpResponse(
+            buf.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
     # ── re-sync all approved leaves view ─────────────────────────────────────
 
