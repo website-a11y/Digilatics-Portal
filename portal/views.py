@@ -1,4 +1,5 @@
 ﻿import calendar
+import io
 from decimal import Decimal
 from datetime import date, datetime, timedelta
 from django.db.models import Count, Case, When, IntegerField, Q
@@ -8,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.management import call_command, CommandError
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -1115,6 +1116,53 @@ def portal_manager_attendance(request):
 
 
 @login_required(login_url="/portal/login/")
+def portal_manager_attendance_export(request):
+    emp = _get_employee(request)
+    if emp is None:
+        return redirect("portal:dashboard")
+    if emp.role not in _MANAGER_ROLES and not request.user.is_superuser:
+        return redirect("portal:dashboard")
+
+    today = timezone.localdate()
+    try:
+        year = int(request.GET.get("year", today.year))
+        month = int(request.GET.get("month", today.month))
+    except ValueError:
+        year, month = today.year, today.month
+    month = max(1, min(12, month))
+
+    employee_pk = request.GET.get("employee_pk", "").strip()
+
+    _, last_day = calendar.monthrange(year, month)
+    start = date(year, month, 1)
+    end = date(year, month, last_day)
+    days = [start + timedelta(days=i) for i in range(last_day)]
+
+    holidays = PublicHoliday.dates_in_range(start, end)
+    holiday_names = {h.date: h.name for h in PublicHoliday.objects.filter(
+        start_date__lte=end, end_date__gte=start, is_active=True
+    )}
+
+    team_qs = EmployeeProfile.objects.filter(
+        reporting_manager=emp,
+        employment_status=EmployeeProfile.EmploymentStatusChoices.ACTIVE,
+    ).order_by("department", "full_name")
+
+    single_employee = False
+    if employee_pk:
+        try:
+            target = team_qs.get(pk=employee_pk)
+            employees = [target]
+            single_employee = True
+        except EmployeeProfile.DoesNotExist:
+            return redirect("portal:manager_attendance")
+    else:
+        employees = list(team_qs)
+
+    return _build_attendance_excel(employees, days, start, end, today, holidays, holiday_names, single_employee, year, month)
+
+
+@login_required(login_url="/portal/login/")
 def portal_manager_leave_action(request, pk):
     if request.method != "POST":
         return redirect("portal:manager_dashboard")
@@ -1751,6 +1799,246 @@ def hr_attendance(request):
         "departments": list(departments), "dept_filter": dept_filter,
         "total_emp": len(employees),
     })
+
+
+def _build_attendance_excel(employees, days, start, end, today, holidays, holiday_names, single_employee, year, month):
+    """Shared helper: build and return an .xlsx HttpResponse for attendance export."""
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+    except ImportError:
+        return HttpResponse("openpyxl not installed. Run: pip install openpyxl", status=500)
+
+    emp_pks = [e.pk for e in employees]
+    records = (
+        AttendanceRecord.objects
+        .filter(employee_id__in=emp_pks, date__range=(start, end))
+        .select_related("employee", "leave_request__leave_type")
+    )
+    record_map = {}
+    for rec in records:
+        record_map.setdefault(rec.employee_id, {})[rec.date] = rec
+
+    wb = openpyxl.Workbook()
+    month_label = start.strftime("%B %Y")
+
+    hdr_font = Font(bold=True, color="FFFFFF", size=11)
+    hdr_fill = PatternFill("solid", fgColor="1E293B")
+    center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    left = Alignment(horizontal="left", vertical="center")
+    thin = Border(
+        left=Side(style="thin", color="CBD5E1"),
+        right=Side(style="thin", color="CBD5E1"),
+        top=Side(style="thin", color="CBD5E1"),
+        bottom=Side(style="thin", color="CBD5E1"),
+    )
+    STATUS_FILLS = {
+        "present":         PatternFill("solid", fgColor="D1FAE5"),
+        "absent":          PatternFill("solid", fgColor="FEE2E2"),
+        "work_from_home":  PatternFill("solid", fgColor="DBEAFE"),
+        "on_leave_paid":   PatternFill("solid", fgColor="FED7AA"),
+        "on_leave_unpaid": PatternFill("solid", fgColor="D1FAE5"),
+        "on_hourly_leave": PatternFill("solid", fgColor="F1F5F9"),
+        "public_holiday":  PatternFill("solid", fgColor="E0E7FF"),
+        "half_day":        PatternFill("solid", fgColor="FEF9C3"),
+    }
+    STATUS_LABELS = {
+        "present": "Present", "absent": "Absent",
+        "work_from_home": "WFH", "on_leave_paid": "Leave (Paid)",
+        "on_leave_unpaid": "Leave (Unpaid)", "on_hourly_leave": "Hourly Leave",
+        "public_holiday": "Public Holiday", "half_day": "Half Day",
+    }
+
+    def _hdr(ws, headers):
+        row = ws.max_row
+        for ci, _ in enumerate(headers, 1):
+            c = ws.cell(row=row, column=ci)
+            c.font = hdr_font; c.fill = hdr_fill; c.alignment = center; c.border = thin
+        ws.row_dimensions[row].height = 22
+
+    def _cell(ws, r, ci, align=None, fill=None):
+        c = ws.cell(row=r, column=ci)
+        c.border = thin; c.alignment = align or left
+        if fill: c.fill = fill
+        return c
+
+    # ── Sheet 1: Summary ──────────────────────────────────────────────────────
+    ws_s = wb.active
+    ws_s.title = "Summary"
+    ws_s.merge_cells("A1:P1")
+    ws_s["A1"].value = f"Attendance Report — {month_label}"
+    ws_s["A1"].font = Font(bold=True, size=14)
+    ws_s["A1"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_s.row_dimensions[1].height = 28
+    ws_s.merge_cells("A2:P2")
+    ws_s["A2"].value = f"Generated: {today.strftime('%d %B %Y')}  ·  Period: {start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
+    ws_s["A2"].font = Font(color="64748B", size=10)
+    ws_s["A2"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_s.append([])
+
+    s_headers = [
+        "Employee", "Code", "Department", "Designation",
+        "Working Days", "Present", "Absent", "Late Arrivals",
+        "Early Checkouts", "WFH", "Leave (Paid)", "Leave (Unpaid)",
+        "Hourly Leave", "Half Days", "Public Holidays", "Attendance %",
+    ]
+    ws_s.append(s_headers)
+    _hdr(ws_s, s_headers)
+
+    for emp in employees:
+        emp_recs = record_map.get(emp.pk, {})
+        wd = pr = ab = la = eo = wfh = lp = lu = hl = hd = ph = 0
+        for day in days:
+            if day.weekday() >= 5 or day > today:
+                continue
+            wd += 1
+            rec = emp_recs.get(day)
+            if rec:
+                s = rec.status
+                if s == "present":
+                    pr += 1
+                    if rec.is_late: la += 1
+                    if rec.is_early_checkout: eo += 1
+                elif s == "absent": ab += 1
+                elif s == "work_from_home": wfh += 1
+                elif s == "on_leave_paid": lp += 1
+                elif s == "on_leave_unpaid": lu += 1
+                elif s == "on_hourly_leave":
+                    hl += 1
+                    if rec.is_late: la += 1
+                    if rec.is_early_checkout: eo += 1
+                elif s == "half_day":
+                    hd += 1
+                    if rec.is_late: la += 1
+                    if rec.is_early_checkout: eo += 1
+                elif s == "public_holiday": ph += 1
+            elif day in holidays: ph += 1
+            else: ab += 1
+        effective = pr + ab + wfh + lp + lu + hl + hd
+        pct = f"{round(pr / effective * 100)}%" if effective else "0%"
+        ws_s.append([
+            emp.full_name, emp.employee_code or "—", emp.department or "—", emp.designation or "—",
+            wd, pr, ab, la, eo, wfh, lp, lu, hl, hd, ph, pct,
+        ])
+        dr = ws_s.max_row
+        for ci in range(1, len(s_headers) + 1):
+            _cell(ws_s, dr, ci, align=left if ci <= 4 else center)
+
+    for i, w in enumerate([26, 12, 18, 20, 13, 10, 10, 14, 15, 10, 13, 14, 13, 11, 15, 13], 1):
+        ws_s.column_dimensions[get_column_letter(i)].width = w
+    ws_s.freeze_panes = "A5"
+
+    # ── Sheet 2: Daily Records ─────────────────────────────────────────────────
+    ws_d = wb.create_sheet("Daily Records")
+    d_headers = [
+        "Date", "Day", "Employee", "Code", "Department", "Designation",
+        "Status", "Check-In", "Check-Out", "Late", "Early Checkout", "Leave Type", "Notes",
+    ]
+    ws_d.append(d_headers)
+    _hdr(ws_d, d_headers)
+
+    for emp in employees:
+        emp_recs = record_map.get(emp.pk, {})
+        for day in days:
+            if day.weekday() >= 5 or day > today:
+                continue
+            rec = emp_recs.get(day)
+            is_hol = day in holidays
+            if rec:
+                slabel = STATUS_LABELS.get(rec.status, rec.status.replace("_", " ").title())
+                ci_str = rec.check_in.strftime("%H:%M") if rec.check_in else "—"
+                co_str = rec.check_out.strftime("%H:%M") if rec.check_out else "—"
+                late_s = "Yes" if rec.is_late else "No"
+                early_s = "Yes" if rec.is_early_checkout else "No"
+                ltype = rec.leave_request.leave_type.name if rec.leave_request_id else "—"
+                notes = rec.notes or "—"
+                fill = STATUS_FILLS.get(rec.status)
+            elif is_hol:
+                slabel = f"Public Holiday ({holiday_names.get(day, '')})"
+                ci_str = co_str = late_s = early_s = ltype = notes = "—"
+                fill = STATUS_FILLS["public_holiday"]
+            else:
+                slabel = "Absent"
+                ci_str = co_str = late_s = early_s = ltype = notes = "—"
+                fill = STATUS_FILLS["absent"]
+            ws_d.append([
+                day.strftime("%d-%m-%Y"), day.strftime("%A"),
+                emp.full_name, emp.employee_code or "—",
+                emp.department or "—", emp.designation or "—",
+                slabel, ci_str, co_str, late_s, early_s, ltype, notes,
+            ])
+            dr = ws_d.max_row
+            for ci in range(1, len(d_headers) + 1):
+                _cell(ws_d, dr, ci, fill=fill)
+
+    for i, w in enumerate([13, 12, 26, 12, 18, 20, 18, 10, 10, 8, 14, 20, 32], 1):
+        ws_d.column_dimensions[get_column_letter(i)].width = w
+    ws_d.freeze_panes = "A2"
+
+    # ── Response ───────────────────────────────────────────────────────────────
+    safe_month = month_label.replace(" ", "_")
+    if single_employee:
+        safe_name = employees[0].full_name.replace(" ", "_").replace("/", "-")
+        filename = f"Attendance_{safe_month}_{safe_name}.xlsx"
+    else:
+        filename = f"Attendance_{safe_month}_All.xlsx"
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    response = HttpResponse(
+        buf.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required(login_url="/portal/login/")
+def hr_attendance_export(request):
+    if not _hr_check(request):
+        return redirect("portal:dashboard")
+
+    today = timezone.localdate()
+    try:
+        year = int(request.GET.get("year", today.year))
+        month = int(request.GET.get("month", today.month))
+    except ValueError:
+        year, month = today.year, today.month
+    month = max(1, min(12, month))
+
+    dept_filter = request.GET.get("dept", "")
+    employee_pk = request.GET.get("employee_pk", "").strip()
+
+    _, last_day = calendar.monthrange(year, month)
+    start = date(year, month, 1)
+    end = date(year, month, last_day)
+    days = [start + timedelta(days=i) for i in range(last_day)]
+
+    holidays = PublicHoliday.dates_in_range(start, end)
+    holiday_names = {h.date: h.name for h in PublicHoliday.objects.filter(
+        start_date__lte=end, end_date__gte=start, is_active=True
+    )}
+
+    emp_qs = EmployeeProfile.objects.filter(
+        employment_status=EmployeeProfile.EmploymentStatusChoices.ACTIVE
+    ).order_by("department", "full_name")
+
+    single_employee = False
+    if employee_pk:
+        try:
+            target = emp_qs.get(pk=employee_pk)
+            employees = [target]
+            single_employee = True
+        except EmployeeProfile.DoesNotExist:
+            return redirect("portal:hr_attendance")
+    elif dept_filter:
+        employees = list(emp_qs.filter(department=dept_filter))
+    else:
+        employees = list(emp_qs)
+
+    return _build_attendance_excel(employees, days, start, end, today, holidays, holiday_names, single_employee, year, month)
 
 
 @login_required(login_url="/portal/login/")

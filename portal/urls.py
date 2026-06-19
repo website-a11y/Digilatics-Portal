@@ -39,6 +39,7 @@ urlpatterns = [
     path("punch/",                          views.portal_punch,                name="punch"),
     path("manager/",                        views.portal_manager_dashboard,    name="manager_dashboard"),
     path("manager/attendance/",             views.portal_manager_attendance,   name="manager_attendance"),
+    path("manager/attendance/export/",      views.portal_manager_attendance_export, name="manager_attendance_export"),
     path("manager/leave/<int:pk>/action/",  views.portal_manager_leave_action, name="manager_leave_action"),
 
     # ── HR Admin Panel ────────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ urlpatterns = [
 
     # Attendance
     path("hr/attendance/",                              views.hr_attendance,              name="hr_attendance"),
+    path("hr/attendance/export/",                       views.hr_attendance_export,        name="hr_attendance_export"),
     path("hr/attendance/record/add/",                   views.hr_attendance_record_edit,  name="hr_attendance_record_add"),
     path("hr/attendance/record/<int:pk>/",              views.hr_attendance_record_edit,  name="hr_attendance_record_edit"),
     path("hr/attendance/record/<int:pk>/delete/",       views.hr_attendance_record_delete, name="hr_attendance_record_delete"),
