@@ -1,10 +1,13 @@
-# ── BEFORE/AFTER THIS DEPLOY (timezone fix) ─────────────────────────────────
-#  The server no longer sets the device clock (no TimeZone in the handshake).
-#  1. On the DEVICE itself, set its clock/timezone to Pakistan (PKT, UTC+5).
-#  2. After deploy: Portal → HR → Settings → Device Timezone = Asia/Karachi
-#     (must match the device's actual clock) and Display Timezone = PKT.
-#  3. Verify: the device clock no longer reverts after a poll, and a fresh
-#     punch shows the correct PKT time on the right day.
+# ── AFTER THIS DEPLOY (timezone fix) ─────────────────────────────────────────
+#  The server now PINS the device clock to the Device Timezone setting (the
+#  device menu is locked under ADMS, so the server sets it). No manual device
+#  step needed.
+#  1. Portal → HR → Settings → Device Timezone = Asia/Karachi (PKT),
+#     Display Timezone = PKT.
+#  2. Within ~1 minute (next device poll) the device clock moves to PKT and
+#     stays there.
+#  3. Verify: device clock shows PKT and no longer drifts; a fresh punch shows
+#     the correct PKT time on the right day.
 # ─────────────────────────────────────────────────────────────────────────────
 cd /home/funnelatics-hris/htdocs/hris.funnelatics.com
 git fetch origin && git reset --hard origin/main
