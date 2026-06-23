@@ -154,7 +154,7 @@ ZK_DEVICE = {
     "password": 0,
     "force_udp": False,        # Use TCP (device does not respond on UDP)
     "ommit_ping": True,        # Skip ping check
-    "device_timezone": "Etc/GMT+8",  # Device clock runs UTC-8 (set by ADMS TimeZone=-8 handshake)
+    "device_timezone": "Asia/Karachi",  # Device clock runs PKT/UTC+5 (set by ADMS TimeZone=5 handshake)
 }
 
 # Stray device enrollment IDs with no real employee — their punches are dropped

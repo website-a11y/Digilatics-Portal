@@ -120,8 +120,10 @@ def _adms_handshake(request):
     device immediately re-uploads ALL its stored punches (more reliable than
     DATA QUERY on most ZKTeco models).
     TransInterval=1 keeps the device polling every minute for new commands.
-    TimeZone=0 instructs the device to send timestamps in UTC so we can
-    reliably convert to Eastern Time on the server side.
+    TimeZone=5 pins the device clock to Pakistan Standard Time (UTC+5) so the
+    on-site display shows correct local time; it must stay paired with
+    settings.ZK_DEVICE["device_timezone"] = "Asia/Karachi" so punches are
+    interpreted in the same zone before conversion to Eastern Time for storage.
     """
     sn = request.GET.get("SN", "unknown")
     logger.info("ADMS handshake from device SN=%s", sn)
@@ -149,7 +151,7 @@ def _adms_handshake(request):
         "TransTimes=00:00;23:59\n"
         "TransInterval=1\n"
         "TransFlag=TransData AttLog\n"
-        "TimeZone=-8\n"
+        "TimeZone=5\n"   # Pakistan Standard Time (UTC+5) — keep in sync with device_timezone
         "Realtime=1\n"
         "Encrypt=None\n"
     )
