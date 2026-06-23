@@ -108,14 +108,18 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                # Device sends timestamps in its own clock timezone (PKT = UTC+5).
-                # Convert to portal local time (EST/EDT).
+                # Device sends timestamps in its own clock timezone (settings
+                # ZK_DEVICE "device_timezone", currently UTC-8). Make the punch
+                # tz-aware, then convert to portal local time (ET) for storage.
                 _device_tz = ZoneInfo(settings.ZK_DEVICE.get("device_timezone", "UTC"))
-                punch_local = timezone.localtime(
-                    timezone.make_aware(punch_naive, _device_tz)
-                )
-                punches[(employee.pk, punch_local.date())].append(
-                    (punch_local.time(), status_code)
+                punch_aware = timezone.make_aware(punch_naive, _device_tz)
+                punch_local = timezone.localtime(punch_aware)
+                # Bucket by the device-local calendar date (matches the live ADMS
+                # handler in views.py) so a shift never splits or merges across ET
+                # midnight. Store the tz-aware instant so we can sort by absolute
+                # time, not naive time-of-day.
+                punches[(employee.pk, punch_naive.date())].append(
+                    (punch_aware, punch_local.time(), status_code)
                 )
 
         self.stdout.write(f"Unique punches parsed : {unique}")
@@ -132,8 +136,11 @@ class Command(BaseCommand):
             employee = emp_by_pk.get(emp_pk)
             if not employee:
                 continue
+            # Sort by the absolute tz-aware instant (x[0]), NOT the naive
+            # time-of-day — otherwise punches that cross ET midnight order wrong
+            # and the first/last picks swap check-in and check-out.
             plist.sort(key=lambda x: x[0])
-            times = [t for t, _ in plist]
+            times = [local_t for _, local_t, _ in plist]
             check_in = times[0]
             check_out = times[-1] if len(times) > 1 else None
             flags = compute_attendance_flags(employee, check_in, check_out)
