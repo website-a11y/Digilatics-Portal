@@ -335,16 +335,28 @@ class PayrollRun(models.Model):
     def __str__(self) -> str:
         return f"Payroll {self.year}-{self.month:02d}"
 
+    @staticmethod
+    def _cycle_start_day() -> int:
+        """Configured payroll cycle start day (SystemSetting), default 23."""
+        try:
+            from attendance.models import SystemSetting
+            return SystemSetting.get_payroll_cycle_start_day()
+        except Exception:
+            return 23
+
     @property
     def period_start(self) -> date:
-        # Pay cycle runs 23rd of previous month → 22nd of current month
+        # Pay cycle runs <start_day> of previous month → (<start_day>-1) of this month.
+        start_day = self._cycle_start_day()
         if self.month == 1:
-            return date(self.year - 1, 12, 23)
-        return date(self.year, self.month - 1, 23)
+            return date(self.year - 1, 12, start_day)
+        return date(self.year, self.month - 1, start_day)
 
     @property
     def period_end(self) -> date:
-        return date(self.year, self.month, 22)
+        from datetime import timedelta
+        start_day = self._cycle_start_day()
+        return date(self.year, self.month, start_day) - timedelta(days=1)
 
 
 class Payslip(models.Model):

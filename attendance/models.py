@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from django.core.cache import cache
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -364,6 +365,17 @@ class SystemSetting(models.Model):
         ),
     )
 
+    payroll_cycle_start_day = models.PositiveSmallIntegerField(
+        default=23,
+        validators=[MinValueValidator(1), MaxValueValidator(28)],
+        verbose_name="Payroll Cycle Start Day",
+        help_text=(
+            "Day of the month the payroll cycle begins (in the previous month). "
+            "Default 23 means each payroll month runs from the 23rd of the previous "
+            "month to the (start day − 1) of the payroll month — e.g. 23rd → 22nd."
+        ),
+    )
+
     class Meta:
         verbose_name = "System Settings"
         verbose_name_plural = "⚙ System Settings"
@@ -389,3 +401,10 @@ class SystemSetting(models.Model):
         tz = cls.get().display_timezone
         cache.set(cls._CACHE_KEY, tz, 120)
         return tz
+
+    @classmethod
+    def get_payroll_cycle_start_day(cls) -> int:
+        try:
+            return cls.get().payroll_cycle_start_day or 23
+        except Exception:
+            return 23

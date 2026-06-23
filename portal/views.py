@@ -2595,13 +2595,24 @@ def hr_settings(request):
     from attendance.tz_utils import get_display_tz_label
     setting = SystemSetting.get()
     if request.method == "POST":
+        from django.contrib import messages
         tz = request.POST.get("display_timezone", "").strip()
         valid = [v for v, _ in SystemSetting.TIMEZONE_CHOICES]
         if tz in valid:
             setting.display_timezone = tz
-            setting.save()
-            from django.contrib import messages
-            messages.success(request, f"Display timezone updated to: {setting.get_display_timezone_display()}")
+        # Payroll cycle start day (1–28)
+        raw_day = request.POST.get("payroll_cycle_start_day", "").strip()
+        if raw_day:
+            try:
+                day = int(raw_day)
+                if 1 <= day <= 28:
+                    setting.payroll_cycle_start_day = day
+                else:
+                    messages.error(request, "Payroll cycle start day must be between 1 and 28.")
+            except ValueError:
+                messages.error(request, "Payroll cycle start day must be a number.")
+        setting.save()
+        messages.success(request, "Settings updated.")
         return redirect("portal:hr_settings")
     return render(request, "portal/hr/settings.html", {
         "setting": setting,

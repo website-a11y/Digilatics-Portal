@@ -122,21 +122,43 @@ def get_effective_salary_revision(salary_setup: SalarySetup, on_date: date):
     )
 
 
+def payroll_cycle_window(year: int, month: int):
+    """Return (start, end) dates for the payroll month labelled (year, month).
+
+    The cycle runs from the configured start day of the *previous* month to the
+    day before that start day in the payroll month — e.g. start day 23 gives the
+    23rd of the previous month → 22nd of the payroll month. The start day comes
+    from SystemSetting (admin-configurable), defaulting to 23.
+    """
+    from datetime import timedelta
+    try:
+        from attendance.models import SystemSetting
+        start_day = SystemSetting.get_payroll_cycle_start_day()
+    except Exception:
+        start_day = 23
+    if month == 1:
+        start = date(year - 1, 12, start_day)
+    else:
+        start = date(year, month - 1, start_day)
+    end = date(year, month, start_day) - timedelta(days=1)
+    return start, end
+
+
 def get_unpaid_leave_days(employee, year: int, month: int) -> Decimal:
     try:
         from leaves.models import LeaveRequest
     except Exception:
         return Decimal("0")
 
-    month_start = date(year, month, 1)
-    month_end = date(year, month, monthrange(year, month)[1])
+    # Aggregate over the payroll cycle window (e.g. 23rd→22nd), not the calendar month.
+    period_start, period_end = payroll_cycle_window(year, month)
     value = (
         LeaveRequest.objects.filter(
             employee=employee,
             status=LeaveRequest.StatusChoices.APPROVED,
             leave_type__is_paid=False,
-            from_date__lte=month_end,
-            to_date__gte=month_start,
+            from_date__lte=period_end,
+            to_date__gte=period_start,
         ).aggregate(total=Sum("number_of_days"))["total"]
         or Decimal("0")
     )
