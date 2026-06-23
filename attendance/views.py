@@ -120,10 +120,10 @@ def _adms_handshake(request):
     device immediately re-uploads ALL its stored punches (more reliable than
     DATA QUERY on most ZKTeco models).
     TransInterval=1 keeps the device polling every minute for new commands.
-    TimeZone=5 pins the device clock to Pakistan Standard Time (UTC+5) so the
-    on-site display shows correct local time; it must stay paired with
-    settings.ZK_DEVICE["device_timezone"] = "Asia/Karachi" so punches are
-    interpreted in the same zone before conversion to Eastern Time for storage.
+    No TimeZone directive is sent — the device clock is managed on the device and
+    the server never overrides it. Punches are interpreted using the configurable
+    Device Timezone setting (SystemSetting.device_timezone) before conversion to
+    Eastern Time for storage.
     """
     sn = request.GET.get("SN", "unknown")
     logger.info("ADMS handshake from device SN=%s", sn)
@@ -151,7 +151,10 @@ def _adms_handshake(request):
         "TransTimes=00:00;23:59\n"
         "TransInterval=1\n"
         "TransFlag=TransData AttLog\n"
-        "TimeZone=5\n"   # Pakistan Standard Time (UTC+5) — keep in sync with device_timezone
+        # NOTE: we deliberately send NO TimeZone directive. The device's clock is
+        # set on the device itself; the server must never override it (doing so
+        # made the clock revert after every poll). Punches are interpreted using
+        # the Device Timezone setting (SystemSetting.device_timezone) instead.
         "Realtime=1\n"
         "Encrypt=None\n"
     )
@@ -236,17 +239,16 @@ def _adms_receive_logs(request):
             logger.warning("ADMS: unrecognised timestamp %r", att_time_str)
             continue
 
-        # Device sends timestamps in its local clock timezone (settings.ZK_DEVICE
-        # "device_timezone").  Attach that zone, then convert to portal local time.
-        from zoneinfo import ZoneInfo
-        _device_tz = ZoneInfo(settings.ZK_DEVICE.get("device_timezone", "UTC"))
+        # Device sends timestamps in its own clock timezone (the admin-set
+        # Device Timezone). Attach that zone, then convert to portal local time.
+        from attendance.tz_utils import get_device_zone, device_workday
+        _device_tz = get_device_zone()
         punch_dt_aware = timezone.make_aware(punch_dt, _device_tz)
         punch_dt_local = timezone.localtime(punch_dt_aware)
 
-        # Use the device's local date (UTC-8) as the record date.
-        # The shift (5PM-2AM PKT) runs 04:00-13:00 in UTC-8 — same calendar day,
-        # no midnight crossing, so the raw device date is always correct.
-        punch_date_device = punch_dt_aware.astimezone(_device_tz).date()
+        # Workday = device-local date with a noon cutoff, so an overnight shift's
+        # after-midnight punches (e.g. a 1 AM check-out) stay on the check-in day.
+        punch_date_device = device_workday(punch_dt_aware.astimezone(_device_tz))
 
         # Store (utc_aware_dt, local_time, status) so we can sort by absolute UTC
         # time rather than naive EDT time, which gives wrong order if punches

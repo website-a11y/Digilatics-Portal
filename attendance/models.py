@@ -365,6 +365,18 @@ class SystemSetting(models.Model):
         ),
     )
 
+    device_timezone = models.CharField(
+        max_length=100,
+        choices=TIMEZONE_CHOICES,
+        default="Asia/Karachi",
+        verbose_name="Device Timezone",
+        help_text=(
+            "The timezone the biometric device's clock is set to. Incoming punch "
+            "timestamps are interpreted in this zone, so it MUST match the device's "
+            "actual clock. The server never changes the device clock."
+        ),
+    )
+
     payroll_cycle_start_day = models.PositiveSmallIntegerField(
         default=23,
         validators=[MinValueValidator(1), MaxValueValidator(28)],
@@ -408,3 +420,10 @@ class SystemSetting(models.Model):
             return cls.get().payroll_cycle_start_day or 23
         except Exception:
             return 23
+
+    @classmethod
+    def get_device_timezone(cls) -> str:
+        try:
+            return cls.get().device_timezone or "Asia/Karachi"
+        except Exception:
+            return "Asia/Karachi"

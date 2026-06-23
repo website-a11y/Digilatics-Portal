@@ -77,7 +77,9 @@ class Command(BaseCommand):
         if dry:
             self.stdout.write(self.style.WARNING("DRY RUN — no records will be written\n"))
 
-        device_tz_name = opts["device_tz"] or settings.ZK_DEVICE.get("device_timezone", "UTC")
+        from attendance.models import SystemSetting
+        from attendance.tz_utils import device_workday, WORKDAY_BOUNDARY_HOUR
+        device_tz_name = opts["device_tz"] or SystemSetting.get_device_timezone()
         try:
             _device_tz = ZoneInfo(device_tz_name)
         except Exception:
@@ -85,6 +87,10 @@ class Command(BaseCommand):
         self.stdout.write(f"Interpreting device timestamps as: {device_tz_name}")
         replace = opts["replace"]
         show_emp = opts["show_emp"]
+        # Use the afternoon-shift workday cutoff for normal (forward) imports. When
+        # reconstructing an old era via --device-tz, the cutoff is calibrated for the
+        # current PKT shifts and would mis-bucket, so disable it (boundary 0).
+        _boundary = 0 if opts["device_tz"] else WORKDAY_BOUNDARY_HOUR
 
         ignored = {int(x) for x in getattr(settings, "ZK_IGNORED_DEVICE_IDS", [])}
         mappings = {dm.device_user_id: dm.employee
@@ -141,7 +147,7 @@ class Command(BaseCommand):
                 # handler in views.py) so a shift never splits or merges across ET
                 # midnight. Store the tz-aware instant so we can sort by absolute
                 # time, not naive time-of-day.
-                punches[(employee.pk, punch_naive.date())].append(
+                punches[(employee.pk, device_workday(punch_naive, _boundary))].append(
                     (punch_aware, punch_local.time(), status_code)
                 )
 

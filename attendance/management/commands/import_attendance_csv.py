@@ -55,6 +55,10 @@ class Command(BaseCommand):
         if dry:
             self.stdout.write(self.style.WARNING("DRY RUN — no records will be written\n"))
 
+        from attendance.models import SystemSetting
+        from attendance.tz_utils import device_workday
+        _device_tz = ZoneInfo(SystemSetting.get_device_timezone())
+
         ignored = {int(x) for x in getattr(settings, "ZK_IGNORED_DEVICE_IDS", [])}
         mappings = {
             dm.device_user_id: dm.employee
@@ -102,10 +106,8 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                # Device sends timestamps in its own clock timezone (settings
-                # ZK_DEVICE "device_timezone", currently UTC-8). Make aware, then
-                # convert to portal local time (ET) for the stored value.
-                _device_tz = ZoneInfo(settings.ZK_DEVICE.get("device_timezone", "UTC"))
+                # Device sends timestamps in its own clock timezone (the admin-set
+                # Device Timezone). Make aware, then convert to ET for the stored value.
                 punch_aware = timezone.make_aware(punch_naive, _device_tz)
                 punch_local = timezone.localtime(punch_aware)
 
@@ -114,10 +116,11 @@ class Command(BaseCommand):
                 except (ValueError, TypeError):
                     status_code = 0
 
-                # Bucket by device-local date and keep the tz-aware instant so we
-                # sort by absolute time (matches the live ADMS handler), never by
-                # naive time-of-day — which swaps check-in/out across ET midnight.
-                punches[(employee.pk, punch_naive.date())].append(
+                # Bucket by workday (device-local date with the noon cutoff so an
+                # overnight shift's after-midnight punches stay on the check-in day),
+                # and keep the tz-aware instant so we sort by absolute time — never by
+                # naive time-of-day, which swaps check-in/out across midnight.
+                punches[(employee.pk, device_workday(punch_naive))].append(
                     (punch_aware, punch_local.time(), status_code)
                 )
 

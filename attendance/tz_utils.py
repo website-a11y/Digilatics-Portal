@@ -22,6 +22,36 @@ def _get_display_tz() -> ZoneInfo:
         return _STORED_TZ
 
 
+# Punches before this device-local hour belong to the previous day's workday.
+# Shifts here start in the afternoon and end after midnight (e.g. 4pm–1am), so a
+# 1 AM punch is the prior day's check-out, not a new workday.
+WORKDAY_BOUNDARY_HOUR = 12
+
+
+def get_device_zone() -> ZoneInfo:
+    """The biometric device's clock timezone (admin setting). Used to interpret
+    incoming punch timestamps. Falls back to PKT."""
+    try:
+        from attendance.models import SystemSetting
+        return ZoneInfo(SystemSetting.get_device_timezone())
+    except Exception:
+        return ZoneInfo("Asia/Karachi")
+
+
+def device_workday(local_dt, boundary_hour: int = WORKDAY_BOUNDARY_HOUR):
+    """Return the workday date for a punch given its DEVICE-LOCAL datetime.
+
+    `local_dt` must already be in device-local time (naive or aware). A punch
+    before `boundary_hour` rolls back to the previous calendar day so an overnight
+    shift's after-midnight punches stay on the check-in day.
+    """
+    from datetime import timedelta
+    workday = local_dt.date()
+    if local_dt.hour < boundary_hour:
+        workday = workday - timedelta(days=1)
+    return workday
+
+
 def convert_time(time_val, record_date=None, fmt: str = "%I:%M %p") -> str:
     """
     Convert a naive time (stored as ET) to the system display timezone.
