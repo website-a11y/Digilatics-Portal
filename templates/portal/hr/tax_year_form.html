@@ -161,6 +161,10 @@
   <script>
     const TAX_YEAR_PK = {{ obj.pk }};
     const ADD_SLAB_URL = "{% url 'portal:hr_tax_slab_inline_add' obj.pk %}";
+    // Build update/delete URLs from {% url %} (with a 0 placeholder pk) so they
+    // carry the correct /portal/ prefix — hardcoding "/hr/..." 404s under /portal/.
+    const UPDATE_SLAB_URL = "{% url 'portal:hr_tax_slab_inline_update' 0 %}";
+    const DELETE_SLAB_URL = "{% url 'portal:hr_tax_slab_inline_delete' 0 %}";
     const CSRF = "{{ csrf_token }}";
 
     function fmt(v) { return v !== "" && v !== null && v !== undefined ? Number(v).toLocaleString() : "—"; }
@@ -217,7 +221,7 @@
         sort_order: document.getElementById("sf-sort").value || "0",
       });
 
-      const url = editId ? `/hr/salary/tax-slabs/${editId}/update/` : ADD_SLAB_URL;
+      const url = editId ? UPDATE_SLAB_URL.replace("/0/update/", `/${editId}/update/`) : ADD_SLAB_URL;
 
       fetch(url, {
         method: "POST",
@@ -296,7 +300,7 @@
 
     function deleteSlab(pk, name) {
       if (!confirm(`Delete slab "${name}"? This cannot be undone.`)) return;
-      fetch(`/hr/salary/tax-slabs/${pk}/delete/`, {
+      fetch(DELETE_SLAB_URL.replace("/0/delete/", `/${pk}/delete/`), {
         method: "POST", headers: {"X-CSRFToken": CSRF}
       })
       .then(r => r.json())
