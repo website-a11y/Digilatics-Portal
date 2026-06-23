@@ -1507,6 +1507,15 @@ def hr_employee_edit(request, pk=None):
     User = get_user_model()
     emp = get_object_or_404(EmployeeProfile, pk=pk) if pk else None
     all_employees = EmployeeProfile.objects.order_by("full_name")
+    # Reporting-manager picklist: real, active people only. Excludes the
+    # blank-name placeholder profiles auto-created for each new user (which made
+    # the dropdown look empty) and inactive staff.
+    managers = (
+        EmployeeProfile.objects
+        .exclude(full_name__in=["", "-"])
+        .exclude(employment_status=EmployeeProfile.EmploymentStatusChoices.INACTIVE)
+        .order_by("full_name")
+    )
     all_shifts = __import__("attendance.models", fromlist=["Shift"]).Shift.objects.filter(is_active=True).order_by("name")
     errors = {}
 
@@ -1685,8 +1694,13 @@ def hr_employee_edit(request, pk=None):
         ("-", "-"),
     ]
 
-    dept_list = list(EmployeeProfile.objects.values_list("department", flat=True).exclude(department="").distinct().order_by("department"))
-    desig_list = list(EmployeeProfile.objects.values_list("designation", flat=True).exclude(designation="").distinct().order_by("designation"))
+    from accounts.models import Department, Designation
+    # Dropdowns combine the HR-managed lists with any value already assigned to an
+    # employee (so existing data still renders even if not yet in the managed list).
+    _dept_used = EmployeeProfile.objects.exclude(department__in=["", "-"]).values_list("department", flat=True)
+    _desig_used = EmployeeProfile.objects.exclude(designation__in=["", "-"]).values_list("designation", flat=True)
+    dept_list = sorted(set(Department.objects.filter(is_active=True).values_list("name", flat=True)) | set(_dept_used))
+    desig_list = sorted(set(Designation.objects.filter(is_active=True).values_list("name", flat=True)) | set(_desig_used))
     location_list = list(EmployeeProfile.objects.values_list("work_location", flat=True).exclude(work_location="").distinct().order_by("work_location"))
 
     return render(request, "portal/hr/employee_form.html", {
@@ -1694,6 +1708,7 @@ def hr_employee_edit(request, pk=None):
         "salary_setup": salary_setup,
         "errors": errors,
         "all_employees": all_employees,
+        "managers": managers,
         "all_shifts": all_shifts,
         "gender_choices": gender_choices,
         "marital_choices": marital_choices,
@@ -1993,6 +2008,89 @@ def _build_attendance_excel(employees, days, start, end, today, holidays, holida
     )
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+@login_required(login_url="/portal/login/")
+def hr_attendance_import(request):
+    """Upload a CSV or Excel punch file and import it via import_attendance_csv.
+
+    Expected columns (header row): user_id, timestamp[, status]
+      - user_id   : device user id (maps to a Device Employee Mapping)
+      - timestamp : YYYY-MM-DD HH:MM:SS in the configured device timezone
+      - status    : optional punch status code
+    """
+    if not _hr_check(request):
+        return redirect("portal:dashboard")
+
+    if request.method == "POST" and request.FILES.get("import_file"):
+        import csv as _csv
+        import io
+        import os
+        import tempfile
+        from django.core.management import call_command
+
+        upload = request.FILES["import_file"]
+        name = (upload.name or "").lower()
+        rows = []  # list of (user_id, timestamp, status)
+        try:
+            if name.endswith((".xlsx", ".xlsm", ".xls")):
+                import openpyxl
+                wb = openpyxl.load_workbook(upload, read_only=True, data_only=True)
+                ws = wb.active
+                header = None
+                for r in ws.iter_rows(values_only=True):
+                    if header is None:
+                        header = [str(c).strip().lower() if c is not None else "" for c in r]
+                        continue
+                    record = {header[i]: r[i] for i in range(len(header)) if i < len(r)}
+                    rows.append(record)
+            else:  # treat as CSV
+                text = upload.read().decode("utf-8", errors="replace")
+                reader = _csv.DictReader(io.StringIO(text))
+                reader.fieldnames = [(f or "").strip().lower() for f in (reader.fieldnames or [])]
+                rows = list(reader)
+
+            def cell(rec, key):
+                v = rec.get(key)
+                return "" if v is None else str(v).strip()
+
+            # Normalise into the CSV layout import_attendance_csv expects.
+            tmp = tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, newline="", encoding="utf-8")
+            written = 0
+            with tmp:
+                w = _csv.writer(tmp)
+                w.writerow(["user_id", "timestamp", "status"])
+                for rec in rows:
+                    uid = cell(rec, "user_id")
+                    ts = cell(rec, "timestamp")
+                    if not uid or not ts:
+                        continue
+                    # openpyxl may hand back a datetime for timestamp cells.
+                    if " " not in ts and "T" in ts:
+                        ts = ts.replace("T", " ")
+                    ts = ts.split(".")[0]  # drop fractional seconds if present
+                    w.writerow([uid, ts, cell(rec, "status")])
+                    written += 1
+
+            if written == 0:
+                messages.error(request, "No valid rows found. Need columns: user_id, timestamp.")
+                os.unlink(tmp.name)
+                return redirect("portal:hr_attendance_import")
+
+            buf = io.StringIO()
+            try:
+                call_command("import_attendance_csv", tmp.name, stdout=buf)
+            finally:
+                os.unlink(tmp.name)
+
+            summary = buf.getvalue().strip().splitlines()
+            tail = summary[-1] if summary else f"{written} rows processed."
+            messages.success(request, f"Import complete — {tail}")
+        except Exception as e:
+            messages.error(request, f"Import failed: {e}")
+        return redirect("portal:hr_attendance_import")
+
+    return render(request, "portal/hr/attendance_import.html", {})
 
 
 @login_required(login_url="/portal/login/")
@@ -2509,6 +2607,65 @@ def hr_settings(request):
         "setting": setting,
         "choices": SystemSetting.TIMEZONE_CHOICES,
         "current_label": get_display_tz_label(),
+    })
+
+
+@login_required(login_url="/portal/login/")
+def hr_org_lists(request):
+    """Manage the HR-curated Department and Designation lists (add/rename/delete/toggle)."""
+    if not _hr_check(request):
+        return redirect("portal:dashboard")
+    from accounts.models import Department, Designation
+
+    MODELS = {"department": Department, "designation": Designation}
+
+    if request.method == "POST":
+        kind = request.POST.get("kind", "")
+        action = request.POST.get("action", "")
+        Model = MODELS.get(kind)
+        if not Model:
+            messages.error(request, "Unknown list type.")
+            return redirect("portal:hr_org_lists")
+        label = kind.capitalize()
+        try:
+            if action == "add":
+                name = request.POST.get("name", "").strip()
+                if not name:
+                    messages.error(request, f"{label} name is required.")
+                elif Model.objects.filter(name__iexact=name).exists():
+                    messages.error(request, f"{label} “{name}” already exists.")
+                else:
+                    Model.objects.create(name=name)
+                    messages.success(request, f"{label} “{name}” added.")
+            elif action == "rename":
+                obj = get_object_or_404(Model, pk=request.POST.get("pk"))
+                name = request.POST.get("name", "").strip()
+                if not name:
+                    messages.error(request, f"{label} name is required.")
+                elif Model.objects.filter(name__iexact=name).exclude(pk=obj.pk).exists():
+                    messages.error(request, f"{label} “{name}” already exists.")
+                else:
+                    obj.name = name
+                    obj.save(update_fields=["name"])
+                    messages.success(request, f"{label} renamed to “{name}”.")
+            elif action == "toggle":
+                obj = get_object_or_404(Model, pk=request.POST.get("pk"))
+                obj.is_active = not obj.is_active
+                obj.save(update_fields=["is_active"])
+                messages.success(request, f"{label} “{obj.name}” {'activated' if obj.is_active else 'deactivated'}.")
+            elif action == "delete":
+                obj = get_object_or_404(Model, pk=request.POST.get("pk"))
+                obj.delete()
+                messages.success(request, f"{label} deleted.")
+        except Exception as e:
+            messages.error(request, str(e))
+        return redirect("portal:hr_org_lists")
+
+    return render(request, "portal/hr/org_lists.html", {
+        "lists": [
+            ("department", Department.objects.all()),
+            ("designation", Designation.objects.all()),
+        ],
     })
 
 

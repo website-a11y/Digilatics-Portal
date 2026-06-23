@@ -1,0 +1,71 @@
+{% extends "portal/hr/base.html" %}
+{% block title %}Departments & Designations — Funnelatics HR{% endblock %}
+{% block page_title %}Departments & Designations{% endblock %}
+
+{% block content %}
+<style>
+.ol-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:920px;}
+@media(max-width:760px){.ol-grid{grid-template-columns:1fr;}}
+.ol-add{display:flex;gap:8px;margin-bottom:14px;}
+.ol-add input{flex:1;height:38px;padding:0 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;}
+.ol-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f3f4f6;}
+.ol-row form{display:inline;}
+.ol-name{flex:1;font-size:13px;font-weight:600;color:#111827;}
+.ol-name.inactive{color:#9ca3af;text-decoration:line-through;}
+.ol-rename{flex:1;height:32px;padding:0 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;}
+.ol-empty{color:#9ca3af;font-size:13px;padding:10px 0;}
+.ol-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:#fee2e2;color:#991b1b;}
+</style>
+
+<div style="margin-bottom:16px;"><a href="{% url 'portal:hr_settings' %}" class="ep-btn-sm" style="text-decoration:none;">← Back to Settings</a></div>
+
+<div class="ol-grid">
+  {% for kind, items in lists %}
+  <div class="ep-card">
+    <div class="ep-card-body">
+      <h3 style="margin:0 0 14px;font-size:15px;font-weight:700;text-transform:capitalize;">{{ kind }}s</h3>
+
+      <form method="post" class="ol-add">
+        {% csrf_token %}
+        <input type="hidden" name="kind" value="{{ kind }}">
+        <input type="hidden" name="action" value="add">
+        <input type="text" name="name" placeholder="Add new {{ kind }}…" required>
+        <button type="submit" class="hr-filter-btn" style="height:38px;padding:0 18px;font-size:13px;">Add</button>
+      </form>
+
+      {% if items %}
+        {% for obj in items %}
+        <div class="ol-row">
+          <form method="post" style="flex:1;display:flex;gap:6px;align-items:center;">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ kind }}">
+            <input type="hidden" name="action" value="rename">
+            <input type="hidden" name="pk" value="{{ obj.pk }}">
+            <input type="text" name="name" value="{{ obj.name }}" class="ol-rename">
+            {% if not obj.is_active %}<span class="ol-tag">inactive</span>{% endif %}
+            <button type="submit" class="ep-btn-sm" title="Save name">Save</button>
+          </form>
+          <form method="post" onsubmit="return true;">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ kind }}">
+            <input type="hidden" name="action" value="toggle">
+            <input type="hidden" name="pk" value="{{ obj.pk }}">
+            <button type="submit" class="ep-btn-sm">{% if obj.is_active %}Disable{% else %}Enable{% endif %}</button>
+          </form>
+          <form method="post" onsubmit="return confirm('Delete “{{ obj.name|escapejs }}”? This cannot be undone.');">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ kind }}">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="pk" value="{{ obj.pk }}">
+            <button type="submit" class="ep-btn-sm" style="background:#fef2f2;color:#dc2626;border:none;cursor:pointer;">Delete</button>
+          </form>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="ol-empty">No {{ kind }}s yet. Add one above.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

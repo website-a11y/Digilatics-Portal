@@ -663,7 +663,7 @@
                 <label class="hr-form-label">Reporting Manager <span class="hr-required">*</span></label>
                 <select name="reporting_manager" id="f-reporting_manager" class="hr-form-input">
                   <option value="">— Select manager —</option>
-                  {% for mgr in all_employees %}
+                  {% for mgr in managers %}
                   {% if not emp or mgr.pk != emp.pk %}
                   <option value="{{ mgr.pk }}" {% if emp and emp.reporting_manager_id == mgr.pk %}selected{% endif %}>{{ mgr.full_name }}</option>
                   {% endif %}

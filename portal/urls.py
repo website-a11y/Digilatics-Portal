@@ -55,6 +55,7 @@ urlpatterns = [
     # Attendance
     path("hr/attendance/",                              views.hr_attendance,              name="hr_attendance"),
     path("hr/attendance/export/",                       views.hr_attendance_export,        name="hr_attendance_export"),
+    path("hr/attendance/import/",                       views.hr_attendance_import,        name="hr_attendance_import"),
     path("hr/attendance/record/add/",                   views.hr_attendance_record_edit,  name="hr_attendance_record_add"),
     path("hr/attendance/record/<int:pk>/",              views.hr_attendance_record_edit,  name="hr_attendance_record_edit"),
     path("hr/attendance/record/<int:pk>/delete/",       views.hr_attendance_record_delete, name="hr_attendance_record_delete"),
@@ -67,6 +68,7 @@ urlpatterns = [
     path("hr/attendance/shifts/<int:pk>/",              views.hr_shift_edit,              name="hr_shift_edit"),
     path("hr/attendance/shifts/<int:pk>/delete/",       views.hr_shift_delete,            name="hr_shift_delete"),
     path("hr/settings/",                                views.hr_settings,                name="hr_settings"),
+    path("hr/settings/org-lists/",                      views.hr_org_lists,               name="hr_org_lists"),
 
     # Leaves
     path("hr/leaves/",                                  views.hr_leaves,                  name="hr_leaves"),

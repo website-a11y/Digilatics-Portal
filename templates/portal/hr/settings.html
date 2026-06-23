@@ -127,6 +127,31 @@
     </div>
 
   </form>
+
+  <div class="ss-card">
+    <div class="ss-card-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+      </svg>
+      <span class="ss-card-head-title">Organization</span>
+    </div>
+    <div class="ss-card-body">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="{% url 'portal:hr_org_lists' %}" class="ss-tz-option" style="text-decoration:none;cursor:pointer;">
+          <div>
+            <div class="ss-tz-name">Departments &amp; Designations</div>
+            <div class="ss-tz-desc">Add, rename, enable/disable the options shown in the employee form.</div>
+          </div>
+        </a>
+        <a href="{% url 'portal:hr_teams' %}" class="ss-tz-option" style="text-decoration:none;cursor:pointer;">
+          <div>
+            <div class="ss-tz-name">Teams</div>
+            <div class="ss-tz-desc">Create and manage teams and their members.</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>

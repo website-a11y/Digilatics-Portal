@@ -223,3 +223,29 @@ class EmployeeProfile(models.Model):
                 self.contract,
             )
         )
+
+
+class Department(models.Model):
+    """HR-managed list of departments shown in the employee form dropdown."""
+    name = models.CharField(max_length=120, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Designation(models.Model):
+    """HR-managed list of designations shown in the employee form dropdown."""
+    name = models.CharField(max_length=120, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
