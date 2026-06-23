@@ -14,7 +14,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import AttendanceRecord, DeviceEmployee, DeviceSyncFlag
+from .models import AttendanceRecord, DeviceEmployee, DeviceSyncFlag, SystemSetting
 
 logger = logging.getLogger("attendance.zkteco")
 
@@ -120,10 +120,11 @@ def _adms_handshake(request):
     device immediately re-uploads ALL its stored punches (more reliable than
     DATA QUERY on most ZKTeco models).
     TransInterval=1 keeps the device polling every minute for new commands.
-    No TimeZone directive is sent — the device clock is managed on the device and
-    the server never overrides it. Punches are interpreted using the configurable
-    Device Timezone setting (SystemSetting.device_timezone) before conversion to
-    Eastern Time for storage.
+    TimeZone is set from the configurable Device Timezone setting (its whole-hour
+    UTC offset). ZKTeco devices commonly lock their clock under ADMS control, so
+    the server pins it to the configured zone — and punches are interpreted in
+    that same zone before conversion to Eastern Time for storage. So: set Device
+    Timezone correctly and the device clock follows it (no manual device step).
     """
     sn = request.GET.get("SN", "unknown")
     logger.info("ADMS handshake from device SN=%s", sn)
@@ -141,6 +142,20 @@ def _adms_handshake(request):
     else:
         att_stamp = "9999"
 
+    # Pin the device clock to the configured Device Timezone, expressed as a
+    # whole-hour UTC offset (what this ZKTeco firmware expects; verified earlier
+    # when -8 produced UTC-8). Many ZKTeco devices lock their clock under ADMS
+    # control so it can't be set on the device menu — so the server sets it, but
+    # to the CORRECT zone, so it stays put instead of drifting to a wrong value.
+    from zoneinfo import ZoneInfo
+    from django.utils import timezone as _djtz
+    try:
+        _tz_name = SystemSetting.get_device_timezone()
+        _offset = _djtz.now().astimezone(ZoneInfo(_tz_name)).utcoffset()
+        _tz_hours = int(_offset.total_seconds() // 3600)
+    except Exception:
+        _tz_hours = 5  # Pakistan Standard Time fallback
+
     body = (
         f"GET OPTION FROM: {sn}\n"
         f"ATTLOGStamp={att_stamp}\n"
@@ -151,10 +166,9 @@ def _adms_handshake(request):
         "TransTimes=00:00;23:59\n"
         "TransInterval=1\n"
         "TransFlag=TransData AttLog\n"
-        # NOTE: we deliberately send NO TimeZone directive. The device's clock is
-        # set on the device itself; the server must never override it (doing so
-        # made the clock revert after every poll). Punches are interpreted using
-        # the Device Timezone setting (SystemSetting.device_timezone) instead.
+        # Pin the device clock to the configured Device Timezone (see above). This
+        # keeps it on the CORRECT zone every poll, so it no longer drifts.
+        f"TimeZone={_tz_hours}\n"
         "Realtime=1\n"
         "Encrypt=None\n"
     )
