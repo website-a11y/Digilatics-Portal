@@ -50,6 +50,20 @@ class Command(BaseCommand):
                             help="Only import punches on/before this device (PST) date YYYY-MM-DD")
         parser.add_argument("--dry-run", action="store_true",
                             help="Parse and report counts without writing any records")
+        parser.add_argument("--device-tz", dest="device_tz", default=None,
+                            help="Override the device clock timezone (e.g. 'UTC') used to "
+                                 "interpret log timestamps. Needed to reconstruct history "
+                                 "recorded before the device was switched to UTC-8 — it ran "
+                                 "on UTC (TimeZone=0) until ~2026-06-15. "
+                                 "Defaults to settings.ZK_DEVICE['device_timezone'].")
+        parser.add_argument("--replace", action="store_true",
+                            help="On update, overwrite check_out unconditionally (even to None) "
+                                 "instead of only when a new value exists. Use when reconstructing "
+                                 "a date range from a complete log slice so stale check-outs are "
+                                 "cleared. Without it, an existing check_out is preserved.")
+        parser.add_argument("--show-emp", dest="show_emp", type=int, default=None,
+                            help="In --dry-run, print the computed check-in/out for this "
+                                 "employee pk so the result can be validated before writing.")
 
     def handle(self, *args, **opts):
         log_path = opts["log"]
@@ -62,6 +76,15 @@ class Command(BaseCommand):
 
         if dry:
             self.stdout.write(self.style.WARNING("DRY RUN — no records will be written\n"))
+
+        device_tz_name = opts["device_tz"] or settings.ZK_DEVICE.get("device_timezone", "UTC")
+        try:
+            _device_tz = ZoneInfo(device_tz_name)
+        except Exception:
+            raise CommandError(f"Unknown --device-tz '{device_tz_name}'")
+        self.stdout.write(f"Interpreting device timestamps as: {device_tz_name}")
+        replace = opts["replace"]
+        show_emp = opts["show_emp"]
 
         ignored = {int(x) for x in getattr(settings, "ZK_IGNORED_DEVICE_IDS", [])}
         mappings = {dm.device_user_id: dm.employee
@@ -108,10 +131,10 @@ class Command(BaseCommand):
                     unknown.add(device_uid)
                     continue
 
-                # Device sends timestamps in its own clock timezone (settings
-                # ZK_DEVICE "device_timezone", currently UTC-8). Make the punch
-                # tz-aware, then convert to portal local time (ET) for storage.
-                _device_tz = ZoneInfo(settings.ZK_DEVICE.get("device_timezone", "UTC"))
+                # Interpret the naive log timestamp in the device clock timezone
+                # (_device_tz, resolved once above — may be overridden via
+                # --device-tz to reconstruct pre-UTC-8 history), then convert to
+                # portal local time (ET) for storage.
                 punch_aware = timezone.make_aware(punch_naive, _device_tz)
                 punch_local = timezone.localtime(punch_aware)
                 # Bucket by the device-local calendar date (matches the live ADMS
@@ -146,6 +169,15 @@ class Command(BaseCommand):
             flags = compute_attendance_flags(employee, check_in, check_out)
             note = f"ZKTeco log import ({len(plist)} punch(es))"
 
+            if show_emp is not None and emp_pk == show_emp:
+                _pkt = ZoneInfo("Asia/Karachi")
+                in_pkt = plist[0][0].astimezone(_pkt).strftime("%a %H:%M")
+                out_pkt = plist[-1][0].astimezone(_pkt).strftime("%a %H:%M") if len(plist) > 1 else "—"
+                self.stdout.write(
+                    f"  {punch_date}  PKT in={in_pkt} out={out_pkt}  "
+                    f"(ET in={check_in} out={check_out}, {len(plist)} punch)"
+                )
+
             existing = AttendanceRecord.objects.filter(employee=employee, date=punch_date).first()
             if existing:
                 if (existing.leave_request_id
@@ -157,7 +189,9 @@ class Command(BaseCommand):
                     continue
                 existing.status = AttendanceRecord.StatusChoices.PRESENT
                 existing.check_in = check_in
-                if check_out:
+                # --replace: overwrite check_out even when None (clears stale values
+                # from a prior wrong import). Default: only set when we have one.
+                if check_out or replace:
                     existing.check_out = check_out
                 existing.is_late = flags["is_late"]
                 existing.is_early_checkout = flags["is_early_checkout"]
