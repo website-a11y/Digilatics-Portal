@@ -90,7 +90,7 @@
           <select name="leave_type" class="ep-select" required id="lt-select">
             <option value="">— Select leave type —</option>
             {% for lt in leave_types %}
-            <option value="{{ lt.pk }}" data-paid="{{ lt.is_paid }}">{{ lt.name }}{% if not lt.is_paid %} (Unpaid){% endif %}</option>
+            <option value="{{ lt.pk }}" data-paid="{{ lt.is_paid }}" data-backdated="{{ lt.allow_backdated|yesno:"1,0" }}">{{ lt.name }}{% if not lt.is_paid %} (Unpaid){% endif %}</option>
             {% endfor %}
           </select>
         </div>
@@ -241,6 +241,8 @@
 (function () {
   var fromEl = document.getElementById('from-date');
   var toEl   = document.getElementById('to-date');
+  var ltEl   = document.getElementById('lt-select');
+  var todayStr = fromEl.getAttribute('min');  // server-rendered today (ET)
   var pill   = document.getElementById('day-count-pill');
   var numEl  = document.getElementById('day-count-num');
   var lblEl  = document.getElementById('day-count-lbl');
@@ -274,6 +276,28 @@
     // Keep to_date min in sync
     toEl.min = f;
   }
+
+  // Annual/Planned Leave (allow_backdated=0) must be applied for in advance, so
+  // the picker blocks past dates. Other types (Casual, Sick, …) may be backdated
+  // — e.g. apply for yesterday's absence when back in office — so drop the floor.
+  function applyBackdatePolicy() {
+    var opt = ltEl.options[ltEl.selectedIndex];
+    var allowBackdated = opt && opt.getAttribute('data-backdated') === '1';
+    if (allowBackdated) {
+      fromEl.removeAttribute('min');
+      toEl.removeAttribute('min');
+    } else {
+      fromEl.min = todayStr;
+      toEl.min = todayStr;
+      // Clear any already-picked past dates that are now invalid.
+      if (fromEl.value && fromEl.value < todayStr) fromEl.value = '';
+      if (toEl.value && toEl.value < todayStr) toEl.value = '';
+    }
+    update();
+  }
+
+  ltEl.addEventListener('change', applyBackdatePolicy);
+  applyBackdatePolicy();
 
   fromEl.addEventListener('change', function () {
     if (toEl.value && toEl.value < fromEl.value) toEl.value = fromEl.value;
