@@ -2600,6 +2600,10 @@ def hr_settings(request):
         valid = [v for v, _ in SystemSetting.TIMEZONE_CHOICES]
         if tz in valid:
             setting.display_timezone = tz
+        # Device clock timezone (how incoming punches are interpreted)
+        dtz = request.POST.get("device_timezone", "").strip()
+        if dtz in valid:
+            setting.device_timezone = dtz
         # Payroll cycle start day (1–28)
         raw_day = request.POST.get("payroll_cycle_start_day", "").strip()
         if raw_day:

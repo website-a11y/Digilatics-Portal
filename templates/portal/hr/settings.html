@@ -115,6 +115,20 @@
         </div>
 
         <div style="margin-top:24px;padding-top:20px;border-top:1px solid #F3F4F6;">
+          <div class="ss-card-head-title" style="margin-bottom:6px;">Device Timezone</div>
+          <div class="ss-tz-desc" style="margin-bottom:10px;">
+            The timezone the biometric device's clock is set to. Incoming punches are
+            interpreted in this zone — it must match the device's actual clock. The
+            server never changes the device clock.
+          </div>
+          <select name="device_timezone" class="hr-form-input" style="max-width:420px;height:40px;">
+            {% for value, label in choices %}
+            <option value="{{ value }}" {% if setting.device_timezone == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid #F3F4F6;">
           <div class="ss-card-head-title" style="margin-bottom:6px;">Payroll Cycle</div>
           <div class="ss-tz-desc" style="margin-bottom:10px;">
             Day of the month the payroll cycle begins (in the previous month). Default 23 →

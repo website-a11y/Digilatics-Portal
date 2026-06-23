@@ -108,7 +108,8 @@ class Command(BaseCommand):
                 except Exception:
                     pass
 
-        device_tz_name = device_cfg.get("device_timezone", "UTC")
+        from attendance.models import SystemSetting
+        device_tz_name = SystemSetting.get_device_timezone()
         self._process_logs(raw_logs, filter_date, device_tz_name)
 
     def _process_logs(self, raw_logs, filter_date: date | None, device_tz_name: str = "UTC"):
@@ -158,10 +159,10 @@ class Command(BaseCommand):
             # Localise to device_tz, then convert to the portal's local time (EST).
             ts_device = ts.replace(tzinfo=None).replace(tzinfo=device_tz)
             ts_local = timezone.localtime(ts_device)
-            # Use the device-local (PKT) calendar date so records land on the
-            # correct workday.  Bucketing by EST date shifts morning PKT punches
-            # to the previous calendar day due to the 10-hour offset.
-            punch_date = ts_device.date()
+            # Workday = device-local date with the noon cutoff so an overnight
+            # shift's after-midnight punches stay on the check-in day.
+            from attendance.tz_utils import device_workday
+            punch_date = device_workday(ts_device)
 
             if filter_date and punch_date != filter_date:
                 continue

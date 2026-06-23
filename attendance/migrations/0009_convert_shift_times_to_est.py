@@ -76,7 +76,12 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("attendance", "0008_date_ranges"),
-        ("accounts", "__latest__"),
+        # Pin to the concrete accounts migration that adds the fields this data
+        # migration touches (shift_master / scheduled_checkin / scheduled_checkout).
+        # Must NOT be "__latest__": that floats forward as new accounts migrations
+        # are added, retroactively declaring a dependency on a migration applied
+        # AFTER this one and breaking history (InconsistentMigrationHistory).
+        ("accounts", "0004_employeeprofile_shift_master"),
     ]
 
     operations = [

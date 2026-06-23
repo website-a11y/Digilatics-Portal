@@ -55,7 +55,7 @@ class Command(BaseCommand):
                                  "interpret log timestamps. Needed to reconstruct history "
                                  "recorded before the device was switched to UTC-8 — it ran "
                                  "on UTC (TimeZone=0) until ~2026-06-15. "
-                                 "Defaults to settings.ZK_DEVICE['device_timezone'].")
+                                 "Defaults to the Device Timezone setting.")
         parser.add_argument("--replace", action="store_true",
                             help="On update, overwrite check_out unconditionally (even to None) "
                                  "instead of only when a new value exists. Use when reconstructing "
